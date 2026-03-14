@@ -16,6 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -28,7 +31,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
           cmake --build . --config Release
 
       - name: Deploy Qt Dependencies
@@ -39,9 +42,8 @@ jobs:
           windeployqt deploy\GoPieMenu.exe
 
       - name: Compile Installer
-        uses: aybe/Inno-Setup-Action@v1.2.2
-        with:
-          filepath: installer.iss
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
