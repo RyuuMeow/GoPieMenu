@@ -1,54 +1,88 @@
-# C++ objects and libs
-*.slo
-*.lo
-*.o
-*.a
-*.la
-*.lai
-*.so
-*.so.*
-*.dll
-*.dylib
+# ==============================================================================
+# GoPieMenu Git Ignore Rules
+# ==============================================================================
 
-# Qt-es
-object_script.*.Release
-object_script.*.Debug
-*_plugin_import.cpp
-/.qmake.cache
-/.qmake.stash
+# === OS Files ===
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# === C++ / Compilers ===
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.gch
+*.pch
+
+# === Qt 6 / CMake (Build Artifacts) ===
+build*/
+out/
+bin/
+x64/
+ARM64/
+
+# === CMake ===
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# === Qt (Moc, UI, Resource) ===
+mocs_compilation*
+*.moc
+moc_*.cpp
+moc_*.h
+ui_*.h
+qrc_*.cpp
+*.qrc.depends
+*_qmlcache.qrc
+*_qmltyperegistrar.cpp
+*_qmlresourcetypeloader.cpp
+
+*.qm
+
+# === IDEs (Rider, VS, QtCreator) ===
+# JetBrains Rider / CLion
+.idea/
+*.sln.iml
+.solution.autofit
+
+# === Visual Studio ===
+.vs/
+*.user
+*.suo
+*.db
+*.opendb
+
+# === Qt Creator ===
 *.pro.user
 *.pro.user.*
 *.qbs.user
 *.qbs.user.*
-*.moc
-moc_*.cpp
-moc_*.h
-qrc_*.cpp
-ui_*.h
-*.qmlc
-*.jsc
-Makefile*
-*build-*
-*.qm
-*.prl
-
-# Qt unit tests
-target_wrapper.*
-
-# QtCreator
-*.autosave
-
-# QtCreator Qml
-*.qmlproject.user
-*.qmlproject.user.*
-
-# QtCreator CMake
 CMakeLists.txt.user*
 
-# QtCreator 4.8< compilation database
-compile_commands.json
+# === Backup & Temp Files ===
+*.bak
+*.swp
+*~
+*.autosave
 
-# QtCreator local machine specific files for imported projects
-*creator.user*
+# ==============================================================================
+# Safety Rules
+# ==============================================================================
 
-*_qmlcache.qrc
+!CMakeLists.txt
+!LICENSE
+!README.md
