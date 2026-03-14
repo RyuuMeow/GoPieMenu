@@ -16,7 +16,7 @@
 
 ## 🎬 Demo
 
-![GoPieMenu Demo](resources/Demo/Demo1.gif)
+![GoPieMenu Demo](resources/demo/Demo1.gif)
 
 ---
 
@@ -42,9 +42,9 @@ The design is heavily inspired by the efficient pie menus used in **Blender**, b
 
 ## 📷 Interface Preview
 
-![GoPieMenu Demo](resources/Demo/Demo1.png)
-![GoPieMenu Demo](resources/Demo/Demo2.png)
-![GoPieMenu Demo](resources/Demo/Demo3.png)
+![GoPieMenu Demo](resources/demo/Demo1.png)
+![GoPieMenu Demo](resources/demo/Demo2.png)
+![GoPieMenu Demo](resources/demo/Demo3.png)
 
 ---
 
