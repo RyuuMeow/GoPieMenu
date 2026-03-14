@@ -66,6 +66,7 @@ set(UI_SOURCES
 
 set(RESOURCE_FILES
     resources/resources.qrc
+    resources/windows_icon.rc
 )
 
 # ── Executable ──────────────────────────────────────────────────────────────
