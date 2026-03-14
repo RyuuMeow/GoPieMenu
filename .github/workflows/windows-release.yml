@@ -39,7 +39,8 @@ jobs:
         run: |
           mkdir deploy
           copy build\Release\GoPieMenu.exe deploy\
-          xcopy "resources\icon" "deploy\icons\" /E /I /Y
+          New-Item -ItemType Directory -Force -Path "deploy\icons"
+          Copy-Item -Path "resources\icon\*" -Destination "deploy\icons\" -Recurse -Force
           windeployqt deploy\GoPieMenu.exe
 
       - name: Compile Installer
