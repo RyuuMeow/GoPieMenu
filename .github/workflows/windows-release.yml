@@ -1,0 +1,52 @@
+name: Windows Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.9.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+
+      - name: Build Project
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+
+      - name: Deploy Qt Dependencies
+        run: |
+          mkdir deploy
+          copy build\Release\GoPieMenu.exe deploy\
+          xcopy "resources\icon" "deploy\resources\icon\" /E /I /Y
+          windeployqt deploy\GoPieMenu.exe
+
+      - name: Compile Installer
+        uses: aybe/Inno-Setup-Action@v1.2.2
+        with:
+          filepath: installer.iss
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Output/GoPieMenu_Setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
