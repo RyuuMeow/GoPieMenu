@@ -39,7 +39,7 @@ jobs:
         run: |
           mkdir deploy
           copy build\Release\GoPieMenu.exe deploy\
-          xcopy "resources\icon" "deploy\resources\" /E /I /Y
+          xcopy "resources\icon" "deploy\icons\" /E /I /Y
           windeployqt deploy\GoPieMenu.exe
 
       - name: Compile Installer
