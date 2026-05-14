@@ -1,6 +1,12 @@
 # GoPieMenu
 
 <p align="center">
+  <a href="README.md">English</a> |
+  <a href="README.zh-TW.md">繁體中文</a> |
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
   <b>A fast, customizable radial (pie) menu for Windows.</b><br>
   Inspired by the intuitive interaction design of Blender.
 </p>
@@ -15,6 +21,8 @@
 ---
 
 ## 🎬 Demo
+
+![GoPieMenu Demo](resources/demo/GoPieMenu_Demo.gif)
 
 ![GoPieMenu Demo](resources/demo/Demo1.gif)
 
