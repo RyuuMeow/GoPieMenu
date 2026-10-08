@@ -74,7 +74,12 @@ void PiePreviewItem::requestIcons() {
     }
 }
 QTransform PiePreviewItem::transform() const {
-    const QRectF bounds = ListMode ? QRectF(QPointF(), List.size(Rows)) : Pie.bounds();
+    QRectF bounds = ListMode ? QRectF(QPointF(), List.size(Rows)) : Pie.previewBounds();
+    if (!ListMode) {
+        const auto halfWidth = std::max(std::abs(bounds.left()), std::abs(bounds.right()));
+        const auto halfHeight = std::max(std::abs(bounds.top()), std::abs(bounds.bottom()));
+        bounds = QRectF(-halfWidth, -halfHeight, halfWidth * 2, halfHeight * 2);
+    }
     if (bounds.isEmpty()) return {};
     const double scale = std::max(.05, std::min({ListMode ? 1.0 : 1.25,
         std::max(1.0, width() - 56) / bounds.width(), std::max(1.0, height() - 56) / bounds.height()}));

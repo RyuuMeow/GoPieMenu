@@ -68,6 +68,7 @@ void PieScene::build(const PieMenuConfig& config, const StyleConfig& globalStyle
     const auto inner = Style.InnerRadius;
     const auto extent = outer * Style.HoverScale + Style.BorderWidth + 6;
     Bounds = QRectF(-extent, -extent, extent * 2, extent * 2);
+    PreviewBounds = Bounds;
     if (Config.Items.empty()) return;
     const auto span = 2 * Pi / Config.Items.size();
     const auto gap = std::min(Style.GapAngle * Pi / 180, span * .8);
@@ -98,6 +99,8 @@ void PieScene::build(const PieMenuConfig& config, const StyleConfig& globalStyle
         sector.Text = MenuTextColor(Style, sector.Fill);
         sector.HoverText = MenuTextColor(Style, Style.HoverColor, true);
         Bounds = Bounds.united(sector.HoverLabel.boundingRect().adjusted(-6, -6, 6, 6));
+        // Reserve label slots rather than glyph extents so editing names cannot move or resize the preview.
+        PreviewBounds = PreviewBounds.united(labelRect.adjusted(-6, -6, 6, 6));
     }
 }
 double PieScene::angle(int index) const { return Pi / 2 - index * 2 * Pi / std::max(size_t(1), Config.Items.size()); }

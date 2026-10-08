@@ -24,6 +24,7 @@ public:
     int hitTest(const QPointF& point, bool extendDirections = true) const;
     double angle(int index) const;
     const QRectF& bounds() const { return Bounds; }
+    const QRectF& previewBounds() const { return PreviewBounds; }
     const PieMenuConfig& config() const { return Config; }
     const StyleConfig& style() const { return Style; }
     void setIcon(int index, const QImage& image);
@@ -38,7 +39,7 @@ private:
     PieMenuConfig Config;
     StyleConfig Style;
     QVector<Sector> Sectors;
-    QRectF Bounds;
+    QRectF Bounds, PreviewBounds;
 public:
     void setHoverIcon(int index, const QImage& image);
 };
