@@ -28,6 +28,8 @@ void ActionExecutor::RegisterHandler(std::unique_ptr<IActionHandler> Handler)
 
 bool ActionExecutor::Execute(const PieItem& Item)
 {
+    if (Item.IsNoOp()) return true;
+
     auto It = Handlers.find(Item.Action);
     if (It == Handlers.end()) 
     {

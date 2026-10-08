@@ -264,7 +264,7 @@ void EditorSession::removeItem(const QString& id) {
     mutate({}, [&] {
         auto* values = owner(id);
         std::erase_if(*values, [&](const auto& item) { return item.Id == id; });
-        Selected.clear();
+        if (Selected == id) Selected.clear();
         if (Folder == id) Folder.clear();
     });
 }
@@ -334,7 +334,8 @@ bool EditorSession::moveItem(const QString& id, const QString& destinationFolder
         auto* destination = container(destinationFolder);
         const auto position = std::clamp(index, 0, int(destination->size()));
         destination->insert(destination->begin() + position, std::move(copy));
-        Folder = destinationFolder; Selected = id;
+        // Reordering does not change selection or open the inspector.
+        if (from != to) { Folder = destinationFolder; Selected = id; }
     });
     return true;
 }
@@ -364,6 +365,7 @@ void EditorSession::setStylePreset(const QString& name) {
         auto preset = name == "Frost" ? StyleConfig::Frost() : StyleConfig();
         if (name == "Slate") { preset.SectorColor = QColor(78, 88, 103, 225); preset.HoverColor = QColor(105, 140, 188, 240); }
         if (name == "Ocean") { preset.SectorColor = QColor(40, 66, 99, 225); preset.HoverColor = QColor(60, 130, 210, 240); }
+        next.Opacity = preset.Opacity;
         next.BackgroundColor = preset.BackgroundColor; next.SectorColor = preset.SectorColor;
         next.HoverColor = preset.HoverColor; next.BorderColor = preset.BorderColor; next.TextColor = preset.TextColor;
         next.CenterColor = preset.CenterColor; next.CenterDotColor = preset.CenterDotColor;

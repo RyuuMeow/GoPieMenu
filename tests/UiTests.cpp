@@ -8,14 +8,38 @@
 #include <QElapsedTimer>
 #include <QRegularExpression>
 #include <QScreen>
+#include <QDesktopServices>
 #include <cmath>
 #include "ui/SettingsWindow.h"
 #include "ui/quick/PiePreviewItem.h"
 #include "ui/quick/ColorWheelItem.h"
 #include "ui/PieMenuWidget.h"
 #include "ui/rendering/MenuScene.h"
+#include "ui/TrayManager.h"
+#include "core/ActionExecutor.h"
 
 using namespace gpm;
+class UrlReceiver : public QObject {
+    Q_OBJECT
+public:
+    QUrl url;
+public slots:
+    void receive(const QUrl& value) { url = value; }
+};
+
+class CountingAction : public IActionHandler {
+public:
+    CountingAction(ActionType type, int& validations, int& executions) : Type(type), Validations(validations), Executions(executions) {}
+    ActionType GetSupportedType() const override { return Type; }
+    QString GetDisplayName() const override { return "Test action"; }
+    bool Validate(const PieItem&) const override { ++Validations; return true; }
+    bool Execute(const PieItem&) override { ++Executions; return true; }
+private:
+    ActionType Type;
+    int& Validations;
+    int& Executions;
+};
+
 class UiTests : public QObject {
     Q_OBJECT
     static QQuickItem* visibleItem(QQuickItem* root, const QString& value, const char* property = "objectName") {
@@ -46,6 +70,89 @@ private slots:
         for (auto* screen : QGuiApplication::screens()) qInfo() << "Screen" << screen->name() << screen->geometry() << screen->availableGeometry() << screen->devicePixelRatio();
     }
     void init() { QTest::failOnWarning(QRegularExpression(".*(qrc:/editor|QQml|Binding loop|ReferenceError|TypeError).*")); }
+    void emptyActionsDoNotDispatch() {
+        ActionExecutor executor; int validations = 0, executions = 0;
+        QSignalSpy failed(&executor, &ActionExecutor::ActionFailed), executed(&executor, &ActionExecutor::ActionExecuted);
+        for (int action = 1; action <= 5; ++action) {
+            const auto type = static_cast<ActionType>(action);
+            executor.RegisterHandler(std::make_unique<CountingAction>(type, validations, executions));
+            for (const auto& data : {QString(), QString(" \t\n")})
+                QVERIFY(executor.Execute(PieItem::Create("Empty", type, data, {}, "arguments alone do not execute")));
+        }
+        QVERIFY(executor.Execute(PieItem::Create("None", ActionType::None, "ignored")));
+        QCOMPARE(validations, 0); QCOMPARE(executions, 0); QCOMPARE(failed.count(), 0); QCOMPARE(executed.count(), 0);
+        QVERIFY(executor.Execute(PieItem::Create("Configured", ActionType::LaunchApp, "test-only")));
+        QCOMPARE(validations, 1); QCOMPARE(executions, 1); QCOMPARE(executed.count(), 1);
+    }
+    void actionContextMenusAndPersistentHint() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session(); auto* canvas = w->findChild<PiePreviewItem*>("pieCanvas"); QVERIFY(canvas);
+        auto* menu = w->findChild<QObject*>("actionContextMenu"); QVERIFY(menu);
+        const auto original = session->items()[0].toMap()["id"].toString();
+        auto point = canvas->mapToScene(canvas->itemCenter(0)).toPoint();
+        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, point);
+        QTRY_VERIFY(menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
+        QTest::qWait(100); // Let the first asynchronous icon requests reach the preview capture.
+        QVERIFY(snapshot(w, "action-context-menu"));
+        QVERIFY(click(w, "contextDuplicateAction"));
+        const auto duplicate = session->selectedId(); QVERIFY(duplicate != original); QCOMPARE(session->items().size(), 5);
+        QTest::qWait(30); point = canvas->mapToScene(canvas->itemCenter(0)).toPoint();
+        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, point);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(click(w, "contextDeleteAction"));
+        QCOMPARE(session->items().size(), 4); QVERIFY(!session->findItem(original)); QCOMPARE(session->selectedId(), duplicate);
+        session->undo(); QVERIFY(session->findItem(original));
+        auto* hint = find(w, "previewHint"); QVERIFY(hint);
+        const auto hintText = hint->property("text").toString(); const auto hintPosition = hint->mapToScene(QPointF());
+        QVERIFY(click(w, "menuEnabledToggle")); QVERIFY(!session->profile()["enabled"].toBool());
+        QVERIFY(find(w, "previewHint")); QCOMPARE(hint->property("text").toString(), hintText);
+        QCOMPARE(hint->mapToScene(QPointF()), hintPosition);
+
+        const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
+        const auto child = session->addItem(int(ActionType::LaunchApp)); session->selectItem({}); QTest::qWait(30);
+        point = canvas->mapToScene(canvas->itemCenter(0)).toPoint();
+        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, point);
+        QTRY_VERIFY(menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
+        QVERIFY(click(w, "contextDuplicateAction")); QCOMPARE(session->items().size(), 2);
+        const auto childCopy = session->selectedId();
+        QVERIFY(click(w, "arrangeButton")); QTest::qWait(30);
+        auto* row = find(w, "arrange-row-" + child); QVERIFY(row);
+        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, row->mapToScene(QPointF(110,20)).toPoint());
+        QTRY_VERIFY(menu->property("visible").toBool()); QCOMPARE(session->selectedId(), childCopy);
+        QVERIFY(click(w, "contextDeleteAction"));
+        QVERIFY(!session->findItem(child)); QCOMPARE(session->items().size(), 1); QCOMPARE(session->selectedId(), childCopy);
+        session->selectItem({}); QTest::qWait(30);
+        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, canvas->mapToScene(QPointF(8,8)).toPoint());
+        QVERIFY(!menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
+    }
+    void githubLinkAndTrayMenu() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        QVERIFY(click(w, "applicationSettingsButton"));
+        auto* github = find(w, "projectGithubButton"); QVERIFY(github);
+        auto* githubIcon = github->findChild<QQuickItem*>("buttonIcon"); QVERIFY(githubIcon); QVERIFY(!githubIcon->childItems().isEmpty());
+        QTRY_COMPARE(githubIcon->childItems().first()->property("status").toInt(), 1); // Image.Ready
+        QVERIFY(snapshot(w, "settings-github"));
+        UrlReceiver receiver; QDesktopServices::setUrlHandler("https", &receiver, "receive");
+        QVERIFY(click(w, "projectGithubButton"));
+        QCOMPARE(receiver.url, QUrl("https://github.com/RyuuMeow/GoPieMenu"));
+        QDesktopServices::unsetUrlHandler("https");
+        QTest::keyClick(w, Qt::Key_Escape);
+        TrayManager tray;
+        auto* icon = tray.findChild<QSystemTrayIcon*>(); QVERIFY(icon); QVERIFY(!icon->icon().isNull());
+        QVERIFY(!QIcon(":/logo/GoPieMenu.ico").pixmap(32,32).isNull());
+        auto* menu = icon->contextMenu(); QVERIFY(menu);
+        QSignalSpy pause(&tray, &TrayManager::PauseToggled);
+        menu->popup(w->mapToGlobal(QPoint(100,160))); QTRY_VERIFY(menu->isVisible());
+        menu->setActiveAction(menu->actions()[0]); QTest::qWait(30);
+        QVERIFY(menu->grab().save("artifacts/tray-menu-" + QString::number(w->devicePixelRatio()) + ".png"));
+        QTest::mouseClick(menu, Qt::LeftButton, Qt::NoModifier, menu->actionGeometry(menu->actions()[2]).center());
+        QCOMPARE(pause.count(), 1); QVERIFY(pause[0][0].toBool());
+        QVERIFY(!menu->isVisible());
+    }
     void placementAlwaysFits() {
         const auto config = AppConfig::CreateDefault();
         PieScene scene; auto style = config.GlobalStyle; style.OuterRadius = 400;
@@ -253,6 +360,7 @@ private slots:
         const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
         QStringList ids;
         for (int i = 0; i < 3; ++i) { ids.append(session->addItem(3)); session->setItemField("name", QString("Action %1").arg(i)); }
+        session->selectItem({});
         QVERIFY(click(w, "arrangeButton")); QTest::qWait(50);
         auto* viewport = find(w, "arrangeViewport"); QVERIFY(viewport);
         // Begin over the row's blank area, then insert before the first row.
@@ -265,7 +373,9 @@ private slots:
         QVERIFY(snapshot(w, "drag-insertion"));
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
         QTRY_COMPARE(session->items()[0].toMap()["id"].toString(), ids[2]);
+        QVERIFY(session->selectedId().isEmpty()); QVERIFY(!find(w, "wideInspector"));
         session->undo(); QTest::qWait(30);
+        session->selectItem(ids[1]); QTest::qWait(30);
         // Begin over the label, then insert after the last row.
         row = find(w, "arrange-row-" + ids[0]); QVERIFY(row);
         from = row->mapToScene(QPointF(105,20)).toPoint();
@@ -275,6 +385,7 @@ private slots:
         QTRY_VERIFY(find(w, "insertionLine"));
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
         QTRY_COMPARE(session->items()[2].toMap()["id"].toString(), ids[0]);
+        QCOMPARE(session->selectedId(), ids[1]);
         const auto before = session->items(); QTest::qWait(30);
         row = find(w, "arrange-row-" + ids[0]); QVERIFY(row);
         from = row->mapToScene(QPointF(110,20)).toPoint();
@@ -405,6 +516,7 @@ private slots:
         QVERIFY(snapshot(w, "unsaved-dialog"));
         QVERIFY(click(w, "exitCancelButton")); QVERIFY(editor.session()->dirty()); QCOMPARE(exit.count(), 0);
         editor.session()->addItem(int(ActionType::SendHotkey));
+        editor.session()->setItemField("target", "Ctrl+UnknownKey");
         editor.requestExit(); QVERIFY(click(w, "exitApplyButton"));
         QVERIFY(popup->property("visible").toBool()); QVERIFY(!editor.session()->error().isEmpty()); QCOMPARE(exit.count(), 0);
         editor.session()->setItemField("target", "Ctrl+Q");

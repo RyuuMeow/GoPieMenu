@@ -187,6 +187,9 @@ ApplicationWindow {
                         session: editor
                         icons: iconService
                         visible: editor.items.length > 0
+                        onContextMenuRequested: function(itemId, position) {
+                            actionContextMenu.showFor(itemId, mapToItem(actionContextMenu.parent, position))
+                        }
                     }
                     ColumnLayout {
                         visible: editor.items.length === 0
@@ -216,16 +219,20 @@ ApplicationWindow {
                         onToggled: editor.setProfileField("enabled", checked)
                     }
                     Label {
-                        visible: editor.profile.enabled
+                        objectName: "previewHint"
                         text: editor.selectedId.length ? "Changes stay in preview until you apply." : editor.folderId.length ? "Click an action to edit" : "Click a slice to edit"
                         color: T.muted; font.pixelSize: 13
                     }
                 }
                 ItemList {
+                    id: organizer
                     visible: root.listVisible
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(220, root.height * .28)
                     onCloseList: root.listVisible = false
+                    onContextMenuRequested: function(itemId, position) {
+                        actionContextMenu.showFor(itemId, organizer.mapToItem(actionContextMenu.parent, position))
+                    }
                 }
             }
             Rectangle { visible: !root.compactMode && root.panelMode.length > 0; Layout.fillHeight: true; implicitWidth: 1; color: T.line }
@@ -262,6 +269,7 @@ ApplicationWindow {
         }
     }
     IconPicker { id: iconPicker; parent: Overlay.overlay }
+    ActionContextMenu { id: actionContextMenu; parent: Overlay.overlay }
     ColorPicker { id: colorPicker }
     ExitDialog { id: exitDialog }
     RunningAppsDialog { id: runningApps }
@@ -288,7 +296,14 @@ ApplicationWindow {
             }
             AppButton { text: "Open custom icon folder"; iconName: "folder.svg"; onClicked: appController.openIconDirectory() }
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
-            AppButton { text: "About"; onClicked: { settings.close(); about.open() } }
+            RowLayout {
+                AppButton { text: "About"; onClicked: { settings.close(); about.open() } }
+                AppButton {
+                    objectName: "projectGithubButton"
+                    iconName: "github.svg"; hint: "Open GoPieMenu on GitHub"
+                    onClicked: Qt.openUrlExternally("https://github.com/RyuuMeow/GoPieMenu")
+                }
+            }
         }
     }
     AppDialog {

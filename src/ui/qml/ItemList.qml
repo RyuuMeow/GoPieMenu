@@ -7,6 +7,7 @@ Rectangle {
     id: root
     color: "#fafbfd"
     signal closeList()
+    signal contextMenuRequested(string itemId, point position)
     implicitHeight: 200
     property string pressedId: ""
     property string draggedName: ""
@@ -103,8 +104,14 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         preventStealing: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
                         cursorShape: root.dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
-                        onPressed: function(mouse) { root.prepare(row.modelData, row.index, mapToItem(viewport, mouse.x, mouse.y)) }
+                        onPressed: function(mouse) {
+                            if (mouse.button === Qt.RightButton) {
+                                root.cancelDrag()
+                                root.contextMenuRequested(row.modelData.id, mapToItem(root, mouse.x, mouse.y))
+                            } else root.prepare(row.modelData, row.index, mapToItem(viewport, mouse.x, mouse.y))
+                        }
                         onPositionChanged: function(mouse) { if (pressed) root.track(mapToItem(viewport, mouse.x, mouse.y)) }
                         onReleased: root.finish()
                         onCanceled: root.cancelDrag()
@@ -114,7 +121,7 @@ Rectangle {
                         Item {
                             objectName: "drag-handle-" + row.modelData.id
                             width: 24; Layout.fillHeight: true
-                            IconImage { name: "move-cross.svg"; width: 17; height: 17; anchors.centerIn: parent; tint: T.muted }
+                            IconImage { name: "menu.svg"; width: 17; height: 17; anchors.centerIn: parent; tint: T.muted }
                         }
                         IconImage { name: row.modelData.icon; width: 19; height: 19 }
                         Label { text: row.modelData.name; Layout.fillWidth: true; Layout.minimumWidth: 0; color: T.ink; font.pixelSize: 14; elide: Text.ElideRight }

@@ -24,6 +24,7 @@ signals:
     void sessionChanged();
     void iconsChanged();
     void hoveredNameChanged();
+    void contextMenuRequested(const QString& itemId, const QPointF& position);
 protected:
     void geometryChange(const QRectF& newGeometry, const QRectF& oldGeometry) override;
     void hoverMoveEvent(QHoverEvent* event) override;

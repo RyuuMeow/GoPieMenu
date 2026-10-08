@@ -49,12 +49,13 @@ struct StyleConfig
 
     [[nodiscard]] static StyleConfig Frost() {
         StyleConfig s;
-        s.BackgroundColor = QColor(246, 248, 251, 242);
-        s.SectorColor = QColor(230, 235, 242, 225);
-        s.HoverColor = QColor(108, 150, 218, 240);
+        s.Opacity = 0.98;
+        s.BackgroundColor = QColor(246, 248, 251, 252);
+        s.SectorColor = QColor(230, 235, 242, 250);
+        s.HoverColor = QColor(108, 150, 218, 252);
         s.BorderColor = QColor(164, 177, 194, 180);
         s.TextColor = QColor(37, 47, 62);
-        s.CenterColor = QColor(249, 250, 252, 240);
+        s.CenterColor = QColor(249, 250, 252, 252);
         s.CenterDotColor = QColor(80, 130, 207);
         s.bAutoContrast = true;
         s.TextOutlineThickness = 2.0;

@@ -51,21 +51,24 @@ if(GPM_BUILD_DESKTOP)
     file(GLOB GPM_QML_FILES CONFIGURE_DEPENDS src/ui/qml/*.qml src/ui/qml/*.js)
     qt_add_resources(gpm_ui "editor" PREFIX "/editor" BASE "src/ui/qml" FILES ${GPM_QML_FILES})
 
-    add_executable(GoPieMenu WIN32
-        src/main.cpp
-        src/core/HookManager.cpp
-        src/core/IHookProvider.h
+    add_library(gpm_actions STATIC
         src/core/ActionExecutor.cpp
         src/core/actions/LaunchAppAction.cpp
         src/core/actions/RunCommandAction.cpp
         src/core/actions/SendHotkeyAction.cpp
         src/core/actions/OpenFileAction.cpp
         src/core/actions/OpenURLAction.cpp
-        src/ui/TrayManager.cpp
-        resources/resources.qrc
+    )
+    target_link_libraries(gpm_actions PUBLIC gpm_core)
+
+    target_sources(gpm_ui PRIVATE src/ui/TrayManager.cpp resources/resources.qrc)
+    add_executable(GoPieMenu WIN32
+        src/main.cpp
+        src/core/HookManager.cpp
+        src/core/IHookProvider.h
         resources/windows_icon.rc
     )
-    target_link_libraries(GoPieMenu PRIVATE gpm_ui)
+    target_link_libraries(GoPieMenu PRIVATE gpm_ui gpm_actions)
     install(TARGETS GoPieMenu DESTINATION bin)
 endif()
 
@@ -77,7 +80,7 @@ if(BUILD_TESTING)
     add_test(NAME core COMMAND gpm_core_tests -o artifacts/core.txt,txt)
     if(GPM_BUILD_DESKTOP)
         add_executable(gpm_ui_tests tests/UiTests.cpp)
-        target_link_libraries(gpm_ui_tests PRIVATE gpm_ui Qt6::Test)
+        target_link_libraries(gpm_ui_tests PRIVATE gpm_ui gpm_actions Qt6::Test)
         foreach(scale 1 1.25 1.5 2)
             add_test(NAME ui-${scale} COMMAND gpm_ui_tests -o artifacts/ui-${scale}.txt,txt)
             set_tests_properties(ui-${scale} PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software;QT_SCALE_FACTOR=${scale}" RUN_SERIAL TRUE)

@@ -30,6 +30,11 @@ struct PieItem
     std::optional<QColor> Color;
     std::vector<PieItem>  SubItems;
 
+    // Empty targets are intentional placeholders, including legacy None actions.
+    [[nodiscard]] bool IsNoOp() const {
+        return Action == ActionType::None || (Action != ActionType::ListMenu && ActionData.trimmed().isEmpty());
+    }
+
     // === Factory ===
     [[nodiscard]] static PieItem Create(
         const QString& InName,

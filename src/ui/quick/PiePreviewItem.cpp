@@ -6,7 +6,7 @@
 
 namespace gpm {
 PiePreviewItem::PiePreviewItem(QQuickItem* parent) : QQuickPaintedItem(parent) {
-    setAntialiasing(true); setAcceptHoverEvents(true); setAcceptedMouseButtons(Qt::LeftButton);
+    setAntialiasing(true); setAcceptHoverEvents(true); setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
     connect(this, &QQuickItem::windowChanged, this, [this](QQuickWindow* window) {
         if (window) connect(window, &QWindow::screenChanged, this, [this] { requestIcons(); update(); });
     });
@@ -128,11 +128,14 @@ QString PiePreviewItem::hoveredName() const {
 void PiePreviewItem::mousePressEvent(QMouseEvent* event) {
     if (!Session) return;
     const auto index = hit(event->position());
-    Session->selectItem(index < 0 ? QString() : (ListMode ? List.items()[index].Id : Pie.config().Items[index].Id));
+    const auto id = index < 0 ? QString() : (ListMode ? List.items()[index].Id : Pie.config().Items[index].Id);
+    if (event->button() == Qt::RightButton) {
+        if (!id.isEmpty()) emit contextMenuRequested(id, event->position());
+    } else Session->selectItem(id);
     event->accept();
 }
 void PiePreviewItem::mouseDoubleClickEvent(QMouseEvent* event) {
-    if (!Session || ListMode) return;
+    if (!Session || ListMode || event->button() != Qt::LeftButton) return;
     const int index = hit(event->position());
     if (index >= 0 && Pie.config().Items[index].Action == ActionType::ListMenu) Session->enterFolder(Pie.config().Items[index].Id);
     event->accept();

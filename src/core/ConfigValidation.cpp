@@ -80,12 +80,9 @@ QString ValidateConfig(const AppConfig& config) {
             if (item.Color && !item.Color->isValid()) return QStringLiteral("An item contains an invalid color.");
             if (profile.bEnabled) {
                 if (item.Name.trimmed().isEmpty()) return QStringLiteral("Give each action a name.");
-                if (item.Action == ActionType::None) return item.Name + QStringLiteral(": choose an action.");
-                if (item.Action != ActionType::ListMenu && item.ActionData.trimmed().isEmpty())
-                    return item.Name + QStringLiteral(": enter a target or record a shortcut.");
-                if (item.Action == ActionType::SendHotkey && ParseShortcut(item.ActionData).empty())
+                if (!item.IsNoOp() && item.Action == ActionType::SendHotkey && ParseShortcut(item.ActionData).empty())
                     return item.Name + QStringLiteral(": record a valid keyboard shortcut.");
-                if (item.Action == ActionType::OpenURL) {
+                if (!item.IsNoOp() && item.Action == ActionType::OpenURL) {
                     const auto url = QUrl::fromUserInput(item.ActionData);
                     if (!url.isValid() || url.scheme().isEmpty()) return item.Name + QStringLiteral(": enter a valid URL.");
                 }

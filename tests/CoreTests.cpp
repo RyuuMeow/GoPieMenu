@@ -14,6 +14,42 @@ using namespace gpm;
 class CoreTests : public QObject {
     Q_OBJECT
 private slots:
+    void emptyActionsCanBeSavedAndImported() {
+        auto config = AppConfig::CreateDefault();
+        auto& items = config.Profiles[0].Items;
+        items.clear();
+        for (int action = 0; action <= 5; ++action)
+            items.push_back(PieItem::Create(QString("Empty %1").arg(action), static_cast<ActionType>(action), " \t"));
+        auto folder = PieItem::Create("Submenu", ActionType::ListMenu, {});
+        folder.SubItems.push_back(PieItem::Create("Empty child", ActionType::SendHotkey, {}));
+        items.push_back(folder);
+        QVERIFY(ValidateConfig(config).isEmpty());
+        const auto parsed = ParseConfig(config.Serialize());
+        QVERIFY2(bool(parsed), qPrintable(parsed.Error));
+        QCOMPARE(parsed.Value->Serialize(), config.Serialize());
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json"));
+        EditorSession session(&manager);
+        QVERIFY(session.importData(config.Serialize()));
+        QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QCOMPARE(reopened.GetConfig().Serialize(), config.Serialize());
+        items[3].ActionData = "Ctrl+UnknownKey";
+        QVERIFY(!ValidateConfig(config).isEmpty()); // Non-empty malformed shortcuts still report an error.
+    }
+    void reorderingAndDeletingAnotherItemPreserveSelection() {
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json")); EditorSession session(&manager);
+        const auto first = session.items()[0].toMap()["id"].toString();
+        const auto second = session.items()[1].toMap()["id"].toString();
+        session.selectItem(second);
+        QVERIFY(session.moveItem(first, {}, 3));
+        QCOMPARE(session.selectedId(), second);
+        session.undo(); QCOMPARE(session.selectedId(), second);
+        session.redo(); QCOMPARE(session.selectedId(), second);
+        session.removeItem(first); QCOMPARE(session.selectedId(), second);
+        session.selectItem({});
+        QVERIFY(session.moveItem(second, {}, 2));
+        QVERIFY(session.selectedId().isEmpty());
+    }
     void recordedAndLegacyShortcutParsing() {
         QCOMPARE(ParseShortcut("Ctrl+Shift+K"), (std::vector<int>{0xa2, 0xa0, 'K'}));
         QCOMPARE(ParseShortcut("Win+F24"), (std::vector<int>{0x5b, 0x87}));
