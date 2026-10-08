@@ -4,7 +4,7 @@
 
 `EditorSession` owns the draft, stable profile/item IDs, selection, and up to 100 undo snapshots. Consecutive edits to one field merge for 650ms. Profile switching and hiding the window preserve drafts. Import is an undoable draft operation. The runtime reads only `ConfigManager`'s committed configuration.
 
-Apply validates action requirements, unique IDs, two-level hierarchy, triggers, and safe geometry. `QSaveFile` writes atomically with direct-write fallback disabled. Only a successful commit replaces the runtime configuration and emits `ConfigChanged`. Parse/type errors, invalid imports, write errors, and failed file replacement retain the draft and original file. Configuration JSON remains version 1.0; legacy appearance aliases and existing custom colors are supported. Fresh configurations use Frost.
+Apply validates non-empty shortcuts/URLs, unique IDs, two-level hierarchy, triggers, and safe geometry. Empty targets and legacy None actions are valid placeholders. `PieItem::IsNoOp` lets the executor skip them before handler validation or dispatch, without a failure notification. `QSaveFile` writes atomically with direct-write fallback disabled. Only a successful commit replaces the runtime configuration and emits `ConfigChanged`. Parse/type errors, invalid imports, write errors, and failed file replacement retain the draft and original file. Configuration JSON remains version 1.0; legacy appearance aliases and existing custom colors are supported. Fresh configurations use Frost at approximately 96% effective sector opacity. Existing saved styles retain their values until edited or replaced by a preset.
 
 ## UI and rendering
 
@@ -15,6 +15,10 @@ Apply validates action requirements, unique IDs, two-level hierarchy, triggers, 
 `ColorWheelItem` paints and hit-tests the hue ring and saturation/value square, retaining hue for achromatic colors. `ColorPicker` stages H/S/V/alpha and RGB/RGBA hex changes until confirmation; configuration colors retain Qt's ARGB representation. Selection IDs guard against applying a delayed result to a different item. The last 12 confirmed colors are stored separately in QSettings; isolated preview/test sessions do not write that history.
 
 `WindowTitleBar` and `WindowResizeHandles` provide system move/resize with shared, unfilled caption buttons. Windows DWM supplies rounded corners where supported. Native maximize/restore preserves the Windows state, including taskbar-free monitors where Qt 6.9's frameless maximization can report FullScreen. The organizer tracks the dragged row by ID, draws an insertion gap, and commits one move on release; edge scrolling and Escape cancellation keep the draft stable during the gesture.
+
+Reordering within a container preserves selection, including an empty selection. Moving an action to another container still follows the moved item. `ActionContextMenu` is shared by preview sectors, preview submenu rows, and organizer rows; it targets the clicked ID without selecting it first. Deleting a different action preserves the current selection. The preview hint does not depend on the Enabled switch.
+
+The QWidget tray menu matches the QML menu's light surface, spacing, corner radii, and hover color. Application and tray ICO resources come from the supplied Pie-Menu-SVG-Pack, with the application SVG master retained under `resources/logo`. The GitHub button beside About uses the verified repository URL.
 
 `PieScene` and `ListScene` share drawing, colors, geometry, and hit testing between `PiePreviewItem` and the runtime QWidget menus. Icons are supplied before painting. The preview composes its logical transform with the Qt Quick device-pixel transform and uses fixed label bounds centered on the menu origin, so renaming does not move or scale the menu. Runtime bounds still follow rendered text. Window placement accounts for negative monitor coordinates, label extents, screen edges, and small work areas. Long submenu lists page with the wheel or edge scrolling. Paint requests occur on changes, animation, or input; there is no idle repaint timer.
 
@@ -37,16 +41,18 @@ Run `scripts/build.ps1` as described in the README. CTest runs core once and the
 - Dialog/window UI: color conversion, ring/square pointer input, hex validation and focus, confirm/cancel isolation and recent colors, modal shortcut blocking, unsaved exit success/failure/cancel, enabled switch, maximize/work-area/restore, running-app selection dialog, and compact color layout. Existing coverage includes the 800×520 drawer, QML warning detection, high-DPI painted coordinates, four-corner/negative-screen placement, a 100-item list, rapid menu reopen, and closing engines during icon loading.
 - Packaging: `windeployqt --qmldir src/ui/qml` includes QML dependencies. `--smoke-test` uses preview isolation and exits after startup. CI tests the deployed executable with the Qt SDK removed from PATH, then compiles the installer. Screenshots and text logs are retained as artifacts.
 
+Additional checks cover blank-action save/import, no-op dispatch through fake action handlers, selection-preserving sorting/deletion, all three action context-menu locations, disabled-menu hints, and tray Pause behavior. The GitHub test intercepts URL opening rather than launching a browser. Action dispatch is built as `gpm_actions` so the same production dispatcher can be tested without executing real actions.
+
 ## Local Release measurements
 
 Measured on 2026-10-09, Windows 11, Qt 6.9.0 / MSVC 2022, software Qt Quick rendering, 1,376 embedded icons. Same development machine, four scale factors; warm opening sampled three times per scale.
 
 | Operation | Observed range | Target |
 | --- | ---: | ---: |
-| Warm picker open and first rendered frame | 41–63ms | <150ms |
-| Search text through filtered model, including 16ms coalescing | 9–32ms | <100ms |
-| Cold metadata index | 53–60ms | Background, UI remains usable |
-| Metadata filter alone | 0.144–0.172ms | <100ms |
+| Warm picker open and first rendered frame | 46–63ms | <150ms |
+| Search text through filtered model, including 16ms coalescing | 10–35ms | <100ms |
+| Cold metadata index | 54–64ms | Background, UI remains usable |
+| Metadata filter alone | 0.100–0.172ms | <100ms |
 
 Warm timing includes the test helper's 30ms layout wait. These are local samples, not latency guarantees or cross-device benchmarks. Logs are in `build/artifacts`; timing values are reported, not enforced as brittle CI thresholds.
 
