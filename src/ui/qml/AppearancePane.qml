@@ -18,12 +18,12 @@ ColumnLayout {
         }
     }
     NumberSetting { Layout.fillWidth: true; label: "Size"; field: "outerRadius"; minimum: 80; maximum: 400; step: 5; value: root.style.outerRadius || 150 }
-    AppButton { text: "Advanced"; iconName: root.advanced ? "nav-arrow-down.svg" : "nav-arrow-right.svg"; onClicked: root.advanced = !root.advanced }
+    AppButton { text: "Advanced"; kind: "text"; iconName: root.advanced ? "nav-arrow-down.svg" : "nav-arrow-right.svg"; onClicked: root.advanced = !root.advanced }
     ColumnLayout {
         Layout.fillWidth: true
         visible: root.advanced
         spacing: 16
-        CheckBox { text: "Only customize this menu"; font.pixelSize: 14; checked: editor.profile.customStyle || false; onClicked: editor.setProfileField("customStyle", checked) }
+        AppCheckBox { text: "Only customize this menu"; checked: editor.profile.customStyle || false; onClicked: editor.setProfileField("customStyle", checked) }
         NumberSetting { Layout.fillWidth: true; label: "Center radius"; field: "innerRadius"; minimum: 10; maximum: Math.min(150, (root.style.outerRadius || 150) - 9); value: root.style.innerRadius || 45 }
         NumberSetting { Layout.fillWidth: true; label: "Icon size"; field: "iconSize"; minimum: 12; maximum: 96; value: root.style.iconSize || 28 }
         NumberSetting { Layout.fillWidth: true; label: "Text size"; field: "fontSize"; minimum: 8; maximum: 32; value: root.style.fontSize || 11 }
@@ -33,7 +33,7 @@ ColumnLayout {
         NumberSetting { Layout.fillWidth: true; label: "Text outline"; field: "textOutlineThickness"; minimum: 0; maximum: 10; step: .5; value: root.style.textOutlineThickness || 0 }
         NumberSetting { Layout.fillWidth: true; label: "Border width"; field: "borderWidth"; minimum: 0; maximum: 5; step: .5; value: root.style.borderWidth || 0 }
         NumberSetting { Layout.fillWidth: true; label: "Hover size"; field: "hoverScale"; minimum: 1; maximum: 1.25; step: .01; value: root.style.hoverScale || 1 }
-        CheckBox { text: "Automatic text contrast"; font.pixelSize: 14; checked: root.style.autoContrast || false; onClicked: editor.setStyleField("autoContrast", checked) }
+        AppCheckBox { text: "Automatic text contrast"; checked: root.style.autoContrast || false; onClicked: editor.setStyleField("autoContrast", checked) }
         Repeater {
             model: [
                 {name: "Slices", key: "sectorColor"}, {name: "Highlight", key: "hoverColor"},

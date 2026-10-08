@@ -3,22 +3,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "Theme.js" as T
 
-Popup {
+AppDialog {
     id: root
     objectName: "iconPicker"
+    title: "Choose icon"
     width: Math.min(520, parent.width - 32)
-    height: Math.min(540, parent.height - 40)
-    anchors.centerIn: parent
-    modal: true
-    focus: true
-    padding: 20
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    background: Rectangle { color: T.surface; border.color: T.line; radius: 14 }
-    Overlay.modal: Rectangle { color: "#25344920" }
     onOpened: { search.text = ""; iconCatalog.query = ""; search.forceActiveFocus() }
     onClosed: { searchDelay.stop(); iconCatalog.query = "" }
     ColumnLayout {
-        anchors.fill: parent
+        Layout.fillWidth: true
         spacing: 12
         RowLayout {
             Layout.fillWidth: true
@@ -30,14 +23,13 @@ Popup {
                 onTextEdited: searchDelay.restart()
                 Accessible.name: "Search icons"
             }
-            AppButton { iconName: "cancel.svg"; hint: "Close"; onClicked: root.close() }
         }
         Timer { id: searchDelay; interval: 16; onTriggered: iconCatalog.query = search.text }
         GridView {
             id: grid
             objectName: "iconGrid"
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: 300
             clip: true
             cellWidth: width / Math.max(3, Math.floor(width / 80))
             cellHeight: 88
@@ -58,9 +50,7 @@ Popup {
                 }
                 HoverHandler { id: hover; cursorShape: Qt.PointingHandCursor }
                 TapHandler { onTapped: { editor.setItemField("icon", cell.iconId); root.close() } }
-                ToolTip.visible: hover.hovered
-                ToolTip.text: cell.displayName
-                ToolTip.delay: 700
+                AppToolTip { visible: hover.hovered && text.length > 0; text: cell.displayName; delay: 700 }
                 Accessible.role: Accessible.Button
                 Accessible.name: cell.displayName
                 Accessible.onPressAction: { editor.setItemField("icon", cell.iconId); root.close() }

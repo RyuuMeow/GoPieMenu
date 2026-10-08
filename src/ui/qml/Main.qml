@@ -11,6 +11,7 @@ ApplicationWindow {
     minimumWidth: 780; minimumHeight: 480
     visible: false
     title: "GoPieMenu"
+    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowMinMaxButtonsHint
     color: T.background
     font.family: "Segoe UI"
     font.pixelSize: 14
@@ -26,6 +27,7 @@ ApplicationWindow {
     property bool compactMode: width < 1000
     property bool listVisible: false
     property string previousSelection: ""
+    readonly property bool dialogOpen: iconPicker.visible || colorPicker.visible || exitDialog.visible || runningApps.visible || settings.visible || about.visible
     onClosing: function(event) {
         root.contentItem.forceActiveFocus()
         recorder.cancel()
@@ -52,44 +54,54 @@ ApplicationWindow {
             }
         }
     }
-    Shortcut { sequence: StandardKey.Save; enabled: !recorder.active; onActivated: root.applyDraft() }
-    Shortcut { sequences: [StandardKey.Undo]; enabled: !recorder.active; onActivated: editor.undo() }
-    Shortcut { sequences: [StandardKey.Redo]; enabled: !recorder.active; onActivated: editor.redo() }
+    Shortcut { sequence: StandardKey.Save; enabled: !recorder.active && !root.dialogOpen; onActivated: root.applyDraft() }
+    Shortcut { sequences: [StandardKey.Undo]; enabled: !recorder.active && !root.dialogOpen; onActivated: editor.undo() }
+    Shortcut { sequences: [StandardKey.Redo]; enabled: !recorder.active && !root.dialogOpen; onActivated: editor.redo() }
 
-    header: Rectangle {
-        height: 68
+    Rectangle {
+        id: windowHeader
+        anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
+        height: 108
         color: T.surface
+        WindowTitleBar { anchors.left: parent.left; anchors.right: parent.right; targetWindow: root }
         Rectangle { height: 1; width: parent.width; anchors.bottom: parent.bottom; color: T.line }
         RowLayout {
             anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20
+            anchors.topMargin: 40
             spacing: 8
+            AppButton {
+                objectName: "newMenuButton"
+                iconName: "plus.svg"; hint: "New menu"
+                onClicked: { editor.addProfile(); root.panelMode = "menu" }
+            }
             AppCombo {
                 objectName: "profileSelector"
                 Layout.preferredWidth: root.width < 900 ? 155 : 215
                 model: editor.profiles
                 textRole: "name"; valueRole: "id"
-                currentIndex: count > 0 ? indexOfValue(editor.profileId) : -1
+                selectionValue: editor.profileId
                 onActivated: editor.selectProfile(currentValue)
                 Accessible.name: "Current menu"
             }
-            AppButton {
+            AppMenuButton {
+                objectName: "manageMenusButton"
                 iconName: "more-horiz.svg"; hint: "Manage menus"
-                onClicked: profileMenu.open()
-                Menu {
+                menu: profileMenu
+                AppMenu {
                     id: profileMenu
-                    y: parent.height + 4
-                    MenuItem { text: "New menu"; onTriggered: { editor.addProfile(); root.panelMode = "menu" } }
-                    MenuItem { text: "Menu settings"; onTriggered: root.panelMode = "menu" }
-                    MenuItem { text: "Duplicate menu"; onTriggered: { editor.duplicateProfile(); root.panelMode = "menu" } }
-                    MenuSeparator {}
-                    MenuItem { text: "Delete menu"; enabled: editor.profiles.length > 1; onTriggered: editor.removeProfile() }
+                    objectName: "profileMenu"
+                    AppMenuItem { text: "New menu"; onTriggered: { editor.addProfile(); root.panelMode = "menu" } }
+                    AppMenuItem { text: "Menu settings"; onTriggered: root.panelMode = "menu" }
+                    AppMenuItem { text: "Duplicate menu"; onTriggered: { editor.duplicateProfile(); root.panelMode = "menu" } }
+                    AppMenuSeparator {}
+                    AppMenuItem { text: "Delete menu"; destructive: true; enabled: editor.profiles.length > 1; onTriggered: editor.removeProfile() }
                 }
             }
             Rectangle { Layout.preferredHeight: 24; implicitWidth: 1; color: T.line; Layout.leftMargin: 3; Layout.rightMargin: 3 }
             AppButton {
                 objectName: "triggerSummaryButton"
                 iconName: "key-command.svg"
-                text: root.width < 900 && editor.dirty ? "" : editor.profile.triggerSummary || ""
+                text: root.width < 1000 ? "" : editor.profile.triggerSummary || ""
                 hint: "Edit trigger and application scope"
                 onClicked: root.panelMode = root.panelMode === "menu" ? "" : "menu"
                 checked: root.panelMode === "menu"
@@ -97,14 +109,15 @@ ApplicationWindow {
             Item { Layout.fillWidth: true }
             AppButton { objectName: "undoButton"; iconName: "undo.svg"; hint: "Undo · Ctrl+Z"; enabled: editor.canUndo; onClicked: editor.undo() }
             AppButton { iconName: "redo.svg"; hint: "Redo · Ctrl+Y"; enabled: editor.canRedo; onClicked: editor.redo() }
-            AppButton { visible: editor.dirty; text: "Discard"; onClicked: { root.contentItem.forceActiveFocus(); editor.discard() } }
-            AppButton { objectName: "applyButton"; visible: editor.dirty; text: "Apply"; iconName: "check.svg"; kind: "primary"; onClicked: root.applyDraft() }
-            AppButton { iconName: "settings.svg"; hint: "Application settings"; onClicked: settings.open() }
+            AppButton { objectName: "discardButton"; enabled: editor.dirty; text: "Discard"; onClicked: { root.contentItem.forceActiveFocus(); editor.discard() } }
+            AppButton { objectName: "applyButton"; enabled: editor.dirty; text: "Apply"; iconName: "check.svg"; kind: "primary"; onClicked: root.applyDraft() }
+            AppButton { objectName: "applicationSettingsButton"; iconName: "settings.svg"; hint: "Application settings"; onClicked: settings.open() }
         }
     }
 
     ColumnLayout {
         anchors.fill: parent
+        anchors.topMargin: windowHeader.height
         spacing: 0
         Rectangle {
             visible: editor.error.length > 0
@@ -128,31 +141,28 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.leftMargin: 24; Layout.rightMargin: 24
                     Layout.topMargin: 20; Layout.bottomMargin: 4
-                    spacing: 6
+                    spacing: 14
                     AppButton {
+                        objectName: "backToMenuButton"
                         visible: editor.folderId.length > 0
                         iconName: "arrow-left.svg"; hint: "Back to main menu"
+                        text: editor.folderName
+                        maximumTextWidth: 140
                         onClicked: editor.leaveFolder()
                     }
-                    Label {
-                        visible: editor.folderId.length > 0
-                        text: editor.folderName; font.pixelSize: 15; color: T.ink; elide: Text.ElideRight
-                        Layout.maximumWidth: 160
-                    }
-                    AppButton {
+                    AppMenuButton {
                         objectName: "addActionButton"
                         iconName: "plus.svg"; text: "Add action"; kind: "secondary"
-                        onClicked: addMenu.open()
-                        Menu {
+                        menu: addMenu
+                        AppMenu {
                             id: addMenu
-                            y: parent.height + 4
-                            MenuItem { text: "Keyboard shortcut"; onTriggered: editor.addItem(3) }
-                            MenuItem { text: "Open application"; onTriggered: editor.addItem(1) }
-                            MenuItem { text: "Open file or folder"; onTriggered: editor.addItem(4) }
-                            MenuItem { text: "Open website"; onTriggered: editor.addItem(5) }
-                            MenuItem { text: "Run command"; onTriggered: editor.addItem(2) }
-                            MenuSeparator { visible: editor.folderId.length === 0 }
-                            MenuItem { text: "New submenu"; visible: editor.folderId.length === 0; onTriggered: editor.addItem(6) }
+                            AppMenuItem { text: "Keyboard shortcut"; onTriggered: editor.addItem(3) }
+                            AppMenuItem { text: "Open application"; onTriggered: editor.addItem(1) }
+                            AppMenuItem { text: "Open file or folder"; onTriggered: editor.addItem(4) }
+                            AppMenuItem { text: "Open website"; onTriggered: editor.addItem(5) }
+                            AppMenuItem { text: "Run command"; onTriggered: editor.addItem(2) }
+                            AppMenuSeparator { visible: editor.folderId.length === 0 }
+                            AppMenuItem { text: "New submenu"; visible: editor.folderId.length === 0; onTriggered: editor.addItem(6) }
                         }
                     }
                     Item { Layout.fillWidth: true }
@@ -177,9 +187,6 @@ ApplicationWindow {
                         session: editor
                         icons: iconService
                         visible: editor.items.length > 0
-                        ToolTip.visible: hoveredName.length > 0
-                        ToolTip.text: hoveredName
-                        ToolTip.delay: 1000
                     }
                     ColumnLayout {
                         visible: editor.items.length === 0
@@ -200,12 +207,19 @@ ApplicationWindow {
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.bottomMargin: 18
+                    Layout.preferredHeight: 40
                     spacing: 8
+                    StatusToggle {
+                        objectName: "menuEnabledToggle"
+                        checked: editor.profile.enabled || false
+                        canEnable: (editor.profile.itemCount || 0) > 0
+                        onToggled: editor.setProfileField("enabled", checked)
+                    }
                     Label {
-                        text: !editor.profile.enabled ? "This menu is disabled" : editor.selectedId.length ? "Changes stay in preview until you apply." : editor.folderId.length ? "Click an action to edit" : "Click a slice to edit"
+                        visible: editor.profile.enabled
+                        text: editor.selectedId.length ? "Changes stay in preview until you apply." : editor.folderId.length ? "Click an action to edit" : "Click a slice to edit"
                         color: T.muted; font.pixelSize: 13
                     }
-                    AppButton { visible: !editor.profile.enabled && editor.items.length > 0; text: "Enable"; compact: true; onClicked: editor.setProfileField("enabled", true) }
                 }
                 ItemList {
                     visible: root.listVisible
@@ -232,9 +246,10 @@ ApplicationWindow {
         objectName: "compactDrawer"
         edge: Qt.RightEdge
         width: Math.min(340, root.width - 48)
-        y: root.header.height
+        y: windowHeader.height
         height: root.height - y
         modal: false
+        focus: false
         interactive: false
         visible: root.compactMode && root.panelMode.length > 0
         padding: 0
@@ -247,26 +262,25 @@ ApplicationWindow {
         }
     }
     IconPicker { id: iconPicker; parent: Overlay.overlay }
-    Popup {
+    ColorPicker { id: colorPicker }
+    ExitDialog { id: exitDialog }
+    RunningAppsDialog { id: runningApps }
+    Connections {
+        target: appController
+        function onColorRequested(color) { colorPicker.begin(color) }
+        function onConfirmExitRequested() { exitDialog.open() }
+        function onRunningAppsRequested() { runningApps.open() }
+    }
+    WindowResizeHandles { anchors.fill: parent; targetWindow: root; z: 1000 }
+    AppDialog {
         id: settings
-        parent: Overlay.overlay
-        anchors.centerIn: parent
+        title: "Settings"
         width: Math.min(440, root.width - 32)
-        implicitHeight: settingsContent.implicitHeight + 40
-        padding: 20
-        modal: true; focus: true
-        background: Rectangle { color: T.surface; border.color: T.line; radius: 14 }
-        Overlay.modal: Rectangle { color: "#25344920" }
         ColumnLayout {
             id: settingsContent
-            width: parent.width
+            Layout.fillWidth: true
             spacing: 14
-            RowLayout {
-                Layout.fillWidth: true
-                Label { text: "Settings"; color: T.ink; font.pixelSize: 19; font.weight: Font.DemiBold; Layout.fillWidth: true }
-                AppButton { iconName: "cancel.svg"; hint: "Close settings"; onClicked: settings.close() }
-            }
-            CheckBox { text: "Start with Windows"; font.pixelSize: 14; checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
+            AppCheckBox { text: "Start with Windows"; checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
             RowLayout {
                 AppButton { text: "Import"; iconName: "import.svg"; kind: "secondary"; onClicked: { settings.close(); appController.importConfig() } }
@@ -274,19 +288,16 @@ ApplicationWindow {
             }
             AppButton { text: "Open custom icon folder"; iconName: "folder.svg"; onClicked: appController.openIconDirectory() }
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
-            AppButton { text: "About"; onClicked: about.open() }
+            AppButton { text: "About"; onClicked: { settings.close(); about.open() } }
         }
     }
-    Popup {
+    AppDialog {
         id: about
-        parent: Overlay.overlay
-        anchors.centerIn: parent
-        width: 320; padding: 24; implicitHeight: aboutContent.implicitHeight + 48
-        modal: true; focus: true
-        background: Rectangle { color: T.surface; border.color: T.line; radius: 14 }
+        title: "About"
+        width: 340
         ColumnLayout {
             id: aboutContent
-            width: parent.width; spacing: 12
+            Layout.fillWidth: true; spacing: 12
             Label { text: "GoPieMenu"; font.pixelSize: 22; font.weight: Font.DemiBold; color: T.ink }
             Label { text: "Version " + appController.version; color: T.muted }
             Label { text: "GoPieMenu · GPL-3.0\nIcons by Iconoir · MIT"; color: T.muted; font.pixelSize: 13 }

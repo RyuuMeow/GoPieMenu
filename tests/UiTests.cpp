@@ -11,6 +11,7 @@
 #include <cmath>
 #include "ui/SettingsWindow.h"
 #include "ui/quick/PiePreviewItem.h"
+#include "ui/quick/ColorWheelItem.h"
 #include "ui/PieMenuWidget.h"
 #include "ui/rendering/MenuScene.h"
 
@@ -173,6 +174,249 @@ private slots:
         QVERIFY(click(w, "applyButton"));
         QVERIFY2(!session->dirty(), qPrintable(session->error()));
         QCOMPARE(config.GetConfig().Profiles[0].Items.size(), size_t(6));
+    }
+    void menuLifecycleAndStableControls() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session();
+        const auto first = session->profileId();
+        auto* apply = find(w, "applyButton"); QVERIFY(apply); QVERIFY(!apply->isEnabled());
+        auto* discard = find(w, "discardButton"); QVERIFY(discard); QVERIFY(!discard->isEnabled());
+        const auto applyPosition = apply->mapToScene(QPointF());
+        auto* manage = find(w, "manageMenusButton"); QVERIFY(manage);
+        auto* menu = w->findChild<QObject*>("profileMenu"); QVERIFY(menu);
+        auto* tip = manage->findChild<QObject*>("manageMenusButtonTip"); QVERIFY(tip);
+        QTest::mouseMove(w, QPoint(w->width()/2, w->height()/2)); QTest::qWait(30);
+        QTest::mouseMove(w, manage->mapToScene(QPointF(20,20)).toPoint());
+        QTRY_VERIFY_WITH_TIMEOUT(tip->property("visible").toBool(), 1500);
+        QVERIFY(click(w, "manageMenusButton"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(!tip->property("visible").toBool());
+        QVERIFY(snapshot(w, "menu-popup"));
+        QVERIFY(click(w, "manageMenusButton"));
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QVERIFY(click(w, "newMenuButton"));
+        QVERIFY(session->profileId() != first);
+        QTRY_COMPARE(find(w, "profileSelector")->property("currentValue").toString(), session->profileId());
+        QCOMPARE(find(w, "profileSelector")->property("displayText").toString(), QString("New menu"));
+        QVERIFY(apply->isEnabled()); QCOMPARE(apply->mapToScene(QPointF()), applyPosition);
+        auto* toggle = find(w, "menuEnabledToggle"); QVERIFY(toggle);
+        QVERIFY(!toggle->property("checked").toBool()); QVERIFY(!toggle->isEnabled());
+        session->setProfileField("name", "Second menu");
+        QVERIFY(click(w, "manageMenusButton"));
+        QVERIFY(click(w, "New menu", "text"));
+        QTRY_COMPARE(find(w, "profileSelector")->property("currentValue").toString(), session->profileId());
+        QVERIFY(click(w, "manageMenusButton"));
+        QVERIFY(click(w, "Delete menu", "text"));
+        QCOMPARE(session->profileId(), first);
+        QTRY_COMPARE(find(w, "profileSelector")->property("currentIndex").toInt(), 0);
+        QVERIFY(click(w, "discardButton"));
+        QVERIFY(!apply->isEnabled()); QCOMPARE(apply->mapToScene(QPointF()), applyPosition);
+        QVERIFY(click(w, "manageMenusButton"));
+        QTest::mouseClick(w, Qt::LeftButton, Qt::NoModifier, QPoint(w->width()/2, w->height()/2));
+        QTRY_VERIFY(!menu->property("visible").toBool());
+    }
+    void renameKeepsPreviewGeometry() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session();
+        session->selectItem(session->items()[1].toMap()["id"].toString());
+        auto* canvas = w->findChild<PiePreviewItem*>("pieCanvas"); QVERIFY(canvas);
+        QTest::qWait(50);
+        const auto firstPoint = canvas->mapToScene(canvas->itemCenter(0));
+        const auto secondPoint = canvas->mapToScene(canvas->itemCenter(1));
+        const auto size = canvas->size();
+        for (const auto& name : {QString("X"), QString(180, QChar('W')), QString::fromUtf8("非常長的動作名稱，用來確認中央預覽不會移動")}) {
+            session->setItemField("name", name); QTest::qWait(30);
+            QCOMPARE(canvas->size(), size);
+            QCOMPARE(canvas->mapToScene(canvas->itemCenter(0)), firstPoint);
+            QCOMPARE(canvas->mapToScene(canvas->itemCenter(1)), secondPoint);
+        }
+        auto* button = find(w, "chooseIconButton"); QVERIFY(button);
+        auto* icon = button->findChild<QQuickItem*>("buttonIcon"); QVERIFY(icon);
+        const auto center = icon->mapToItem(button, QPointF(icon->width()/2, icon->height()/2));
+        QVERIFY(std::abs(center.x() - button->width()/2) < 1);
+        QVERIFY(std::abs(center.y() - button->height()/2) < 1);
+        QVERIFY(click(w, "itemAdvancedButton"));
+        session->setItemField("color", "#dd5555");
+        QVERIFY(snapshot(w, "text-actions"));
+        QVERIFY(click(w, "resetItemColorButton"));
+        QVERIFY(session->selectedItem()["color"].toString().isEmpty());
+    }
+    void dragRowsToBothBoundariesAndCancel() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session();
+        const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
+        QStringList ids;
+        for (int i = 0; i < 3; ++i) { ids.append(session->addItem(3)); session->setItemField("name", QString("Action %1").arg(i)); }
+        QVERIFY(click(w, "arrangeButton")); QTest::qWait(50);
+        auto* viewport = find(w, "arrangeViewport"); QVERIFY(viewport);
+        // Begin over the row's blank area, then insert before the first row.
+        auto* row = find(w, "arrange-row-" + ids[2]); QVERIFY(row);
+        auto from = row->mapToScene(QPointF(row->width()*.65, 20)).toPoint();
+        auto to = viewport->mapToScene(QPointF(120, 2)).toPoint();
+        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
+        QTest::mouseMove(w, from - QPoint(0,20), 20); QTest::mouseMove(w, to, 30);
+        QTRY_VERIFY(find(w, "insertionLine")); QVERIFY(find(w, "dragPreview"));
+        QVERIFY(snapshot(w, "drag-insertion"));
+        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        QTRY_COMPARE(session->items()[0].toMap()["id"].toString(), ids[2]);
+        session->undo(); QTest::qWait(30);
+        // Begin over the label, then insert after the last row.
+        row = find(w, "arrange-row-" + ids[0]); QVERIFY(row);
+        from = row->mapToScene(QPointF(105,20)).toPoint();
+        to = viewport->mapToScene(QPointF(120, viewport->height()-2)).toPoint();
+        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
+        QTest::mouseMove(w, from + QPoint(0,20), 20); QTest::mouseMove(w, to, 30);
+        QTRY_VERIFY(find(w, "insertionLine"));
+        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        QTRY_COMPARE(session->items()[2].toMap()["id"].toString(), ids[0]);
+        const auto before = session->items(); QTest::qWait(30);
+        row = find(w, "arrange-row-" + ids[0]); QVERIFY(row);
+        from = row->mapToScene(QPointF(110,20)).toPoint();
+        to = viewport->mapToScene(QPointF(120,2)).toPoint();
+        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
+        QTest::mouseMove(w, to, 30); QTRY_VERIFY(find(w, "insertionLine"));
+        QTest::keyClick(w, Qt::Key_Escape);
+        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        QCOMPARE(session->items(), before); QVERIFY(!find(w, "insertionLine"));
+    }
+    void dragAutoscrollKeepsGestureAlive() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session();
+        const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
+        QString first;
+        for (int i = 0; i < 12; ++i) { const auto id = session->addItem(3); if (!i) first = id; }
+        QVERIFY(click(w, "arrangeButton")); QTest::qWait(30);
+        auto* list = find(w, "arrangeList"); auto* viewport = find(w, "arrangeViewport"); QVERIFY(list); QVERIFY(viewport);
+        auto* row = find(w, "arrange-row-" + first); QVERIFY(row);
+        auto from = row->mapToScene(QPointF(110,20)).toPoint();
+        auto to = viewport->mapToScene(QPointF(120,viewport->height()-2)).toPoint();
+        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from); QTest::mouseMove(w, to, 30);
+        QTRY_VERIFY_WITH_TIMEOUT(list->property("contentY").toReal() >= list->property("contentHeight").toReal() - list->height() - 1, 4000);
+        QVERIFY(find(w, "insertionLine"));
+        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        QTRY_COMPARE(session->items().last().toMap()["id"].toString(), first);
+    }
+    void mouseModifiersAndKeyboardRecordingKeepMode() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session();
+        QVERIFY(click(w, "triggerSummaryButton"));
+        QVERIFY(click(w, "modifierWin")); QVERIFY(click(w, "modifierShift"));
+        QCOMPARE(session->profile()["modifiers"].toInt(), 11);
+        QCOMPARE(session->profile()["triggerMode"].toInt(), 0);
+        QVERIFY(click(w, "mouseButtonCombo"));
+        QTest::keyClick(w, Qt::Key_Down); QTest::keyClick(w, Qt::Key_Down); QTest::keyClick(w, Qt::Key_Return);
+        QTRY_COMPARE(session->profile()["mouseButton"].toString(), QString("X1"));
+        QCOMPARE(session->profile()["triggerMode"].toInt(), 0);
+        QVERIFY(snapshot(w, "mouse-trigger"));
+        auto* recorder = qvariant_cast<QObject*>(qmlContext(w)->contextProperty("recorder")); QVERIFY(recorder);
+        QVERIFY(QMetaObject::invokeMethod(recorder, "start", Q_ARG(QString, QString("trigger"))));
+        QTest::keyClick(w, Qt::Key_K, Qt::ControlModifier);
+        QCOMPARE(session->profile()["triggerMode"].toInt(), 0);
+        QCOMPARE(session->profile()["modifiers"].toInt(), 11);
+        QVERIFY(QMetaObject::invokeMethod(recorder, "cancel"));
+        session->setProfileField("triggerMode", 2);
+        QVERIFY(click(w, "triggerRecorderButton"));
+        QTest::keyClick(w, Qt::Key_K, Qt::MetaModifier | Qt::ShiftModifier);
+        QCOMPARE(session->profile()["triggerMode"].toInt(), 2);
+        QCOMPARE(session->profile()["vkCode"].toInt(), int('K'));
+        QCOMPARE(session->profile()["modifiers"].toInt(), 10);
+        QCOMPARE(session->profile()["mouseButton"].toString(), QString("X1"));
+    }
+    void colorWheelConversionAndDialogTransactions() {
+        ColorWheelItem numeric;
+        QVERIFY(numeric.setHex("#33669980"));
+        QCOMPARE(numeric.hex(), QString("#33669980"));
+        QCOMPARE(numeric.color().alpha(), 128);
+        QVERIFY(!numeric.setHex("#bad-input")); QCOMPARE(numeric.hex(), QString("#33669980"));
+        numeric.setHue(1.0/3); numeric.setSaturation(1); numeric.setValue(1); numeric.setAlpha(1);
+        QCOMPARE(numeric.hex(), QString("#00FF00"));
+        numeric.setColor(Qt::black); QVERIFY(std::abs(numeric.hue() - 1.0/3) < .001);
+
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session();
+        session->selectItem(session->items()[0].toMap()["id"].toString());
+        QVERIFY(click(w, "itemAdvancedButton"));
+        QVERIFY(click(w, "Custom color", "text"));
+        auto* popup = w->findChild<QObject*>("colorPicker"); QVERIFY(popup);
+        QTRY_VERIFY(popup->property("visible").toBool());
+        auto* wheel = w->findChild<ColorWheelItem*>("colorWheel"); QVERIFY(wheel);
+        QTest::qWait(30); // Dialog body/footer layout settles after opening.
+        QTest::keyClick(w, Qt::Key_S, Qt::ControlModifier);
+        QVERIFY(!QFile::exists(config.GetConfigFilePath()));
+        const auto original = session->selectedItem()["color"].toString();
+        QTest::mouseClick(w, Qt::LeftButton, Qt::NoModifier, wheel->mapToScene(QPointF(wheel->width()-17, wheel->height()/2)).toPoint());
+        QVERIFY(wheel->hue() < .02 || wheel->hue() > .98);
+        QTest::mouseClick(w, Qt::LeftButton, Qt::NoModifier, wheel->mapToScene(QPointF(wheel->width()/2, wheel->height()/2)).toPoint());
+        QVERIFY(std::abs(wheel->saturation()-.5) < .02); QVERIFY(std::abs(wheel->value()-.5) < .02);
+        QCOMPARE(session->selectedItem()["color"].toString(), original);
+        QVERIFY(click(w, "cancelColorButton"));
+        QCOMPARE(session->selectedItem()["color"].toString(), original);
+        editor.chooseColor("color", true);
+        QVERIFY(click(w, "colorHexField"));
+        QTest::keyClick(w, Qt::Key_A, Qt::ControlModifier);
+        for (const char c : QByteArray("#33669980")) QTest::keyClick(w, c);
+        QCOMPARE(wheel->hex(), QString("#33669980"));
+        QVERIFY(click(w, "useColorButton"));
+        QCOMPARE(QColor(session->selectedItem()["color"].toString()), QColor("#80336699"));
+        QCOMPARE(editor.recentColors().front(), QString("#80336699"));
+        editor.chooseColor("color", true);
+        QVERIFY(click(w, "colorHexField"));
+        QTest::keyClick(w, Qt::Key_A, Qt::ControlModifier); QTest::keyClick(w, Qt::Key_Z);
+        QTest::qWait(50); QVERIFY(find(w, "colorHexField")->hasActiveFocus());
+        QVERIFY(!find(w, "useColorButton")->isEnabled());
+        QVERIFY(click(w, "recentColor0"));
+        QCOMPARE(wheel->hex(), QString("#33669980")); QVERIFY(find(w, "useColorButton")->isEnabled());
+        QVERIFY(snapshot(w, "color-picker"));
+        w->resize(800,520); QTest::qWait(30);
+        QVERIFY(snapshot(w, "color-picker-compact"));
+        QTest::keyClick(w, Qt::Key_Escape);
+        QTRY_VERIFY(!popup->property("visible").toBool());
+    }
+    void unifiedExitDialogAndWindowControls() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        QVERIFY(w->flags() & Qt::FramelessWindowHint);
+        const auto normalSize = w->size();
+        QVERIFY(click(w, "windowMaximizeButton")); QTRY_VERIFY(editor.maximized());
+        QCOMPARE(w->geometry(), w->screen()->availableGeometry());
+        QCOMPARE(find(w, "windowMaximizeButton")->property("hint").toString(), QString("Restore"));
+        QVERIFY(click(w, "windowMaximizeButton")); QTRY_COMPARE(w->visibility(), QWindow::Windowed);
+        QVERIFY(!editor.maximized());
+        QTRY_COMPARE(w->size(), normalSize);
+        QVERIFY(click(w, "menuEnabledToggle")); QVERIFY(!editor.session()->profile()["enabled"].toBool());
+        QVERIFY(click(w, "menuEnabledToggle")); QVERIFY(editor.session()->profile()["enabled"].toBool());
+        QSignalSpy exit(&editor, &SettingsWindow::exitConfirmed);
+        editor.session()->setProfileField("name", "Unsaved draft"); editor.requestExit();
+        auto* popup = w->findChild<QObject*>("exitDialog"); QVERIFY(popup);
+        QTRY_VERIFY(popup->property("visible").toBool());
+        QVERIFY(snapshot(w, "unsaved-dialog"));
+        QVERIFY(click(w, "exitCancelButton")); QVERIFY(editor.session()->dirty()); QCOMPARE(exit.count(), 0);
+        editor.session()->addItem(int(ActionType::SendHotkey));
+        editor.requestExit(); QVERIFY(click(w, "exitApplyButton"));
+        QVERIFY(popup->property("visible").toBool()); QVERIFY(!editor.session()->error().isEmpty()); QCOMPARE(exit.count(), 0);
+        editor.session()->setItemField("target", "Ctrl+Q");
+        QVERIFY(click(w, "exitApplyButton")); QCOMPARE(exit.count(), 1); QVERIFY(!editor.session()->dirty());
+        editor.session()->setProfileField("name", "Discard this"); editor.requestExit();
+        QVERIFY(click(w, "exitDiscardButton")); QCOMPARE(exit.count(), 2);
+        QCOMPARE(editor.session()->profile()["name"].toString(), QString("Unsaved draft"));
+        editor.pickRunningApplication();
+        auto* apps = w->findChild<QObject*>("runningAppsDialog"); QVERIFY(apps);
+        QTRY_VERIFY(apps->property("visible").toBool()); QVERIFY(find(w, "runningAppsSearch"));
+        QVERIFY(snapshot(w, "running-apps")); QTest::keyClick(w, Qt::Key_Escape);
+        QVERIFY(click(w, "windowCloseButton")); QTRY_VERIFY(!w->isVisible());
     }
     void runtimeRapidReopenAndLongList() {
         IconService icons; PieMenuWidget pie(&icons);

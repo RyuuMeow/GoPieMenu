@@ -12,6 +12,7 @@
 #include <QFileInfo>
 #include <QIcon>
 #include <QTimer>
+#include <QStyleHints>
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -20,6 +21,8 @@ int main(int argc, char* argv[]) {
     app.setOrganizationName("GoPieMenu");
     app.setQuitOnLastWindowClosed(false);
     app.setWindowIcon(QIcon(":/logo/GoPieMenu.png"));
+    app.setStyle("Fusion");
+    app.styleHints()->setColorScheme(Qt::ColorScheme::Light);
     QQuickStyle::setStyle("Basic");
     const bool smokeTest = app.arguments().contains("--smoke-test");
     const bool preview = smokeTest || app.arguments().contains("--preview");
@@ -64,9 +67,8 @@ int main(int argc, char* argv[]) {
         if (paused) hooks.Uninstall();
         else if (!preview && !hooks.Install()) editor.session()->reportError("Could not install global input hooks.");
     });
-    QObject::connect(&tray, &gpm::TrayManager::QuitRequested, &app, [&] {
-        if (editor.requestExit()) app.quit();
-    });
+    QObject::connect(&tray, &gpm::TrayManager::QuitRequested, &editor, &gpm::SettingsWindow::requestExit);
+    QObject::connect(&editor, &gpm::SettingsWindow::exitConfirmed, &app, &QCoreApplication::quit);
     if (!preview && !hooks.Install()) editor.session()->reportError("Could not install global input hooks.");
     if (!preview) tray.Show();
     if (preview || app.arguments().contains("--settings") || !QFileInfo::exists(config.GetConfigFilePath()) || !config.LoadError().isEmpty())

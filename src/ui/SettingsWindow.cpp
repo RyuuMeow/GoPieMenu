@@ -1,11 +1,10 @@
 #include "SettingsWindow.h"
 #include "quick/PiePreviewItem.h"
-#include "widgets/WindowPickerDialog.h"
+#include "quick/ColorWheelItem.h"
+#include "RunningApplications.h"
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QFileDialog>
-#include <QColorDialog>
-#include <QMessageBox>
 #include <QSaveFile>
 #include <QFileInfo>
 #include <QDir>
@@ -15,6 +14,11 @@
 #include <QScreen>
 #include <QGuiApplication>
 #include <QCursor>
+#include <QStyleHints>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <dwmapi.h>
+#endif
 
 static void InitializeEditorResources() { Q_INIT_RESOURCE(editor); }
 
@@ -22,8 +26,14 @@ namespace gpm {
 SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent)
     : QObject(parent), Manager(manager), Icons(icons), Session(manager), Recorder(&Session), Catalog(icons) {
     InitializeEditorResources();
+    QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Light);
+    for (const auto& value : QSettings().value("editor/recentColors").toStringList()) {
+        if (QColor(value).isValid() && !RecentColors.contains(value)) RecentColors.append(value);
+        if (RecentColors.size() == 12) break;
+    }
     static const bool registered = [] {
         qmlRegisterType<PiePreviewItem>("GoPieMenu", 1, 0, "PiePreview");
+        qmlRegisterType<ColorWheelItem>("GoPieMenu", 1, 0, "ColorWheel");
         qmlRegisterUncreatableType<EditorSession>("GoPieMenu", 1, 0, "EditorSession", "Provided by the application");
         qmlRegisterUncreatableType<IconService>("GoPieMenu", 1, 0, "IconService", "Provided by the application");
         return true;
@@ -39,6 +49,18 @@ SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObje
     connect(&Recorder, &InputRecorder::changed, this, [this] { emit RecordingChanged(Recorder.active()); });
     Engine.load(QUrl("qrc:/editor/Main.qml"));
     if (!Engine.rootObjects().isEmpty()) Window = qobject_cast<QQuickWindow*>(Engine.rootObjects().first());
+    if (Window) connect(Window, &QWindow::windowStateChanged, this, &SettingsWindow::windowStateChanged);
+#ifdef Q_OS_WIN
+    if (Window) {
+        const auto handle = reinterpret_cast<HWND>(Window->winId());
+        const DWM_WINDOW_CORNER_PREFERENCE corners = DWMWCP_ROUND;
+        DwmSetWindowAttribute(handle, DWMWA_WINDOW_CORNER_PREFERENCE, &corners, sizeof(corners));
+        const BOOL dark = FALSE;
+        DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
+        const COLORREF border = RGB(226, 231, 239);
+        DwmSetWindowAttribute(handle, DWMWA_BORDER_COLOR, &border, sizeof(border));
+    }
+#endif
 }
 SettingsWindow::~SettingsWindow() = default;
 void SettingsWindow::show() {
@@ -62,14 +84,37 @@ void SettingsWindow::show() {
 }
 void SettingsWindow::raise() { if (Window) Window->raise(); }
 void SettingsWindow::activateWindow() { if (Window) Window->requestActivate(); }
-bool SettingsWindow::requestExit() {
-    if (!Session.dirty()) return true;
+bool SettingsWindow::maximized() const {
+    if (!Window) return false;
+#ifdef Q_OS_WIN
+    return IsZoomed(reinterpret_cast<HWND>(Window->winId()));
+#else
+    return Window->windowState() == Qt::WindowMaximized;
+#endif
+}
+void SettingsWindow::toggleMaximized() {
+    if (!Window) return;
+#ifdef Q_OS_WIN
+    // Qt 6.9 emulates frameless maximization with MoveWindow and can report
+    // FullScreen on a monitor without a taskbar. Preserve the native window state.
+    const auto handle = reinterpret_cast<HWND>(Window->winId());
+    ShowWindow(handle, IsZoomed(handle) ? SW_RESTORE : SW_MAXIMIZE);
+#else
+    if (Window->windowState() == Qt::WindowMaximized) Window->showNormal();
+    else Window->showMaximized();
+#endif
+    emit windowStateChanged();
+}
+void SettingsWindow::requestExit() {
+    if (!Session.dirty()) { emit exitConfirmed(); return; }
     show();
-    const auto choice = QMessageBox::question(nullptr, tr("Unsaved changes"), tr("Apply your changes before quitting?"),
-        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
-    if (choice == QMessageBox::Cancel) return false;
-    if (choice == QMessageBox::Discard) return true;
-    return Session.apply();
+    emit confirmExitRequested();
+}
+bool SettingsWindow::resolveExit(const QString& choice) {
+    if (choice == "apply") { if (!Session.apply()) return false; }
+    else if (choice == "discard") Session.discard();
+    else return false;
+    emit exitConfirmed(); return true;
 }
 void SettingsWindow::chooseTarget(bool directory) {
     const auto type = static_cast<ActionType>(Session.selectedItem()["action"].toInt());
@@ -90,15 +135,38 @@ void SettingsWindow::chooseApplicationFilter() {
     if (!path.isEmpty()) addAppFilter(QFileInfo(path).fileName());
 }
 void SettingsWindow::pickRunningApplication() {
-    WindowPickerDialog dialog;
-    if (dialog.exec() == QDialog::Accepted) addAppFilter(dialog.GetSelectedProcessName());
+    refreshRunningApplications(); emit runningAppsRequested();
+}
+void SettingsWindow::refreshRunningApplications() {
+    Applications = RunningApplications(); emit runningApplicationsChanged();
+}
+void SettingsWindow::useRunningApplication(const QString& name) {
+    if (Applications.contains(name, Qt::CaseInsensitive)) addAppFilter(name);
 }
 void SettingsWindow::chooseColor(const QString& field, bool item) {
     const auto initial = item ? Session.selectedItem()["color"].toString() : Session.style()[field].toString();
-    const auto color = QColorDialog::getColor(QColor(initial), nullptr, tr("Choose color"), QColorDialog::ShowAlphaChannel);
-    if (!color.isValid()) return;
-    if (item) Session.setItemField("color", color.name(QColor::HexArgb));
-    else Session.setStyleField(field, color.name(QColor::HexArgb));
+    ColorField = field; ColorProfile = Session.profileId(); ColorItem = item ? Session.selectedId() : QString();
+    auto color = QColor(initial);
+    if (!color.isValid()) color = Session.effectiveStyle().SectorColor;
+    emit colorRequested(color);
+}
+void SettingsWindow::acceptColor(const QColor& color) {
+    if (!color.isValid() || ColorField.isEmpty()) return;
+    if (ColorProfile != Session.profileId() || (!ColorItem.isEmpty() && ColorItem != Session.selectedId())) {
+        Session.reportError(tr("The selection changed. Choose the color again.")); return;
+    }
+    const auto value = color.name(QColor::HexArgb);
+    if (!ColorItem.isEmpty()) Session.setItemField(ColorField, value);
+    else Session.setStyleField(ColorField, value);
+    ColorField.clear();
+    RecentColors.removeAll(value); RecentColors.prepend(value);
+    while (RecentColors.size() > 12) RecentColors.removeLast();
+    if (PlatformIntegration) {
+        QSettings settings;
+        settings.setValue("editor/recentColors", RecentColors); settings.sync();
+        if (settings.status() != QSettings::NoError) Session.reportError(tr("Color updated, but recent colors could not be saved."));
+    }
+    emit recentColorsChanged();
 }
 void SettingsWindow::importConfig() {
     const auto path = QFileDialog::getOpenFileName(nullptr, tr("Import configuration"), {}, tr("JSON files (*.json)"));

@@ -4,6 +4,7 @@ import "Theme.js" as T
 TextField {
     id: root
     implicitHeight: 42
+    implicitWidth: 200
     font.pixelSize: 14
     color: T.ink
     placeholderTextColor: "#99a3b3"

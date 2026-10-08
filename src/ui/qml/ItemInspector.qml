@@ -23,6 +23,7 @@ ColumnLayout {
         AppField {
             objectName: "itemNameField"
             Layout.fillWidth: true
+            Layout.minimumWidth: 0
             font.pixelSize: 17
             font.weight: Font.DemiBold
             placeholderText: "Action name"
@@ -44,7 +45,7 @@ ColumnLayout {
             {label: "Run command", value: 2},
             {label: "Submenu", value: 6}
         ]
-        currentIndex: count > 0 ? indexOfValue(root.item.action) : -1
+        selectionValue: root.item.action
         onActivated: editor.setItemField("action", currentValue)
         enabled: !(root.item.action === 6 && root.item.childCount > 0)
         Accessible.name: "Action type"
@@ -91,7 +92,7 @@ ColumnLayout {
         iconName: "nav-arrow-right.svg"
         onClicked: editor.enterFolder(root.item.id)
     }
-    AppButton { text: "Advanced"; iconName: root.advanced ? "nav-arrow-down.svg" : "nav-arrow-right.svg"; onClicked: root.advanced = !root.advanced }
+    AppButton { objectName: "itemAdvancedButton"; text: "Advanced"; kind: "text"; iconName: root.advanced ? "nav-arrow-down.svg" : "nav-arrow-right.svg"; onClicked: root.advanced = !root.advanced }
     ColumnLayout {
         visible: root.advanced
         Layout.fillWidth: true
@@ -106,9 +107,9 @@ ColumnLayout {
         }
         FieldLabel { text: "Color" }
         RowLayout {
-            AppButton { text: root.item.color ? "Change color" : "Custom color"; kind: "secondary"; onClicked: appController.chooseColor("color", true) }
+            AppButton { text: root.item.color ? "Change color" : "Custom color"; kind: "text"; onClicked: appController.chooseColor("color", true) }
             Rectangle { visible: !!root.item.color; width: 22; height: 22; radius: 5; color: root.item.color || "transparent"; border.color: T.line }
-            AppButton { visible: !!root.item.color; text: "Reset"; onClicked: editor.setItemField("color", "") }
+            AppButton { objectName: "resetItemColorButton"; visible: !!root.item.color; text: "Reset"; kind: "danger"; onClicked: editor.setItemField("color", "") }
         }
         FieldLabel { visible: root.item.action !== 6; text: "Location" }
         AppCombo {
@@ -116,7 +117,7 @@ ColumnLayout {
             Layout.fillWidth: true
             model: editor.destinations
             textRole: "name"; valueRole: "id"
-            currentIndex: count > 0 ? indexOfValue(editor.folderId) : -1
+            selectionValue: editor.folderId
             onActivated: editor.moveItem(root.item.id, currentValue, 99999)
         }
     }

@@ -35,12 +35,16 @@ if(GPM_BUILD_DESKTOP)
         src/ui/PieMenuWidget.cpp
         src/ui/widgets/ListMenuWidget.cpp
         src/ui/quick/PiePreviewItem.cpp
+        src/ui/quick/ColorWheelItem.cpp
         src/ui/SettingsWindow.cpp
         src/ui/InputRecorder.cpp
-        src/ui/widgets/WindowPickerDialog.cpp
+        src/ui/RunningApplications.cpp
     )
     target_include_directories(gpm_ui PUBLIC src)
     target_link_libraries(gpm_ui PUBLIC gpm_core Qt6::Widgets Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Svg)
+    if(WIN32)
+        target_link_libraries(gpm_ui PRIVATE dwmapi)
+    endif()
 
     file(GLOB GPM_ICON_FILES CONFIGURE_DEPENDS resources/icon/*.svg)
     qt_add_resources(gpm_ui "icons" PREFIX "/icons" BASE "resources/icon" FILES ${GPM_ICON_FILES})

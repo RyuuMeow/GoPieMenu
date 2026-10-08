@@ -17,7 +17,7 @@ ColumnLayout {
         Label { text: root.label; color: T.ink; font.pixelSize: 14; Layout.fillWidth: true }
         Label { text: (root.step < 1 ? root.value.toFixed(2) : Math.round(root.value)) + root.suffix; color: T.muted; font.pixelSize: 13 }
     }
-    Slider {
+    AppSlider {
         Layout.fillWidth: true
         from: root.minimum; to: root.maximum; stepSize: root.step
         value: root.value
