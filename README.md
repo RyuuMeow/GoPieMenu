@@ -1,293 +1,53 @@
 # GoPieMenu
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh-TW.md">繁體中文</a> |
-  <a href="README.zh-CN.md">简体中文</a>
-</p>
+[English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md)
 
-<p align="center">
-  <b>A fast, customizable radial (pie) menu for Windows.</b><br>
-  Inspired by the intuitive interaction design of Blender.
-</p>
+A customizable Windows radial menu for shortcuts, applications, files, websites, and commands.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/platform-Windows-blue">
-  <img src="https://img.shields.io/badge/language-C++20-blue">
-  <img src="https://img.shields.io/badge/framework-Qt%206.9-green">
-  <img src="https://img.shields.io/github/license/RyuuMeow/GoPieMenu">
-</p>
+![Light editor](resources/demo/Editor2.png)
 
----
+## Edit your menu
 
-## 🎬 Demo
+1. Open **Settings** from the tray icon. Choose a menu in the top toolbar; the adjacent menu contains New, Duplicate, and Delete.
+2. Click a slice to edit it. **Add action** creates an action or a submenu. Record shortcuts, choose targets, and search the built-in Iconoir library.
+3. Open **Arrange actions** to reorder items. Double-click a submenu or choose **Edit actions** to edit it in the same workspace. Submenus contain actions only.
+4. Edit the trigger and application scope from the trigger summary. New and copied menus start disabled; enable them when ready.
+5. Changes appear immediately in the preview. **Apply** validates and saves them before the running menu changes. **Discard**, Ctrl+Z, and Ctrl+Y are available.
 
-![GoPieMenu Demo](resources/demo/GoPieMenu_Demo.gif)
+Switching menus preserves all drafts. Closing the editor hides it to the tray and preserves edits; quitting asks how to handle unapplied changes. Import creates an undoable draft. Invalid imports and failed saves leave the current configuration intact.
 
-![GoPieMenu Demo](resources/demo/Demo1.gif)
+The default trigger is **Ctrl + right mouse button**: hold, point, and release. Keyboard hold and keyboard toggle are also supported. Toggle mode confirms on a left click; Escape cancels. Application-specific menus take precedence over global menus.
 
----
+## Appearance and icons
 
-## 📖 Overview
+The editor uses a light Frost theme. Existing custom Pie colors stay intact. Appearance keeps the preview visible and offers presets and size, with detailed geometry, colors, and animation under Advanced.
 
-**GoPieMenu** is a powerful and highly customizable **radial (pie) menu utility for Windows**.
-It allows you to trigger shortcuts, launch applications, or execute commands directly from your **cursor position**, enabling a much faster workflow than traditional menus.
+The icon picker has search, a virtualized grid, and Clear. Built-in icons are embedded; custom SVG, PNG, JPEG, and ICO files can be placed in the icon folder opened from Settings. Preview and runtime share rendering and icon resolution.
 
-The design is heavily inspired by the efficient pie menus used in **Blender**, bringing the same interaction style to any Windows application.
+Configuration remains version 1.0 JSON, stored under Qt's application-data directory. Export and import are available in Settings.
 
----
+## Build and verify
 
-### 🚀 Why GoPieMenu?
+Requires Windows, Visual Studio 2022 with C++ tools, CMake 3.21+, and Qt 6.9 with Widgets, Quick, QML, Quick Controls, SVG, and Test.
 
-| Feature | Traditional Menu | GoPieMenu |
-| :--- | :--- | :--- |
-| **Speed** | Slow (requires precise clicks) | **Instant** (muscle memory) |
-| **Focus** | Moves eye to taskbar/ribbon | **Stay centered** on cursor |
-| **Customization** | Fixed by developer | **Fully programmable** JSON |
-| **Context** | Global only | **App-specific** profiles |
-
----
-
-## 📷 Interface Preview
-
-![GoPieMenu Demo](resources/demo/Demo1.png)
-![GoPieMenu Demo](resources/demo/Demo2.png)
-![GoPieMenu Demo](resources/demo/Demo3.png)
-
----
-
-## ✨ Features
-
-### 🎯 Context-Aware Profiles
-
-Create different pie menus for different applications.
-
-Examples:
-
-* Photoshop → brush / layer shortcuts
-* VS Code → build / run / terminal
-* Browser → tab management
-
----
-
-### ⚡ Multiple Activation Modes
-
-Choose the interaction style that fits your workflow:
-
-**Mouse Hold**
-
-* Hold a mouse button
-* Move to a slice
-* Release to execute
-
-**Key Hold**
-
-* Hold a keyboard key
-* Move to select
-* Release key to execute
-* *(no mouse click required)*
-
-**Key Toggle**
-
-* Press a key to open the menu
-* Move to select
-* Click to execute
-
----
-
-### 🎨 Modern UI
-
-* Minimalist dark theme
-* Smooth animations
-* Glassmorphism visual style
-* Clean radial layout
-
----
-
-### 🧠 Smart Window Picker
-
-Quickly bind menus to specific applications by selecting from currently running windows.
-
-Example:
-
-```
-photoshop.exe
-code.exe
-chrome.exe
+```powershell
+./scripts/build.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"
 ```
 
----
+This builds Release and runs core and UI regression tests at 100%, 125%, 150%, and 200% scale. Test screenshots are written to `build/artifacts`. Use `-SkipTests` for an incremental build.
 
-### 🧩 Icon Support
+Run `build/Release/GoPieMenu.exe --settings` with Qt's bin directory on PATH. `--preview` opens an isolated temporary configuration without global hooks, action execution, or Windows startup changes.
 
-Includes a **Notion-style icon picker** with search.
+To package, copy the executable into a deployment folder and run:
 
-You can:
-
-* search icons
-* assign custom icons
-* visually organize actions
-
----
-
-### 💾 Import / Export
-
-Configurations are stored as **JSON**.
-
-You can easily:
-
-* backup your settings
-* share profiles with others
-* version control configurations
-
----
-
-### 🚀 High Performance
-
-Uses **low-level Win32 hooks** to ensure:
-
-* extremely fast input detection
-* reliable triggers
-* minimal overhead
-
----
-
-## 🚀 Usage
-
-### 1️⃣ Open Settings
-
-Right-click the **GoPieMenu tray icon** and select:
-
-```
-Settings
+```powershell
+windeployqt --release --qmldir src/ui/qml --no-translations deploy/GoPieMenu.exe
 ```
 
----
+CI builds, tests, packages Qt/QML dependencies, and compiles the installer on pull requests and main-branch pushes. Tags beginning with `v` additionally publish the installer.
 
-### 2️⃣ Create a Profile
+See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
 
-Add a new profile and configure a **Trigger**.
+## Credits and license
 
-Example triggers:
-
-* `Ctrl + Mouse Right Button`
-* `Ctrl + Shift + M`
-
----
-
-### 3️⃣ Add Menu Items
-
-Define what each slice does:
-
-* Launch Application
-* Send Hotkey
-* Open URL
-* Run Command
-
----
-
-### 4️⃣ Set Application Filter (Optional)
-
-Limit the menu to specific apps.
-
-Example:
-
-```
-chrome.exe
-photoshop.exe
-AnyApp.exe
-```
-
-The pie menu will only appear when that application is focused.
-
----
-
-### 5️⃣ Activate
-
-Use your trigger and move your mouse to select a slice.
-
-Enjoy a **much faster workflow** 🚀
-
----
-
-## 🛠 Build From Source
-
-GoPieMenu is built with **C++20** and **Qt 6.9**.
-
-### Requirements
-
-* Visual Studio 2022 (MSVC)
-* CMake 3.16+
-* Qt 6.9.0 or newer
-
----
-
-### Clone Repository
-
-```bash
-git clone https://github.com/RyuuMeow/GoPieMenu.git
-cd GoPieMenu
-```
-
----
-
-### Configure CMake
-
-```bash
-mkdir build
-cd build
-
-cmake .. -DCMAKE_PREFIX_PATH="C:/Path/To/Qt/6.9.0/msvc2022_64"
-```
-
----
-
-### Build
-
-```bash
-cmake --build . --config Release
-```
-
----
-
-## 📁 Project Structure
-
-```
-src/
- ├─ core/      Win32 hooks & action execution
- ├─ models/    Data structures & JSON serialization
- └─ ui/        Qt interface & radial menu rendering
-```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-
-You can help by:
-
-* reporting bugs
-* suggesting features
-* submitting pull requests
-* improving documentation
-
-If you find GoPieMenu useful, consider giving the project a ⭐ on GitHub.
-
----
-
-## 🙏 Credits
-
-Default icons are provided by **Iconoir**
-https://github.com/iconoir-icons/iconoir
-
----
-
-## 📜 License
-
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
-
-You are free to use, modify, and distribute this software under the terms of the GPL-3.0 license.
-
-See the full license text here:
-https://www.gnu.org/licenses/gpl-3.0.html
+[Iconoir](https://github.com/iconoir-icons/iconoir) supplies the built-in icons under its MIT license. GoPieMenu is [GPL-3.0](LICENSE).

@@ -25,6 +25,9 @@ $RECYCLE.BIN/
 # === Qt 6 / CMake (Build Artifacts) ===
 build*/
 out/
+artifacts/
+deploy/
+Output/
 bin/
 x64/
 ARM64/

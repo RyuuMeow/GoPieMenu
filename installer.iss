@@ -1,6 +1,6 @@
 [Setup]
 AppName=GoPieMenu
-AppVersion=1.0.0
+AppVersion=2.0.0
 AppPublisher=RyuuMeow
 DefaultDirName={autopf}\GoPieMenu
 DefaultGroupName=GoPieMenu
