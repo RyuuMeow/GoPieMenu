@@ -8,12 +8,15 @@
 #include <QIcon>
 #include <QStyle>
 
+static void InitializeBrandResources() { Q_INIT_RESOURCE(resources); }
+
 namespace gpm 
 {
 
 TrayManager::TrayManager(QObject* Parent)
     : QObject(Parent)
 {
+    InitializeBrandResources();
     CreateTrayIcon();
 }
 
@@ -25,16 +28,23 @@ TrayManager::~TrayManager()
 void TrayManager::CreateTrayIcon()
 {
     TrayIcon = new QSystemTrayIcon(this);
-    TrayIcon->setIcon(QIcon(QStringLiteral(":/logo/GoPieMenu.png")));
+    TrayIcon->setIcon(QIcon(QStringLiteral(":/logo/tray-color.ico")));
     TrayIcon->setToolTip(QStringLiteral("GoPieMenu - Active"));
 
     TrayMenu = new QMenu;
+    TrayMenu->setObjectName(QStringLiteral("trayContextMenu"));
+    TrayMenu->setAttribute(Qt::WA_TranslucentBackground);
+    TrayMenu->setWindowFlag(Qt::FramelessWindowHint);
     TrayMenu->setStyleSheet(QStringLiteral(
-        "QMenu { background: #ffffff; color: #253247; border: 1px solid #d9e1ed; "
-        "        border-radius: 6px; padding: 4px; font-family: 'Segoe UI'; font-size: 14px; }"
-        "QMenu::item { padding: 6px 24px 6px 16px; border-radius: 4px; margin: 2px 4px; }"
-        "QMenu::item:selected { background: #e9f1fc; color: #253247; }"
-        "QMenu::separator { background: #d9e1ed; height: 1px; margin: 4px 12px; }"
+        // Match the QML AppMenu/AppMenuItem spacing, colors, and corner radii.
+        "QMenu { background: #ffffff; color: #29374b; border: 1px solid #e2e7ef; "
+        "        border-radius: 8px; padding: 6px; min-width: 212px; font-family: 'Segoe UI'; font-size: 14px; }"
+        "QMenu::item { padding: 10px 12px; min-height: 20px; border-radius: 5px; margin: 0; }"
+        "QMenu::item:selected { background: #e2ebf8; color: #29374b; }"
+        "QMenu::item:pressed { background: #d2e1f5; }"
+        "QMenu::separator { background: #e2e7ef; height: 1px; margin: 6px; }"
+        "QMenu::indicator { width: 14px; height: 14px; border: 1px solid #e2e7ef; border-radius: 3px; }"
+        "QMenu::indicator:checked { background: #4e80c8; border-color: #4e80c8; }"
     ));
 
     auto* LocalSettingsAction = TrayMenu->addAction(QStringLiteral("Settings"));

@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     app.setApplicationVersion(APP_VERSION);
     app.setOrganizationName("GoPieMenu");
     app.setQuitOnLastWindowClosed(false);
-    app.setWindowIcon(QIcon(":/logo/GoPieMenu.png"));
+    app.setWindowIcon(QIcon(":/logo/GoPieMenu.ico"));
     app.setStyle("Fusion");
     app.styleHints()->setColorScheme(Qt::ColorScheme::Light);
     QQuickStyle::setStyle("Basic");
