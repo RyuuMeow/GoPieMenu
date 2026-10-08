@@ -26,6 +26,8 @@ bool InputRecorder::eventFilter(QObject*, QEvent* event) {
     if (event->type() == QEvent::KeyPress) {
         auto* key = static_cast<QKeyEvent*>(event);
         if (key->key() == Qt::Key_Escape) { cancel(); return true; }
+        // Recording must never silently change the activation mode.
+        if (Target == "trigger" && Session->profile()["triggerMode"].toInt() == 0) return true;
         if (key->isAutoRepeat() || key->key() == Qt::Key_Control || key->key() == Qt::Key_Shift ||
             key->key() == Qt::Key_Alt || key->key() == Qt::Key_Meta) return true;
         mods = key->modifiers(); vk = key->nativeVirtualKey();
@@ -39,6 +41,7 @@ bool InputRecorder::eventFilter(QObject*, QEvent* event) {
     } else {
         auto* mouse = static_cast<QMouseEvent*>(event);
         if (Target != "trigger" || mouse->button() == Qt::LeftButton) { cancel(); return false; }
+        if (Session->profile()["triggerMode"].toInt() != 0) return true;
         mods = mouse->modifiers();
         switch (mouse->button()) {
         case Qt::RightButton: button = "Right"; break;
@@ -55,10 +58,9 @@ bool InputRecorder::eventFilter(QObject*, QEvent* event) {
     if (mods & Qt::MetaModifier) modifiers |= 8;
     if (Target == "action") Session->setItemField("target", shortcut);
     else {
-        int mode = Session->profile()["triggerMode"].toInt();
-        if (!button.isEmpty()) mode = 0;
-        else if (mode == 0) mode = 1;
-        Session->setTrigger(mode, modifiers, button.isEmpty() ? "Right" : button, int(vk));
+        const auto profile = Session->profile();
+        Session->setTrigger(profile["triggerMode"].toInt(), modifiers,
+            button.isEmpty() ? profile["mouseButton"].toString() : button, int(vk));
     }
     cancel(); return true;
 }

@@ -102,7 +102,7 @@ QVariantList EditorSession::profiles() const {
 }
 QVariantMap EditorSession::profile() const {
     if (const auto* p = currentProfile()) {
-        return {{"id", p->Id}, {"name", p->Name}, {"enabled", p->bEnabled},
+        return {{"id", p->Id}, {"name", p->Name}, {"enabled", p->bEnabled}, {"itemCount", int(p->Items.size())},
             {"appFilter", p->AppFilter.join(", ")}, {"triggerMode", int(p->Trigger.Mode)},
             {"modifiers", int(ModifierKeyToUint(p->Trigger.Modifiers))},
             {"mouseButton", MouseButtonToString(p->Trigger.Button)}, {"vkCode", p->Trigger.VKCode},

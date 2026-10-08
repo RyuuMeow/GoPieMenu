@@ -3,6 +3,13 @@ import QtQuick.Controls
 import "Theme.js" as T
 ComboBox {
     id: root
+    property var selectionValue: undefined
+    function syncSelection() {
+        if (selectionValue !== undefined) currentIndex = indexOfValue(selectionValue)
+    }
+    onSelectionValueChanged: Qt.callLater(syncSelection)
+    onModelChanged: Qt.callLater(syncSelection)
+    onCountChanged: Qt.callLater(syncSelection)
     implicitHeight: 42
     implicitWidth: 200
     font.pixelSize: 14
@@ -25,7 +32,7 @@ ComboBox {
     background: Rectangle {
         color: root.hovered ? "#f9fbfe" : T.surface
         radius: 8
-        border.color: root.activeFocus ? T.accent : T.line
+        border.color: root.visualFocus ? T.accent : T.line
     }
     popup: Popup {
         y: root.height + 5
@@ -48,6 +55,6 @@ ComboBox {
         font.pixelSize: 14
         highlighted: root.highlightedIndex === index
         contentItem: Text { text: parent.text; color: T.ink; font: parent.font; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
-        background: Rectangle { radius: 6; color: parent.highlighted ? T.tint : "transparent" }
+        background: Rectangle { radius: 6; color: parent.highlighted ? T.hover : "transparent" }
     }
 }

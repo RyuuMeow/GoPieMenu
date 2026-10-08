@@ -165,6 +165,7 @@ private slots:
         QVERIFY(click(w, "appearanceButton"));
         QVERIFY(snapshot(w, "appearance"));
         QVERIFY(click(w, "triggerSummaryButton"));
+        session->setProfileField("triggerMode", 1);
         QVERIFY(click(w, "triggerRecorderButton"));
         QTest::keyClick(w, Qt::Key_M, Qt::ControlModifier);
         QCOMPARE(session->profile()["vkCode"].toInt(), int('M'));

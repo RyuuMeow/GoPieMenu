@@ -79,6 +79,22 @@ private slots:
         { ConfigManager manager(nullptr, file.fileName()); QVERIFY(!manager.LoadError().isEmpty()); }
         QVERIFY(file.open(QIODevice::ReadOnly)); QCOMPARE(file.readAll(), QByteArray("{broken original"));
     }
+    void winMouseModifiersAndKeyboardTriggers() {
+        auto p = PieMenuConfig::CreateDefault();
+        p.Trigger = {ActivationMode::MouseHold, ModifierKey::Win | ModifierKey::Shift, MouseButton::X1, 0};
+        InputState state;
+        for (int winKey : {0x5b, 0x5c}) {
+            state.setProfiles({p}); state.key(winKey, true); state.key(0xa0, true);
+            QCOMPARE(state.mouse(MouseButton::Right, true).Effect, InputEffect::None);
+            QCOMPARE(state.mouse(MouseButton::X1, true).Effect, InputEffect::Show);
+            state.key(winKey, false);
+            QCOMPARE(state.mouse(MouseButton::X1, false).Effect, InputEffect::Confirm);
+        }
+        p.Trigger = {ActivationMode::KeyHold, ModifierKey::Win, MouseButton::None, 'K'};
+        state.setProfiles({p}); state.key(0x5b, true);
+        QCOMPARE(state.key('K', true).Effect, InputEffect::Show);
+        QCOMPARE(state.key('K', false).Effect, InputEffect::Confirm);
+    }
     void draftSurvivesSelectionAndNeverTouchesRuntime() {
         QTemporaryDir dir;
         ConfigManager manager(nullptr, dir.filePath("config.json"));
