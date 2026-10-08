@@ -1,369 +1,109 @@
-// =============================================================================
-// GoPieMenu - List Menu Widget Implementation
-// =============================================================================
-
 #include "ListMenuWidget.h"
-
-#include <QPainter>
-#include <QPainterPath>
-#include <QMouseEvent>
-#include <QApplication>
-#include <QScreen>
-#include <QIcon>
 #include <QGuiApplication>
+#include <QScreen>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QKeyEvent>
+#include <cmath>
 
-namespace gpm 
-{
-
-ListMenuWidget::ListMenuWidget(QWidget* Parent)
-    : QWidget(Parent, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool)
-{
-    // === Initialization ===
-    setAttribute(Qt::WA_TranslucentBackground);
-    setAttribute(Qt::WA_ShowWithoutActivating);
-    setAttribute(Qt::WA_DeleteOnClose, false);
-    setMouseTracking(true);
-    setFocusPolicy(Qt::NoFocus);
-
-    // === Animation Setup ===
-    OpenAnim = new QPropertyAnimation(this, "AnimProgress", this);
-    CloseAnim = new QPropertyAnimation(this, "AnimProgress", this);
-
-    connect(CloseAnim, &QPropertyAnimation::finished, this, [this]() 
-    {
-        hide();
-        bIsOpen = false;
-        emit MenuClosed();
+namespace gpm {
+ListMenuWidget::ListMenuWidget(IconService* icons, QWidget* parent)
+    : QWidget(parent, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool | Qt::WindowDoesNotAcceptFocus),
+      Icons(icons), OpenAnimation(this, "AnimProgress"), CloseAnimation(this, "AnimProgress") {
+    setAttribute(Qt::WA_TranslucentBackground); setAttribute(Qt::WA_ShowWithoutActivating);
+    setMouseTracking(true); setFocusPolicy(Qt::NoFocus);
+    connect(&CloseAnimation, &QPropertyAnimation::finished, this, [this] { hide(); emit MenuClosed(); });
+    connect(Icons, &IconService::imageReady, this, [this](const QString& key, const QImage& image) {
+        for (const auto& request : IconRequests.value(key)) Scene.setIcon(request.first, image, request.second);
+        if (IconRequests.contains(key)) update();
     });
+    connect(Icons, &IconService::invalidated, this, [this] { if (Open) requestIcons(); });
+    EdgeScrollTimer.setInterval(180);
+    connect(&EdgeScrollTimer, &QTimer::timeout, this, [this] { Scroll(-EdgeDirection * 120); });
 }
-
-ListMenuWidget::~ListMenuWidget() = default;
-
-void ListMenuWidget::ShowAt(const QPoint& InScreenPos, const std::vector<PieItem>& InItems, const StyleConfig& InStyle)
-{
-    if (InItems.empty()) 
-    {
-        return;
-    }
-
-    // === Data Binding ===
-    Items        = InItems;
-    Style        = InStyle;
-    bIsOpen      = true;
-    HoveredIndex = -1;
-
-    // === Geometry Calculation ===
-    ItemHeight = static_cast<int>(Style.FontSize) * 2 + 10;
-    MenuWidth  = 220;
-
-    int TotalHeight = ItemHeight * static_cast<int>(Items.size()) + 16;
-    int W = MenuWidth + 40; 
-    int H = TotalHeight + 40;
-
-    resize(W, H);
-
-    QPoint TopLeft(InScreenPos.x() + 30, InScreenPos.y() - TotalHeight / 2);
-
-    if (auto* Screen = QGuiApplication::screenAt(InScreenPos)) 
-    {
-        QRect ScreenRect = Screen->availableGeometry();
-        if (TopLeft.x() + W > ScreenRect.right()) 
-        {
-            TopLeft.setX(InScreenPos.x() - W - 30);
-        }
-        TopLeft.setY(std::clamp(TopLeft.y(), ScreenRect.top(), ScreenRect.bottom() - H));
-    }
-
-    move(TopLeft);
-
-    // === Execution ===
-    AnimProgress = 0.01;
-    StartOpenAnimation();
-    show();
-    raise();
-    update();
+void ListMenuWidget::Reset() {
+    Open = false; OpenAnimation.stop(); CloseAnimation.stop(); EdgeScrollTimer.stop();
+    Hovered = -1; hide();
 }
-
-void ListMenuWidget::ShowAtDir(const QPoint& InOriginPos, double InAngle, const std::vector<PieItem>& InItems, const StyleConfig& InStyle)
-{
-    if (InItems.empty()) 
-    {
-        return;
-    }
-
-    // === Data Binding ===
-    Items        = InItems;
-    Style        = InStyle;
-    bIsOpen      = true;
-    HoveredIndex = -1;
-
-    // === Geometry Calculation ===
-    ItemHeight = static_cast<int>(Style.FontSize) * 2 + 10;
-    MenuWidth  = 220;
-
-    int TotalHeight = ItemHeight * static_cast<int>(Items.size()) + 16;
-    int W = MenuWidth + 40; 
-    int H = TotalHeight + 40;
-    resize(W, H);
-
-    QPoint TopLeft;
-    int Gap = 15;
-
-    if (std::cos(InAngle) >= -0.01) 
-    {
-        TopLeft = QPoint(InOriginPos.x() - 20 + Gap, InOriginPos.y() - 20 - TotalHeight / 2);
-    } 
-    else 
-    {
-        TopLeft = QPoint(InOriginPos.x() - W + 20 - Gap, InOriginPos.y() - 20 - TotalHeight / 2);
-    }
-
-    if (auto* Screen = QGuiApplication::screenAt(InOriginPos)) 
-    {
-        QRect ScreenRect = Screen->availableGeometry();
-        if (std::cos(InAngle) >= -0.01 && TopLeft.x() + W > ScreenRect.right()) 
-        {
-            TopLeft.setX(InOriginPos.x() - W + 20 - Gap);
-        } 
-        else if (std::cos(InAngle) < -0.01 && TopLeft.x() < ScreenRect.left()) 
-        {
-            TopLeft.setX(InOriginPos.x() - 20 + Gap);
-        }
-        TopLeft.setY(std::clamp(TopLeft.y(), ScreenRect.top(), ScreenRect.bottom() - H));
-    }
-
-    move(TopLeft);
-
-    // === Execution ===
-    AnimProgress = 0.01;
-    StartOpenAnimation();
-    show();
-    raise();
-    update();
+void ListMenuWidget::ShowAt(const QPoint& pos, const std::vector<PieItem>& items, const StyleConfig& style) {
+    ShowAtDir(pos, 0, items, style);
 }
-
-void ListMenuWidget::HideMenu()
-{
-    if (!bIsOpen) 
-    {
-        return;
-    }
-    StartCloseAnimation();
+void ListMenuWidget::ShowAtDir(const QPoint& pos, double angle, const std::vector<PieItem>& items, const StyleConfig& style) {
+    Reset();
+    if (items.empty()) return;
+    Scene.build(items, style); First = 0;
+    auto* screen = QGuiApplication::screenAt(pos);
+    if (!screen) screen = QGuiApplication::primaryScreen();
+    const auto available = screen ? screen->availableGeometry() : QRect(0, 0, 800, 600);
+    Rows = Scene.rowsForHeight(available.height() - 24);
+    const auto size = (Scene.size(Rows) + QSizeF(20, 20)).toSize();
+    int x = std::cos(angle) >= 0 ? pos.x() + 10 : pos.x() - size.width() - 10;
+    if (x + size.width() > available.x() + available.width()) x = pos.x() - size.width() - 10;
+    if (x < available.left()) x = pos.x() + 10;
+    x = std::clamp(x, available.left(), std::max(available.left(), available.x() + available.width() - size.width()));
+    const auto y = std::clamp(pos.y() - size.height() / 2, available.top(),
+        std::max(available.top(), available.y() + available.height() - size.height()));
+    setGeometry(x, y, size.width(), size.height());
+    requestIcons(); Open = true; Progress = .01;
+    OpenAnimation.setDuration(Scene.style().AnimationDuration);
+    OpenAnimation.setStartValue(.01); OpenAnimation.setEndValue(1.0); OpenAnimation.setEasingCurve(QEasingCurve::OutCubic);
+    show(); raise(); OpenAnimation.start(); update();
 }
-
-void ListMenuWidget::UpdateMousePos(const QPoint& InScreenPos)
-{
-    if (!bIsOpen) 
-    {
-        return;
-    }
-
-    QPoint Local = mapFromGlobal(InScreenPos);
-    int NewHover = GetItemAtPos(Local);
-
-    if (NewHover != HoveredIndex) 
-    {
-        HoveredIndex = NewHover;
-        update();
+void ListMenuWidget::requestIcons() {
+    IconRequests.clear();
+    Scene.retainIcons(First, Rows);
+    const int pixels = int(std::ceil(std::min(Scene.style().IconSize * .8, Scene.rowHeight() - 10) * devicePixelRatioF()));
+    for (int i = First; i < std::min(First + Rows, Scene.count()); ++i) for (bool hover : {false, true}) {
+        const auto key = Icons->request(Scene.items()[i].Icon, pixels, Scene.iconColor(i, hover));
+        IconRequests[key].append({i, hover}); Scene.setIcon(i, Icons->cached(key), hover);
     }
 }
-
-int ListMenuWidget::ConfirmSelection()
-{
-    if (!bIsOpen) 
-    {
-        return -1;
+void ListMenuWidget::HideMenu() {
+    if (!Open) return;
+    Open = false; EdgeScrollTimer.stop(); OpenAnimation.stop(); CloseAnimation.stop();
+    CloseAnimation.setDuration(std::max(40, Scene.style().AnimationDuration / 2));
+    CloseAnimation.setStartValue(Progress); CloseAnimation.setEndValue(0.0); CloseAnimation.start();
+}
+void ListMenuWidget::UpdateMousePos(const QPoint& pos) {
+    if (!Open) return;
+    LastMouse = pos;
+    const QPointF point = mapFromGlobal(pos) - QPoint(10, 10);
+    const int next = Scene.hitTest(point, First, Rows);
+    if (next != Hovered) { Hovered = next; update(); }
+    EdgeDirection = 0;
+    if (point.x() >= 0 && point.x() <= Scene.size(Rows).width()) {
+        if (point.y() >= 0 && point.y() < 8 && First > 0) EdgeDirection = -1;
+        if (point.y() > Scene.size(Rows).height() - 8 && point.y() <= Scene.size(Rows).height() && First + Rows < Scene.count()) EdgeDirection = 1;
     }
-
-    int Selected = HoveredIndex;
-    if (Selected >= 0 && Selected < static_cast<int>(Items.size())) 
-    {
-        emit ItemSelected(Selected, Items[Selected]);
-    }
-    
+    if (EdgeDirection && !EdgeScrollTimer.isActive()) EdgeScrollTimer.start();
+    if (!EdgeDirection) EdgeScrollTimer.stop();
+}
+void ListMenuWidget::Scroll(int delta) {
+    if (!Open || delta == 0) return;
+    const int next = std::clamp(First - (delta > 0 ? 1 : -1), 0, std::max(0, Scene.count() - Rows));
+    if (next == First) return;
+    First = next; Hovered = -1; requestIcons(); UpdateMousePos(LastMouse); update();
+}
+int ListMenuWidget::ConfirmSelection() {
+    if (!Open) return -1;
+    const int selected = Hovered;
+    std::optional<PieItem> item;
+    if (selected >= 0 && selected < Scene.count()) item = Scene.items()[selected];
     HideMenu();
-    return Selected;
+    if (item) emit ItemSelected(selected, *item);
+    return item ? selected : -1;
 }
-
-void ListMenuWidget::SetAnimProgress(qreal InValue)
-{
-    AnimProgress = InValue;
-    update();
+void ListMenuWidget::SetAnimProgress(qreal value) { Progress = value; update(); }
+bool ListMenuWidget::event(QEvent* event) {
+    const bool handled = QWidget::event(event);
+    if (event->type() == QEvent::DevicePixelRatioChange && Open) { requestIcons(); update(); }
+    return handled;
 }
-
-// === Rendering ===
-
-void ListMenuWidget::paintEvent(QPaintEvent*)
-{
-    if (Items.empty()) 
-    {
-        return;
-    }
-
-    QPainter Painter(this);
-    Painter.setRenderHint(QPainter::Antialiasing);
-
-    double Alpha = std::clamp(AnimProgress, 0.0, 1.0);
-    Painter.setOpacity(Alpha);
-
-    double SlideOffset = 10.0 * (1.0 - Alpha);
-    Painter.translate(20, 20 + SlideOffset);
-
-    int TotalHeight = ItemHeight * static_cast<int>(Items.size()) + 16;
-    QRectF BGRect(0, 0, MenuWidth, TotalHeight);
-
-    // Draw background
-    QPainterPath BGPath;
-    BGPath.addRoundedRect(BGRect, 8.0, 8.0);
-    
-    QColor BGColor = Style.BackgroundColor;
-    Painter.setPen(QPen(Style.BorderColor, Style.BorderWidth));
-    Painter.setBrush(BGColor);
-    Painter.drawPath(BGPath);
-
-    // Draw items
-    QFont TextFont(Style.FontFamily, static_cast<int>(Style.FontSize));
-    TextFont.setWeight(QFont::Medium);
-    Painter.setFont(TextFont);
-
-    int Count = static_cast<int>(Items.size());
-    for (int i = 0; i < Count; ++i) 
-    {
-        QRectF ItemRect(4, 8 + i * ItemHeight, MenuWidth - 8, ItemHeight);
-
-        // Hover background
-        if (i == HoveredIndex) 
-        {
-            QPainterPath HoverPath;
-            HoverPath.addRoundedRect(ItemRect, 6.0, 6.0);
-            Painter.setPen(Qt::NoPen);
-            Painter.setBrush(Style.HoverColor);
-            Painter.drawPath(HoverPath);
-        }
-
-        const auto& CurrentItem = Items[i];
-        
-        // Icon
-        double IconSz = std::min(Style.IconSize * 0.8, static_cast<double>(ItemHeight - 8));
-        QRectF IconRect(ItemRect.left() + 8, ItemRect.center().y() - IconSz / 2, IconSz, IconSz);
-        
-        if (!CurrentItem.Icon.isEmpty()) 
-        {
-            QIcon IconObj = QIcon(CurrentItem.Icon);
-            if (IconObj.isNull()) 
-            {
-                IconObj = QIcon::fromTheme(CurrentItem.Icon);
-            }
-            
-            if (!IconObj.isNull()) 
-            {
-                IconObj.paint(&Painter, IconRect.toRect());
-            }
-        }
-
-        // Text
-        QRectF TextRect(IconRect.right() + 8, ItemRect.top(), ItemRect.width() - IconSz - 24, ItemRect.height());
-        
-        if (i == HoveredIndex) 
-        {
-            QFont BoldFont = TextFont;
-            BoldFont.setWeight(QFont::Bold);
-            Painter.setFont(BoldFont);
-            
-            if (Style.bAutoContrast) 
-            {
-                int Br = (Style.HoverColor.red() * 299 + Style.HoverColor.green() * 587 + Style.HoverColor.blue() * 114) / 1000;
-                Painter.setPen(Br > 125 ? QColor(0, 0, 0) : QColor(255, 255, 255));
-            } 
-            else 
-            {
-                Painter.setPen(QColor(255, 255, 255));
-            }
-        } 
-        else 
-        {
-            Painter.setFont(TextFont);
-            if (Style.bAutoContrast) 
-            {
-                int Br = (Style.BackgroundColor.red() * 299 + Style.BackgroundColor.green() * 587 + Style.BackgroundColor.blue() * 114) / 1000;
-                Painter.setPen(Br > 125 ? QColor(0, 0, 0) : QColor(255, 255, 255));
-            } 
-            else 
-            {
-                Painter.setPen(CurrentItem.Color.value_or(Style.TextColor));
-            }
-        }
-
-        Painter.drawText(TextRect, Qt::AlignLeft | Qt::AlignVCenter, CurrentItem.Name);
-    }
+void ListMenuWidget::paintEvent(QPaintEvent*) {
+    QPainter painter(this); painter.translate(10, 10);
+    Scene.draw(painter, First, Rows, Hovered, Progress);
 }
-
-int ListMenuWidget::GetItemAtPos(const QPoint& Pos) const
-{
-    int LocalX = Pos.x() - 20; 
-    int LocalY = Pos.y() - 20;
-
-    int TotalHeight = ItemHeight * static_cast<int>(Items.size()) + 16;
-    if (LocalX < 0 || LocalX > MenuWidth || LocalY < 0 || LocalY > TotalHeight) 
-    {
-        return -1;
-    }
-
-    int Index = (LocalY - 8) / ItemHeight;
-    if (Index >= 0 && Index < static_cast<int>(Items.size())) 
-    {
-        return Index;
-    }
-    return -1;
+void ListMenuWidget::mouseMoveEvent(QMouseEvent* event) { UpdateMousePos(event->globalPosition().toPoint()); }
+void ListMenuWidget::wheelEvent(QWheelEvent* event) { Scroll(event->angleDelta().y()); event->accept(); }
+void ListMenuWidget::keyPressEvent(QKeyEvent* event) { if (event->key() == Qt::Key_Escape) HideMenu(); }
 }
-
-// === Input Events ===
-
-void ListMenuWidget::mouseMoveEvent(QMouseEvent* Event)
-{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    UpdateMousePos(Event->globalPosition().toPoint());
-#else
-    UpdateMousePos(Event->globalPos());
-#endif
-}
-
-void ListMenuWidget::mouseReleaseEvent(QMouseEvent*)
-{
-    ConfirmSelection();
-}
-
-void ListMenuWidget::keyPressEvent(QKeyEvent* Event)
-{
-    if (Event->key() == Qt::Key_Escape) 
-    {
-        HoveredIndex = -1;
-        HideMenu();
-    }
-}
-
-// === Animation ===
-
-void ListMenuWidget::StartOpenAnimation()
-{
-    CloseAnim->stop();
-    OpenAnim->stop();
-    OpenAnim->setDuration(Style.AnimationDuration);
-    OpenAnim->setStartValue(0.01);
-    OpenAnim->setEndValue(Style.Opacity);
-    OpenAnim->setEasingCurve(QEasingCurve::OutCubic);
-    OpenAnim->start();
-}
-
-void ListMenuWidget::StartCloseAnimation()
-{
-    OpenAnim->stop();
-    CloseAnim->stop();
-    CloseAnim->setDuration(std::max(Style.AnimationDuration / 2, 50));
-    CloseAnim->setStartValue(AnimProgress);
-    CloseAnim->setEndValue(0.0);
-    CloseAnim->setEasingCurve(QEasingCurve::InCubic);
-    CloseAnim->start();
-}
-
-} // namespace gpm

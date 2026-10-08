@@ -1,100 +1,48 @@
 #pragma once
-
-// =============================================================================
-// GoPieMenu - Pie Menu Widget
-// =============================================================================
-
-#include "models/PieMenuConfig.h"
-#include "models/StyleConfig.h"
+#include "rendering/MenuScene.h"
+#include "icons/IconService.h"
 #include "widgets/ListMenuWidget.h"
-
 #include <QWidget>
 #include <QPropertyAnimation>
 #include <QTimer>
-#include <QPoint>
 
-#include <optional>
-
-namespace gpm 
-{
-
-class PieMenuWidget : public QWidget 
-{
+namespace gpm {
+class PieMenuWidget : public QWidget {
     Q_OBJECT
     Q_PROPERTY(qreal AnimProgress READ GetAnimProgress WRITE SetAnimProgress)
-
 public:
-    explicit PieMenuWidget(QWidget* Parent = nullptr);
-    virtual ~PieMenuWidget() override = default;
-
-    /** Open the menu at a screen position with specified configuration and style */
-    void ShowAt(const QPoint& InScreenPos, const PieMenuConfig& InConfig, const StyleConfig& InGlobalStyle);
-    
-    /** Close the menu with animation */
+    explicit PieMenuWidget(IconService* icons, QWidget* parent = nullptr);
+    void ShowAt(const QPoint& screenPos, const PieMenuConfig& config, const StyleConfig& globalStyle);
     void HideMenu();
-    
-    /** Update selection based on mouse movement */
-    void UpdateMousePos(const QPoint& InScreenPos);
-    
-    /** Finalize selection and trigger action */
+    void UpdateMousePos(const QPoint& screenPos);
+    void Scroll(int delta);
     int ConfirmSelection();
-
-    // === Property Accessors ===
-    [[nodiscard]] qreal GetAnimProgress() const { return AnimProgress; }
-    void SetAnimProgress(qreal InValue);
-
-    // === Configuration ===
-    void SetSafeZoneRadius(double InRadius) { SafeZoneRadius = InRadius; }
-    [[nodiscard]] double GetSafeZoneRadius() const { return SafeZoneRadius; }
-
+    qreal GetAnimProgress() const { return Progress; }
+    void SetAnimProgress(qreal value);
+    bool IsOpen() const { return Open; }
+    void SetSafeZoneRadius(double radius) { SafeZoneRadius = radius; }
+    double GetSafeZoneRadius() const { return SafeZoneRadius; }
 signals:
-    void ItemSelected(int Index, const PieItem& Item);
+    void ItemSelected(int index, const PieItem& item);
     void MenuClosed();
-
 protected:
-    virtual void paintEvent(QPaintEvent* Event) override;
-    virtual void mouseMoveEvent(QMouseEvent* Event) override;
-    virtual void mouseReleaseEvent(QMouseEvent* Event) override;
-    virtual void keyPressEvent(QKeyEvent* Event) override;
-
+    bool event(QEvent* event) override;
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 private:
-    // === Rendering ===
-    void DrawSectors(QPainter& Painter);
-    void DrawCenter(QPainter& Painter);
-    void DrawLabels(QPainter& Painter);
-    void DrawIcons(QPainter& Painter);
-    void DrawSafeZone(QPainter& Painter);
-
-    // === Calculations ===
-    [[nodiscard]] int GetSectorAtAngle(double Angle) const;
-    [[nodiscard]] int GetSectorAtPos(const QPoint& Pos) const;
-    [[nodiscard]] double GetAngleForSector(int Index) const;
-    [[nodiscard]] double GetSectorSpanAngle() const;
-    [[nodiscard]] QPointF GetSectorCenter(int Index, double Radius) const;
-    [[nodiscard]] bool bIsInsideDeadzone(const QPoint& Pos) const;
-    [[nodiscard]] bool bIsInsideSafeZone(const QPoint& ScreenPos) const;
-
-    // === Animation ===
-    void StartOpenAnimation();
-    void StartCloseAnimation();
-
-    // === Data ===
-    PieMenuConfig       Config;
-    StyleConfig         Style;
-    QPoint              Origin;
-    QPoint              ScreenOrigin;
-
-    // === State ===
-    int                 HoveredIndex = -1;
-    bool                bIsOpen      = false;
-    qreal               AnimProgress = 0.0;
-    double              SafeZoneRadius = 35.0;
-
-    // === Widgets ===
-    QPropertyAnimation* OpenAnim  = nullptr;
-    QPropertyAnimation* CloseAnim = nullptr;
-    ListMenuWidget*     ListMenu  = nullptr;
-    QTimer*             ListHideTimer = nullptr;
+    void requestIcons();
+    IconService* Icons;
+    PieScene Scene;
+    QHash<QString, QList<QPair<int, bool>>> IconRequests;
+    MenuPlacement Placement;
+    QPoint ScreenOrigin, LastMouse;
+    QPropertyAnimation OpenAnimation, CloseAnimation;
+    ListMenuWidget* List;
+    QTimer ListHideTimer;
+    int Hovered = -1;
+    bool Open = false;
+    qreal Progress = 0;
+    double SafeZoneRadius = 35;
 };
-
-} // namespace gpm
+}

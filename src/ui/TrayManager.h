@@ -11,8 +11,6 @@
 namespace gpm 
 {
 
-class SettingsWindow;
-
 class TrayManager : public QObject 
 {
     Q_OBJECT
@@ -24,9 +22,6 @@ public:
     /** Makes the tray icon visible */
     void Show();
     
-    /** Link to the settings window for single-instance control */
-    void SetSettingsWindow(SettingsWindow* InWindow) { SettingsWindowPtr = InWindow; }
-
 signals:
     void SettingsRequested();
     void PauseToggled(bool bPaused);
@@ -41,7 +36,6 @@ private:
     QSystemTrayIcon* TrayIcon          = nullptr;
     QMenu*           TrayMenu          = nullptr;
     QAction*         PauseAction       = nullptr;
-    SettingsWindow*  SettingsWindowPtr = nullptr;
     
     // === State ===
     bool             bIsPaused         = false;

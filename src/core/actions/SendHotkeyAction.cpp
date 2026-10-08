@@ -3,6 +3,8 @@
 // =============================================================================
 
 #include "SendHotkeyAction.h"
+#include "core/InputState.h"
+#include "core/Shortcut.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -15,7 +17,7 @@ bool SendHotkeyAction::Execute(const PieItem& Item)
 {
     qDebug() << "[SendHotkey] Sending:" << Item.ActionData;
 
-    auto Keys = ParseHotkey(Item.ActionData);
+    auto Keys = ParseShortcut(Item.ActionData);
     if (Keys.empty()) 
     {
         qWarning() << "[SendHotkey] Failed to parse hotkey:" << Item.ActionData;
@@ -72,6 +74,7 @@ bool SendHotkeyAction::Execute(const PieItem& Item)
         Inputs.push_back(Inp);
     }
 
+    for (auto& input : Inputs) input.ki.dwExtraInfo = OwnInputTag;
     UINT Sent = SendInput(static_cast<UINT>(Inputs.size()), Inputs.data(), sizeof(INPUT));
     return Sent == Inputs.size();
 }
@@ -87,71 +90,6 @@ std::vector<int> SendHotkeyAction::GetHeldModifiers()
         }
     }
     return Held;
-}
-
-std::vector<int> SendHotkeyAction::ParseHotkey(const QString& InString) 
-{
-    static const std::unordered_map<QString, int> KeyMap = 
-    {
-        {"ctrl",      VK_LCONTROL},
-        {"control",   VK_LCONTROL},
-        {"shift",     VK_LSHIFT},
-        {"alt",       VK_LMENU},
-        {"win",       VK_LWIN},
-        {"tab",       VK_TAB},
-        {"enter",     VK_RETURN},
-        {"return",    VK_RETURN},
-        {"escape",    VK_ESCAPE},
-        {"esc",       VK_ESCAPE},
-        {"space",     VK_SPACE},
-        {"backspace", VK_BACK},
-        {"delete",    VK_DELETE},
-        {"del",       VK_DELETE},
-        {"insert",    VK_INSERT},
-        {"ins",       VK_INSERT},
-        {"home",      VK_HOME},
-        {"end",       VK_END},
-        {"pageup",    VK_PRIOR},
-        {"pgup",      VK_PRIOR},
-        {"pagedown",  VK_NEXT},
-        {"pgdn",      VK_NEXT},
-        {"up",        VK_UP},
-        {"down",      VK_DOWN},
-        {"left",      VK_LEFT},
-        {"right",     VK_RIGHT},
-        {"f1",  VK_F1},  {"f2",  VK_F2},  {"f3",  VK_F3},  {"f4",  VK_F4},
-        {"f5",  VK_F5},  {"f6",  VK_F6},  {"f7",  VK_F7},  {"f8",  VK_F8},
-        {"f9",  VK_F9},  {"f10", VK_F10}, {"f11", VK_F11}, {"f12", VK_F12},
-        {"printscreen", VK_SNAPSHOT},
-        {"prtsc",       VK_SNAPSHOT},
-        {"scrolllock",  VK_SCROLL},
-        {"pause",       VK_PAUSE},
-        {"numlock",     VK_NUMLOCK},
-    };
-
-    std::vector<int> Result;
-    auto Parts = InString.split('+', Qt::SkipEmptyParts);
-
-    for (auto& Part : Parts) 
-    {
-        auto Key = Part.trimmed().toLower();
-        if (auto It = KeyMap.find(Key); It != KeyMap.end()) 
-        {
-            Result.push_back(It->second);
-        } 
-        else if (Key.length() == 1) 
-        {
-            // Single character — use VkKeyScan
-            auto Ch = Key[0].unicode();
-            SHORT VK = VkKeyScanW(Ch);
-            if (VK != -1) 
-            {
-                Result.push_back(VK & 0xFF);
-            }
-        }
-    }
-
-    return Result;
 }
 
 bool SendHotkeyAction::bIsExtendedKey(int VK) 

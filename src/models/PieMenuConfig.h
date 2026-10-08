@@ -48,7 +48,7 @@ struct PieMenuConfig
         // Add some demo items
         Config.Items.push_back(PieItem::Create(
             QStringLiteral("Notepad"), ActionType::LaunchApp,
-            QStringLiteral("notepad.exe"), QStringLiteral("notepad")));
+            QStringLiteral("notepad.exe"), QStringLiteral("page.svg")));
         Config.Items.push_back(PieItem::Create(
             QStringLiteral("Calculator"), ActionType::LaunchApp,
             QStringLiteral("calc.exe"), QStringLiteral("calculator")));

@@ -97,9 +97,11 @@ struct TriggerDef
     {
         if (Mode == ActivationMode::MouseHold) 
         {
-            return Button != MouseButton::None;
+            return Button >= MouseButton::Left && Button <= MouseButton::X2;
         }
-        return VKCode != 0;
+        return (Mode == ActivationMode::KeyHold || Mode == ActivationMode::KeyToggle) &&
+            VKCode > 0 && VKCode <= 255 && VKCode != 0x10 && VKCode != 0x11 && VKCode != 0x12 &&
+            VKCode != 0x5b && VKCode != 0x5c && (VKCode < 0xa0 || VKCode > 0xa5);
     }
 
     bool operator==(const TriggerDef&) const = default;

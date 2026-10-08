@@ -3,7 +3,6 @@
 // =============================================================================
 
 #include "TrayManager.h"
-#include "SettingsWindow.h"
 
 #include <QApplication>
 #include <QIcon>
@@ -31,11 +30,11 @@ void TrayManager::CreateTrayIcon()
 
     TrayMenu = new QMenu;
     TrayMenu->setStyleSheet(QStringLiteral(
-        "QMenu { background: #16161e; color: #c0c0d8; border: 1px solid #2a2a40; "
-        "        border-radius: 6px; padding: 4px; font-family: 'Segoe UI'; font-size: 12px; }"
+        "QMenu { background: #ffffff; color: #253247; border: 1px solid #d9e1ed; "
+        "        border-radius: 6px; padding: 4px; font-family: 'Segoe UI'; font-size: 14px; }"
         "QMenu::item { padding: 6px 24px 6px 16px; border-radius: 4px; margin: 2px 4px; }"
-        "QMenu::item:selected { background: #2a2a50; color: #e0e0ff; }"
-        "QMenu::separator { background: #2a2a40; height: 1px; margin: 4px 12px; }"
+        "QMenu::item:selected { background: #e9f1fc; color: #253247; }"
+        "QMenu::separator { background: #d9e1ed; height: 1px; margin: 4px 12px; }"
     ));
 
     auto* LocalSettingsAction = TrayMenu->addAction(QStringLiteral("Settings"));

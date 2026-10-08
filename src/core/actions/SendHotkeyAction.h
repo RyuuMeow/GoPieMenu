@@ -43,7 +43,6 @@ public:
 
 private:
     [[nodiscard]] static std::vector<int> GetHeldModifiers();
-    [[nodiscard]] static std::vector<int> ParseHotkey(const QString& InString);
     [[nodiscard]] static bool bIsExtendedKey(int VK);
 };
 

@@ -36,17 +36,13 @@ public:
     {
         qDebug() << "[OpenURL] Opening:" << Item.ActionData;
         
-        QUrl Url(Item.ActionData);
-        if (Url.scheme().isEmpty()) 
-        {
-            Url.setScheme(QStringLiteral("https"));
-        }
+        const QUrl Url = QUrl::fromUserInput(Item.ActionData);
         return QDesktopServices::openUrl(Url);
     }
 
     [[nodiscard]] virtual bool Validate(const PieItem& Item) const override 
     {
-        return !Item.ActionData.isEmpty() && QUrl(Item.ActionData).isValid();
+        return !Item.ActionData.isEmpty() && QUrl::fromUserInput(Item.ActionData).isValid();
     }
 };
 

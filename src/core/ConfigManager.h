@@ -1,57 +1,26 @@
 #pragma once
-
-// =============================================================================
-// GoPieMenu - ConfigManager
-// =============================================================================
-
 #include "IConfigProvider.h"
-#include "models/AppConfig.h"
-
 #include <QObject>
-#include <QString>
-#include <functional>
 
-namespace gpm 
-{
-
-class ConfigManager : public QObject, public IConfigProvider 
-{
+namespace gpm {
+class ConfigManager : public QObject, public IConfigProvider {
     Q_OBJECT
 public:
-    explicit ConfigManager(QObject* Parent = nullptr);
-    virtual ~ConfigManager() override = default;
-
-    // === IConfigProvider Implementation ===
-    [[nodiscard]] virtual AppConfig Load() override;
-    virtual bool Save(const AppConfig& InConfig) override;
-    [[nodiscard]] virtual QString GetConfigFilePath() const override;
-
-    // === Accessors ===
+    explicit ConfigManager(QObject* parent = nullptr, QString path = {});
+    [[nodiscard]] ConfigLoadResult Load() override;
+    [[nodiscard]] ConfigSaveResult Save(const AppConfig& config) override;
+    [[nodiscard]] QString GetConfigFilePath() const override { return ConfigPath; }
     [[nodiscard]] const AppConfig& GetConfig() const { return Config; }
-    [[nodiscard]] AppConfig& GetConfigMutable() { return Config; }
-
-    // === Profile Management ===
-    void AddProfile(PieMenuConfig InProfile);
-    void RemoveProfile(const QString& InId);
-    [[nodiscard]] PieMenuConfig* FindProfile(const QString& InId);
-    [[nodiscard]] const PieMenuConfig* FindProfile(const QString& InId) const;
-
-    // === Lifecycle ===
-    void Reload();
-    void SaveCurrentConfig();
+    [[nodiscard]] const PieMenuConfig* FindProfile(const QString& id) const;
+    [[nodiscard]] QString LoadError() const { return LastLoadError; }
+    [[nodiscard]] ConfigSaveResult Commit(const AppConfig& config);
 
 signals:
     void ConfigChanged();
-    void ProfileAdded(const QString& Id);
-    void ProfileRemoved(const QString& Id);
 
 private:
-    [[nodiscard]] QString GetDefaultConfigDir() const;
-    void EnsureConfigDir() const;
-
-    // === Data ===
+    QString ConfigPath;
+    QString LastLoadError;
     AppConfig Config;
-    QString   ConfigPath;
 };
-
-} // namespace gpm
+}

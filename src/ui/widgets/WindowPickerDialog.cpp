@@ -23,7 +23,7 @@ WindowPickerDialog::WindowPickerDialog(QWidget* Parent)
     : QDialog(Parent, Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint)
 {
     setAttribute(Qt::WA_TranslucentBackground);
-    setFixedSize(360, 480);
+    setFixedSize(440, 520);
     SetupUI();
     ScanWindows();
 }
@@ -37,7 +37,7 @@ void WindowPickerDialog::SetupUI()
     Container->setObjectName(QStringLiteral("container"));
     Container->setStyleSheet(QStringLiteral(
         "QWidget#container {"
-        "  background: #1a1a28; border: 1px solid #2a2a40; border-radius: 8px;"
+        "  background: #ffffff; border: 1px solid #d9e1ed; border-radius: 8px;"
         "}"
     ));
 
@@ -52,15 +52,15 @@ void WindowPickerDialog::SetupUI()
     ContentLayout->setSpacing(8);
 
     auto* TitleLabel = new QLabel(QStringLiteral("Select Running Application"));
-    TitleLabel->setStyleSheet(QStringLiteral("color: #e0e0f0; font-size: 14px; font-weight: 600; border: none;"));
+    TitleLabel->setStyleSheet(QStringLiteral("color: #253247; font-size: 14px; font-weight: 600; border: none;"));
     ContentLayout->addWidget(TitleLabel);
 
     SearchEdit = new QLineEdit;
     SearchEdit->setPlaceholderText(QStringLiteral("Search processes..."));
     SearchEdit->setStyleSheet(QStringLiteral(
-        "QLineEdit { background: #131320; color: #d0d0e8; border: 1px solid #2a2a40; "
-        "border-radius: 6px; padding: 8px 12px; font-size: 12px; margin-bottom: 4px; }"
-        "QLineEdit:focus { border-color: #4f46e5; }"
+        "QLineEdit { background: #f8faff; color: #253247; border: 1px solid #d9e1ed; "
+        "border-radius: 6px; padding: 8px 12px; font-size: 14px; margin-bottom: 4px; }"
+        "QLineEdit:focus { border-color: #527fc5; }"
     ));
     connect(SearchEdit, &QLineEdit::textChanged, this, &WindowPickerDialog::FilterWindows);
     ContentLayout->addWidget(SearchEdit);
@@ -69,17 +69,17 @@ void WindowPickerDialog::SetupUI()
     ListWidget->setIconSize(QSize(24, 24));
     ListWidget->setStyleSheet(QStringLiteral(
         "QListWidget {"
-        "  background: #131320; border: 1px solid #1e1e30; border-radius: 6px;"
+        "  background: #f8faff; border: 1px solid #e4e9f1; border-radius: 6px;"
         "  padding: 4px; outline: none;"
         "}"
         "QListWidget::item {"
-        "  color: #c0c0d8; font-size: 12px; border-radius: 4px; padding: 6px;"
+        "  color: #253247; font-size: 14px; border-radius: 4px; padding: 6px;"
         "}"
         "QListWidget::item:hover {"
-        "  background: #2a2a40;"
+        "  background: #d9e1ed;"
         "}"
         "QListWidget::item:selected {"
-        "  background: #4f46e5; color: #ffffff;"
+        "  background: #527fc5; color: #ffffff;"
         "}"
     ));
     connect(ListWidget, &QListWidget::itemClicked, this, [this](QListWidgetItem* Item) 
@@ -91,8 +91,8 @@ void WindowPickerDialog::SetupUI()
 
     auto* CancelBtn = new QPushButton(QStringLiteral("Cancel"));
     CancelBtn->setStyleSheet(QStringLiteral(
-        "QPushButton { background: transparent; color: #a0a0c0; border: 1px solid #2a2a40; border-radius: 6px; padding: 6px; font-size: 12px; }"
-        "QPushButton:hover { background: #2a2a40; color: #e0e0f0; }"
+        "QPushButton { background: transparent; color: #62728a; border: 1px solid #d9e1ed; border-radius: 6px; padding: 6px; font-size: 14px; }"
+        "QPushButton:hover { background: #d9e1ed; color: #253247; }"
     ));
     CancelBtn->setCursor(Qt::PointingHandCursor);
     connect(CancelBtn, &QPushButton::clicked, this, &QDialog::reject);

@@ -1,84 +1,46 @@
 #pragma once
-
-// =============================================================================
-// GoPieMenu - List Menu Widget
-// =============================================================================
-
-#include "models/PieItem.h"
-#include "models/StyleConfig.h"
-
+#include "ui/rendering/MenuScene.h"
+#include "ui/icons/IconService.h"
 #include <QWidget>
 #include <QPropertyAnimation>
-#include <vector>
+#include <QTimer>
 
-namespace gpm 
-{
-
-class ListMenuWidget : public QWidget 
-{
+namespace gpm {
+class ListMenuWidget : public QWidget {
     Q_OBJECT
     Q_PROPERTY(qreal AnimProgress READ GetAnimProgress WRITE SetAnimProgress)
-
 public:
-    explicit ListMenuWidget(QWidget* Parent = nullptr);
-    virtual ~ListMenuWidget() override;
-
-    /** Open the list menu at a screen position */
-    void ShowAt(const QPoint& InScreenPos, const std::vector<PieItem>& InItems, const StyleConfig& InStyle);
-    
-    /** Open the list menu projecting in a specific direction from an origin */
-    void ShowAtDir(const QPoint& InOriginPos, double InAngle, const std::vector<PieItem>& InItems, const StyleConfig& InStyle);
-    
-    /** Close the menu with animation */
+    explicit ListMenuWidget(IconService* icons, QWidget* parent = nullptr);
+    void ShowAt(const QPoint& pos, const std::vector<PieItem>& items, const StyleConfig& style);
+    void ShowAtDir(const QPoint& pos, double angle, const std::vector<PieItem>& items, const StyleConfig& style);
     void HideMenu();
-    
-    /** Update selection based on mouse movement */
-    void UpdateMousePos(const QPoint& InScreenPos);
-    
-    /** Finalize selection and trigger action */
+    void Reset();
+    void UpdateMousePos(const QPoint& pos);
+    void Scroll(int delta);
     int ConfirmSelection();
-
-    // === Property Accessors ===
-    [[nodiscard]] qreal GetAnimProgress() const { return AnimProgress; }
-    void SetAnimProgress(qreal InValue);
-
-    [[nodiscard]] bool IsOpen() const { return bIsOpen; }
-    [[nodiscard]] int GetHoveredIndex() const { return HoveredIndex; }
-
+    bool IsOpen() const { return Open; }
+    int GetHoveredIndex() const { return Hovered; }
+    qreal GetAnimProgress() const { return Progress; }
+    void SetAnimProgress(qreal value);
 signals:
-    void ItemSelected(int Index, const PieItem& Item);
+    void ItemSelected(int index, const PieItem& item);
     void MenuClosed();
-
 protected:
-    virtual void paintEvent(QPaintEvent* Event) override;
-    virtual void mouseMoveEvent(QMouseEvent* Event) override;
-    virtual void mouseReleaseEvent(QMouseEvent* Event) override;
-    virtual void keyPressEvent(QKeyEvent* Event) override;
-
+    bool event(QEvent* event) override;
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 private:
-    // === Animation ===
-    void StartOpenAnimation();
-    void StartCloseAnimation();
-
-    /** Calculate which item is at the given local position */
-    [[nodiscard]] int GetItemAtPos(const QPoint& Pos) const;
-
-    // === Data ===
-    std::vector<PieItem> Items;
-    StyleConfig          Style;
-
-    // === State ===
-    bool                 bIsOpen       = false;
-    int                  HoveredIndex  = -1;
-    qreal                AnimProgress  = 0.0;
-
-    // === Configuration ===
-    int                  ItemHeight    = 36;
-    int                  MenuWidth     = 200;
-
-    // === Widgets ===
-    QPropertyAnimation*  OpenAnim      = nullptr;
-    QPropertyAnimation*  CloseAnim     = nullptr;
+    void requestIcons();
+    IconService* Icons;
+    ListScene Scene;
+    QHash<QString, QList<QPair<int, bool>>> IconRequests;
+    QPropertyAnimation OpenAnimation, CloseAnimation;
+    QTimer EdgeScrollTimer;
+    QPoint LastMouse;
+    int First = 0, Rows = 0, Hovered = -1, EdgeDirection = 0;
+    bool Open = false;
+    qreal Progress = 0;
 };
-
-} // namespace gpm
+}

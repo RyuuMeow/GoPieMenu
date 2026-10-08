@@ -31,6 +31,7 @@ struct AppConfig
     [[nodiscard]] static AppConfig CreateDefault() 
     {
         AppConfig Config;
+        Config.GlobalStyle = StyleConfig::Frost();
         Config.Profiles.push_back(PieMenuConfig::CreateDefault());
         return Config;
     }
@@ -82,15 +83,6 @@ struct AppConfig
         return QJsonDocument(ToJson()).toJson(QJsonDocument::Indented);
     }
 
-    [[nodiscard]] static AppConfig Deserialize(const QByteArray& Data) 
-    {
-        auto Doc = QJsonDocument::fromJson(Data);
-        if (Doc.isNull() || !Doc.isObject()) 
-        {
-            return CreateDefault();
-        }
-        return FromJson(Doc.object());
-    }
 };
 
 } // namespace gpm

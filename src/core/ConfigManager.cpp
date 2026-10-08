@@ -1,130 +1,52 @@
-// =============================================================================
-// GoPieMenu - ConfigManager Implementation
-// =============================================================================
-
 #include "ConfigManager.h"
-
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
+#include <QSaveFile>
 #include <QStandardPaths>
-#include <QDebug>
+#include <algorithm>
 
-namespace gpm 
-{
-
-ConfigManager::ConfigManager(QObject* Parent)
-    : QObject(Parent)
-{
-    ConfigPath = GetConfigFilePath();
-    Reload();
+namespace gpm {
+ConfigManager::ConfigManager(QObject* parent, QString path) : QObject(parent) {
+    ConfigPath = path.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/config.json" : path;
+    auto result = Load();
+    LastLoadError = result.Error;
+    Config = result ? std::move(*result.Value) : AppConfig::CreateDefault();
 }
-
-AppConfig ConfigManager::Load()
-{
-    QFile ConfigFile(ConfigPath);
-    if (!ConfigFile.exists()) 
-    {
-        qDebug() << "[ConfigManager] No config file found, using defaults.";
-        return AppConfig::CreateDefault();
+ConfigLoadResult ConfigManager::Load() {
+    QFile file(ConfigPath);
+    if (!file.exists()) return {AppConfig::CreateDefault(), {}};
+    if (!file.open(QIODevice::ReadOnly)) return {{}, file.errorString()};
+    const auto data = file.readAll();
+    if (file.error() != QFileDevice::NoError) return {{}, file.errorString()};
+    return ParseConfig(data);
+}
+ConfigSaveResult ConfigManager::Save(const AppConfig& config) {
+    if (auto error = ValidateConfig(config); !error.isEmpty()) return {false, error};
+    if (!QDir().mkpath(QFileInfo(ConfigPath).absolutePath()))
+        return {false, QStringLiteral("Cannot create the configuration folder.")};
+    QSaveFile file(ConfigPath);
+    file.setDirectWriteFallback(false);
+    if (!file.open(QIODevice::WriteOnly)) return {false, file.errorString()};
+    const auto bytes = config.Serialize();
+    if (file.write(bytes) != bytes.size()) {
+        const auto error = file.errorString();
+        file.cancelWriting();
+        return {false, error};
     }
-
-    if (!ConfigFile.open(QIODevice::ReadOnly)) 
-    {
-        qWarning() << "[ConfigManager] Failed to open config:" << ConfigPath;
-        return AppConfig::CreateDefault();
-    }
-
-    auto Data = ConfigFile.readAll();
-    ConfigFile.close();
-
-    auto NewConfig = AppConfig::Deserialize(Data);
-    qDebug() << "[ConfigManager] Loaded" << NewConfig.Profiles.size() << "profiles.";
-    return NewConfig;
+    if (!file.commit()) return {false, file.errorString()};
+    return {true, {}};
 }
-
-bool ConfigManager::Save(const AppConfig& InConfig)
-{
-    EnsureConfigDir();
-
-    QFile ConfigFile(ConfigPath);
-    if (!ConfigFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) 
-    {
-        qWarning() << "[ConfigManager] Failed to write config:" << ConfigPath;
-        return false;
-    }
-
-    ConfigFile.write(InConfig.Serialize());
-    ConfigFile.close();
-
-    qDebug() << "[ConfigManager] Config saved.";
-    return true;
-}
-
-QString ConfigManager::GetConfigFilePath() const
-{
-    return GetDefaultConfigDir() + QStringLiteral("/config.json");
-}
-
-void ConfigManager::AddProfile(PieMenuConfig InProfile)
-{
-    auto NewId = InProfile.Id;
-    Config.Profiles.push_back(std::move(InProfile));
-    SaveCurrentConfig();
-    emit ProfileAdded(NewId);
+ConfigSaveResult ConfigManager::Commit(const AppConfig& config) {
+    auto result = Save(config);
+    if (!result) return result;
+    Config = config;
+    LastLoadError.clear();
     emit ConfigChanged();
+    return result;
 }
-
-void ConfigManager::RemoveProfile(const QString& InId)
-{
-    auto It = std::ranges::find_if(Config.Profiles,
-        [&](const auto& P) { return P.Id == InId; });
-
-    if (It != Config.Profiles.end()) 
-    {
-        Config.Profiles.erase(It);
-        SaveCurrentConfig();
-        emit ProfileRemoved(InId);
-        emit ConfigChanged();
-    }
+const PieMenuConfig* ConfigManager::FindProfile(const QString& id) const {
+    const auto it = std::ranges::find_if(Config.Profiles, [&](const auto& p) { return p.Id == id; });
+    return it == Config.Profiles.end() ? nullptr : &*it;
 }
-
-PieMenuConfig* ConfigManager::FindProfile(const QString& InId)
-{
-    auto It = std::ranges::find_if(Config.Profiles,
-        [&](const auto& P) { return P.Id == InId; });
-    return It != Config.Profiles.end() ? &(*It) : nullptr;
 }
-
-const PieMenuConfig* ConfigManager::FindProfile(const QString& InId) const
-{
-    auto It = std::ranges::find_if(Config.Profiles,
-        [&](const auto& P) { return P.Id == InId; });
-    return It != Config.Profiles.end() ? &(*It) : nullptr;
-}
-
-void ConfigManager::Reload()
-{
-    Config = Load();
-    emit ConfigChanged();
-}
-
-void ConfigManager::SaveCurrentConfig()
-{
-    Save(Config);
-}
-
-QString ConfigManager::GetDefaultConfigDir() const
-{
-    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-}
-
-void ConfigManager::EnsureConfigDir() const
-{
-    QDir Dir(GetDefaultConfigDir());
-    if (!Dir.exists()) 
-    {
-        Dir.mkpath(".");
-    }
-}
-
-} // namespace gpm

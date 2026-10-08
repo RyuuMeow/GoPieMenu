@@ -1,138 +1,76 @@
-// =============================================================================
-// GoPieMenu - Application Entry Point
-// =============================================================================
-
 #include "core/ConfigManager.h"
 #include "core/HookManager.h"
 #include "core/ActionExecutor.h"
 #include "ui/PieMenuWidget.h"
 #include "ui/SettingsWindow.h"
 #include "ui/TrayManager.h"
-
 #include <QApplication>
-#include <QIcon>
+#include <QQuickStyle>
 #include <QSharedMemory>
 #include <QMessageBox>
-#include <QDebug>
+#include <QTemporaryDir>
+#include <QFileInfo>
+#include <QIcon>
+#include <QTimer>
 
-int main(int argc, char* argv[])
-{
-    QApplication App(argc, argv);
-    App.setApplicationName(QStringLiteral("GoPieMenu"));
-    App.setApplicationVersion(QStringLiteral(APP_VERSION));
-    App.setOrganizationName(QStringLiteral("GoPieMenu"));
-    App.setQuitOnLastWindowClosed(false);
-    
-    // === Application Icon ===
-    App.setWindowIcon(QIcon(QStringLiteral(":/logo/GoPieMenu.png")));
-
-    // === Single Instance Check ===
-    QSharedMemory SingleInstance(QStringLiteral("GoPieMenu_SingleInstance"));
-    if (!SingleInstance.create(1)) 
-    {
-        // Handle Windows crash scenario where memory was not released
-        if (SingleInstance.attach()) 
-        {
-            SingleInstance.detach();
-        }
-        
-        if (!SingleInstance.create(1)) 
-        {
-            QMessageBox::information(nullptr, QStringLiteral("GoPieMenu"),
-                                      QStringLiteral("GoPieMenu is already running."));
-            return 0;
-        }
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+    app.setApplicationName("GoPieMenu");
+    app.setApplicationVersion(APP_VERSION);
+    app.setOrganizationName("GoPieMenu");
+    app.setQuitOnLastWindowClosed(false);
+    app.setWindowIcon(QIcon(":/logo/GoPieMenu.png"));
+    QQuickStyle::setStyle("Basic");
+    const bool smokeTest = app.arguments().contains("--smoke-test");
+    const bool preview = smokeTest || app.arguments().contains("--preview");
+    app.setQuitOnLastWindowClosed(preview);
+    QSharedMemory instance("GoPieMenu_SingleInstance");
+    if (!preview && !instance.create(1)) {
+        QMessageBox::information(nullptr, "GoPieMenu", "GoPieMenu is already running.");
+        return 0;
     }
-
-    // === Core Components ===
-    gpm::ConfigManager ConfigMgr;
-    gpm::ActionExecutor Executor;
-    Executor.RegisterBuiltins();
-    gpm::HookManager HookMgr(&ConfigMgr);
-
-    // === UI Components ===
-    gpm::PieMenuWidget PieWidget;
-    gpm::SettingsWindow SettingsWindowObj(&ConfigMgr, &Executor);
-    gpm::TrayManager TrayMgr;
-    TrayMgr.SetSettingsWindow(&SettingsWindowObj);
-
-    // === Connections ===
-    // CRITICAL: Use QueuedConnection for hook signals so they execute
-    // after the hook callback returns (not inside WH_*_LL proc)
-
-    QObject::connect(&HookMgr, &gpm::HookManager::Triggered,
-        &PieWidget, [&](const QString& ProfileId, const QPoint& MousePos) 
-        {
-            if (auto* Profile = ConfigMgr.FindProfile(ProfileId)) 
-            {
-                PieWidget.ShowAt(MousePos, *Profile, ConfigMgr.GetConfig().GlobalStyle);
-            }
-        }, Qt::QueuedConnection);
-
-    QObject::connect(&HookMgr, &gpm::HookManager::MouseMoved,
-        &PieWidget, &gpm::PieMenuWidget::UpdateMousePos,
-        Qt::QueuedConnection);
-
-    QObject::connect(&HookMgr, &gpm::HookManager::TriggerReleased,
-        &PieWidget, [&](const QPoint&) 
-        {
-            PieWidget.ConfirmSelection();
-        }, Qt::QueuedConnection);
-
-    QObject::connect(&HookMgr, &gpm::HookManager::CancelRequested,
-        &PieWidget, &gpm::PieMenuWidget::HideMenu,
-        Qt::QueuedConnection);
-
-    // Pie Menu -> Action Executor
-    QObject::connect(&PieWidget, &gpm::PieMenuWidget::ItemSelected,
-        [&](int, const gpm::PieItem& Item) 
-        {
-            Executor.Execute(Item);
-        });
-
-    // Tray
-    QObject::connect(&TrayMgr, &gpm::TrayManager::SettingsRequested,
-        [&]() 
-        {
-            SettingsWindowObj.show();
-            SettingsWindowObj.raise();
-            SettingsWindowObj.activateWindow();
-        });
-
-    QObject::connect(&TrayMgr, &gpm::TrayManager::PauseToggled,
-        [&](bool bPaused) 
-        {
-            if (bPaused) 
-            {
-                HookMgr.Uninstall();
-            }
-            else 
-            {
-                HookMgr.Install();
-            }
-        });
-
-    QObject::connect(&TrayMgr, &gpm::TrayManager::QuitRequested,
-        &App, &QApplication::quit);
-
-    QObject::connect(&SettingsWindowObj, &gpm::SettingsWindow::ConfigUpdated,
-        [&]() 
-        {
-            if (HookMgr.IsInstalled()) 
-            {
-                HookMgr.Uninstall();
-                HookMgr.Install();
-            }
-        });
-
-    // === Execution ===
-    if (!HookMgr.Install()) 
-    {
-        qWarning() << "[Main] Failed to install hooks. Try running as Administrator.";
-    }
-
-    TrayMgr.Show();
-    qDebug() << "[Main] GoPieMenu started. Profiles:" << ConfigMgr.GetConfig().Profiles.size();
-
-    return App.exec();
+    QTemporaryDir previewDir;
+    gpm::ConfigManager config(nullptr, preview ? previewDir.filePath("config.json") : QString());
+    gpm::ActionExecutor executor;
+    executor.RegisterBuiltins();
+    gpm::IconService icons;
+    gpm::PieMenuWidget pie(&icons);
+    gpm::SettingsWindow editor(&config, &icons);
+    editor.setPlatformIntegrationEnabled(!preview);
+    editor.setPreviewMode(preview);
+    if (!editor.window()) return 1;
+    gpm::HookManager hooks(&config);
+    gpm::TrayManager tray;
+    QObject::connect(&hooks, &gpm::HookManager::Triggered, &pie, [&](const QString& id, const QPoint& pos) {
+        if (hooks.IsSuspended()) return;
+        if (const auto* profile = config.FindProfile(id)) pie.ShowAt(pos, *profile, config.GetConfig().GlobalStyle);
+    }, Qt::QueuedConnection);
+    QObject::connect(&hooks, &gpm::HookManager::MouseMoved, &pie, &gpm::PieMenuWidget::UpdateMousePos, Qt::QueuedConnection);
+    QObject::connect(&hooks, &gpm::HookManager::TriggerReleased, &pie, [&](const QPoint& pos) {
+        pie.UpdateMousePos(pos); pie.ConfirmSelection();
+    }, Qt::QueuedConnection);
+    QObject::connect(&hooks, &gpm::HookManager::CancelRequested, &pie, &gpm::PieMenuWidget::HideMenu, Qt::QueuedConnection);
+    QObject::connect(&hooks, &gpm::HookManager::WheelScrolled, &pie, &gpm::PieMenuWidget::Scroll, Qt::QueuedConnection);
+    QObject::connect(&pie, &gpm::PieMenuWidget::ItemSelected, &executor, [&](int, const gpm::PieItem& item) {
+        if (!preview) executor.Execute(item);
+    });
+    QObject::connect(&executor, &gpm::ActionExecutor::ActionFailed, editor.session(), [&](const QString& name, const QString& error) {
+        editor.session()->reportError(name + ": " + error);
+    });
+    QObject::connect(&editor, &gpm::SettingsWindow::RecordingChanged, &hooks, &gpm::HookManager::SetSuspended);
+    QObject::connect(&config, &gpm::ConfigManager::ConfigChanged, &pie, &gpm::PieMenuWidget::HideMenu);
+    QObject::connect(&tray, &gpm::TrayManager::SettingsRequested, &editor, &gpm::SettingsWindow::show);
+    QObject::connect(&tray, &gpm::TrayManager::PauseToggled, &hooks, [&](bool paused) {
+        if (paused) hooks.Uninstall();
+        else if (!preview && !hooks.Install()) editor.session()->reportError("Could not install global input hooks.");
+    });
+    QObject::connect(&tray, &gpm::TrayManager::QuitRequested, &app, [&] {
+        if (editor.requestExit()) app.quit();
+    });
+    if (!preview && !hooks.Install()) editor.session()->reportError("Could not install global input hooks.");
+    if (!preview) tray.Show();
+    if (preview || app.arguments().contains("--settings") || !QFileInfo::exists(config.GetConfigFilePath()) || !config.LoadError().isEmpty())
+        editor.show();
+    if (smokeTest) QTimer::singleShot(1000, &app, &QCoreApplication::quit);
+    return app.exec();
 }
