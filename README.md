@@ -4,6 +4,8 @@
 
 A customizable Windows radial menu for shortcuts, applications, files, websites, and commands.
 
+[Download v2.0.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.0.0) · [What's new and upgrading](docs/releases/v2.0.0.md)
+
 ![Light editor](resources/demo/Editor2.png)
 
 ## Edit your menu
@@ -44,13 +46,13 @@ This builds Release and runs core and UI regression tests at 100%, 125%, 150%, a
 
 Run `build/Release/GoPieMenu.exe --settings` with Qt's bin directory on PATH. `--preview` opens an isolated temporary configuration without global hooks, action execution, or Windows startup changes.
 
-To package, copy the executable into a deployment folder and run:
+To package with Inno Setup 6 installed:
 
 ```powershell
-windeployqt --release --qmldir src/ui/qml --no-translations deploy/GoPieMenu.exe
+./scripts/package.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"
 ```
 
-CI builds, tests, packages Qt/QML dependencies, and compiles the installer on pull requests and main-branch pushes. Tags beginning with `v` additionally publish the installer.
+This deploys Qt/QML dependencies, checks startup without the SDK on PATH, and writes the installer and `SHA256SUMS.txt` to `Output`. CI uses the same build and packaging scripts on pull requests and main-branch pushes. Version tags additionally publish the installer, checksum, and matching release notes after validation succeeds.
 
 See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
 

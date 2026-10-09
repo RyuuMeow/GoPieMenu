@@ -4,6 +4,8 @@
 
 Windows 圓形快捷選單，可錄製快捷鍵、啟動應用程式、開啟檔案／網址與執行指令。
 
+[下載 v2.0.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.0.0) · [更新與升級說明](docs/releases/v2.0.0.md)
+
 ![淺色編輯器](resources/demo/Editor2.png)
 
 ## 使用方式
@@ -44,7 +46,7 @@ JSON 設定格式維持 1.0，存於 Qt 應用程式資料目錄；Settings 可�
 
 執行時將 Qt bin 加到 PATH，開啟 `build/Release/GoPieMenu.exe --settings`。參數 `--preview` 使用暫存設定，不安裝全域掛鉤、不執行動作，也不更動 Windows 啟動設定。
 
-封裝 QML 需使用 `windeployqt --release --qmldir src/ui/qml --no-translations deploy/GoPieMenu.exe`。CI 已包含建置、回歸測試、截圖及安裝程式封裝。
+安裝 Inno Setup 6 後，執行 `./scripts/package.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"`，即可部署 Qt/QML、檢查獨立啟動，並在 `Output` 產生安裝檔與 `SHA256SUMS.txt`。CI 使用相同建置與打包入口；版本標籤通過驗證後，會發佈安裝檔、校驗檔及對應更新說明。
 
 架構、測試範圍、效能數據及尚需實機驗證項目，見 [架構與驗證](docs/architecture.md)。
 
