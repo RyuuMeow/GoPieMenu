@@ -31,7 +31,7 @@ export const pop = (f: number, delay = 0) =>
 
 export const MotionStage = ({
   children,
-  light = false,
+  light = true,
 }: {
   children: ReactNode;
   light?: boolean;
@@ -40,15 +40,15 @@ export const MotionStage = ({
   return (
     <AbsoluteFill
       style={{
-        background: light ? "#edf2fb" : "#0a1528",
-        color: light ? "#13284d" : "#f8fbff",
+        background: light ? "#f7f9fc" : "#f7f9fc",
+        color: light ? "#253348" : "#253348",
         fontFamily: '"Microsoft YaHei",sans-serif',
         overflow: "hidden",
       }}
     >
       <AbsoluteFill
         style={{
-          backgroundImage: `radial-gradient(${light ? "#477ddd26" : "#88b7ff20"} 1px,transparent 1px)`,
+          backgroundImage: `radial-gradient(${light ? "#507fcf10" : "#507fcf10"} 1px,transparent 1px)`,
           backgroundSize: "48px 48px",
           backgroundPosition: `${f * 0.35}px ${f * 0.2}px`,
         }}
@@ -61,7 +61,7 @@ export const MotionStage = ({
           left: 750,
           top: -160,
           borderRadius: "50%",
-          background: light ? "#6a9ef720" : "#467dff20",
+          background: light ? "#a5c4f018" : "#a5c4f018",
           filter: "blur(100px)",
           translate: `${Math.sin(f / 70) * 90}px ${Math.cos(f / 90) * 40}px`,
         }}
@@ -238,8 +238,8 @@ export const Ring = ({
           >
             <path
               d="M106 97 A281 281 0 0 1 494 97 L372 224 A104 104 0 0 0 228 224 Z"
-              fill={active === i ? tint : "#c9d9f1"}
-              stroke={active === i ? "#ffffff" : "#92abce"}
+              fill={active === i ? tint : "#e6ebf2"}
+              stroke={active === i ? "#ffffff" : "#b6c3d5"}
               strokeWidth="3"
             />
             <text
@@ -259,7 +259,7 @@ export const Ring = ({
           cx="300"
           cy="300"
           r="68"
-          fill="#0c1b32"
+          fill="#f9fafc"
           stroke="#79a8ee"
           strokeWidth="2"
         />
@@ -299,7 +299,7 @@ export const Cut = ({
             width: "120%",
             top: i * 216 - 30,
             height: 250,
-            background: ["#61d9bc", "#5798ff", "#9bafff", "#5798ff", "#61d9bc"][
+            background: ["#dbe7f8", "#edf2fa", "#c5d7f2", "#edf2fa", "#dbe7f8"][
               i
             ],
             transform: `translateX(${snap(f, duration - 12 + i, duration - 5 + i, 110, 0)}%) skewX(-12deg)`,

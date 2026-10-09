@@ -1,48 +1,44 @@
-# GoPieMenu 功能展示影片
+# GoPieMenu 功能与设置导览
 
-B 站优先的简体中文初稿，1920 × 1080 / 30 fps / 41 秒。主合成为 `GoPieMenu-Bilibili`，七个场景也可在 Studio 的 Scenes 文件夹里单独编辑。新版采用弹性菜单、逐字入场、指针轨迹、点击波纹、局部推近、快切、扇形分解、透视列表展开与分层斜切转场；一般段落约 4–6 秒，二级菜单段 9 秒。
+简体中文视频草稿，1920 × 1080 / 30 fps / 59 秒。主合成为 `GoPieMenu-Bilibili`。全片统一采用白色、浅灰、蓝色强调和深灰文字，对齐软件界面。Slate、Ocean、Obsidian 的深色仅出现在真实菜单预设中。
 
-```powershell
-cd video
-npm ci
-npm run dev -- --no-open --port=3001
-```
+## 启动与验证
 
-打开 http://localhost:3001/GoPieMenu-Bilibili 。本项目独立于 `C:/Users/guguc/GitHub/remotion/packages/example`，不修改原有 Studio 范例。
+在 `video` 目录运行 `npm ci`，然后 `npm run dev -- --no-open --port=3001`。预览地址为 http://localhost:3001/GoPieMenu-Bilibili 。独立于其他 Remotion 示例项目。
 
-## 验证与导出
+`npm run lint` 检查 ESLint 与 TypeScript；`npm run build` 验证 bundle；`npm run render` 输出 `out/gopiemenu-bilibili.mp4`（H.264）。目前交付为 Studio 草稿，未导出或发布。无配音、背景音乐与最终逐句字幕。
 
-`npm run lint` 执行 ESLint 与 TypeScript 检查；`npm run build` 验证视频 bundle。`npm run render` 输出 H.264 MP4 至 `out/gopiemenu-bilibili.mp4`，可作为 B 站与 YouTube 的横版上传素材。当前交付为无旁白的 Studio 初稿，尚未发布或导出成片。
+## 导览顺序与配音槽
 
-## GPT-SoVITS 配音
+| 场景 / WAV 文件名 | 时间     | 介绍                             |
+| ----------------- | -------- | -------------------------------- |
+| hook              | 0–4 秒   | 产品开场                         |
+| gesture           | 4–8 秒   | 默认按住、划过、松开             |
+| overview          | 8–13 秒  | 切换、新建、管理菜单             |
+| actions           | 13–19 秒 | Add action 与右侧动作设置        |
+| arrange           | 19–22 秒 | Arrange actions 拖动排序         |
+| submenu           | 22–31 秒 | 分类、子动作与二级菜单编辑       |
+| trigger           | 31–36 秒 | 触发方式、快捷键、指定应用       |
+| style             | 36–44 秒 | Frost → Slate → Ocean → Obsidian |
+| settings          | 44–48 秒 | 开机启动、导入导出、自定义图标   |
+| apply             | 48–51 秒 | 预览、Apply、Discard             |
+| workflow          | 51–55 秒 | 返回绘图工作流                   |
+| outro             | 55–59 秒 | 项目入口                         |
 
-旁白稿、段落起点和时长的单一来源是 `src/timeline.ts`。逐段生成 PCM WAV 后放入 `public/voice/`，文件名为 `hook.wav`、`gesture.wav`、`submenu.wav`、`actions.wav`、`workflow.wav`、`style.wav`、`outro.wav`。主合成自动发现并加载音频；缺失文件的段落保持静音。独立场景合成用于画面编辑，不包含主合成的旁白轨。
-
-| 文件名       | 时间     | 建议音频最长时长 |
-| ------------ | -------- | ---------------- |
-| hook.wav     | 0–4 秒   | 3.5 秒           |
-| gesture.wav  | 4–9 秒   | 4.5 秒           |
-| submenu.wav  | 9–18 秒  | 8.5 秒           |
-| actions.wav  | 18–24 秒 | 5.5 秒           |
-| workflow.wav | 24–30 秒 | 5.5 秒           |
-| style.wav    | 30–36 秒 | 5.5 秒           |
-| outro.wav    | 36–41 秒 | 4.5 秒           |
-
-这是初步节奏，收到实际语音后再按自然语速调整场景。超出片段长度的语音会被截断，不能直接使用。调整时同步 `timeline.ts`、`Promo.tsx` 的 Series 时长，以及 `Root.tsx` 的主合成与独立场景时长。中文字体优先使用本机 Microsoft YaHei；跨系统渲染需安装对应字体或 Noto Sans CJK SC。
+旁白与时长的单一来源为 `src/timeline.ts`，主合成、独立场景和配音起点自动从这里生成。组件映射在 `src/sceneRegistry.ts`。GPT-SoVITS 生成的 PCM WAV 放入 `public/voice/<场景名>.wav`，缺失文件保持静音。音频必须短于对应场景，建议留 0.5 秒余量；实际配音完成后再调整节奏和字幕。独立场景不包含旁白。
 
 ## 素材与真实性
 
-- `submenu-parent.png`、`submenu-live.png`、`submenu-editor.png` 是本次直接从已打开的 GoPieMenu 捕获的 ClipStudioPaint 配置画面，依次展示图层分类、五项子动作、新图层快捷键设置。仅导航和选择，没有更改或 Apply 配置。剪辑为截图快切与镜头动画，并非连续录屏。
-- 其余 `public/assets/` 来自本仓库 `resources/demo/` 和 `resources/logo/`，保留真实界面与原有演示内容。
-- 编辑器与选色器使用新版浅色截图；绘图演示是现有 720 × 553 GIF，清晰度受源文件限制，发布前建议换成高清录屏。
-- 开场、手势、二级菜单前半段及配色段的圆形菜单为明确标注的动效示意，并非实时录制的界面。仅说明默认 Ctrl + 右键按住模式。
-- 功能与用语依据仓库 README，未加入实测加速数字或未实现功能。
-- 当前无背景音乐，无最终逐句字幕；后续依实际配音对齐字幕，不把草稿时间直接当成成片字幕。
+- `preset-frost/slate/ocean/obsidian.png` 来自本次在实际 GoPieMenu 的 Appearance 中逐一点击预设后的截图。使用擦除动画展示切换，不是连续录屏，也不是用示意圆环替代预设。
+- `tour-*.png` 来自实际菜单管理、Add action、排序、触发设置与全局设置。`submenu-*.png` 来自实际 ClipStudioPaint 配置的图层分类与新图层动作设置。
+- 取材前无未保存变更；四种预设仅用于预览，完成后用 Discard 还原，未 Apply 或改动用户已保存配置。其余设置只导航和读取。
+- 软件截图搭配高亮框、推近和切换动画；不将高亮标注描述为软件原生动画。Apply 段解释操作，未实际提交设置。
+- 开场、默认手势和二级菜单前半段为标注的动效示意。实际配置使用 F12，默认手势示意使用 Ctrl + 右键，影片分别说明。
+- Logo 与绘图 GIF 来自本仓库 `resources`；GIF 源为 720 × 553，发布前可替换高清录屏。
+- 中文字体优先使用 Microsoft YaHei，跨系统渲染需安装对应字体或 Noto Sans CJK SC。
 
 ## 发布文案草稿
 
-标题：给鼠标装一个快捷菜单！GoPieMenu，让常用操作围着你转
+标题：给鼠标装一个快捷菜单！一分钟上手 GoPieMenu
 
-简介：快捷键、应用、文件与网址，都可以放进鼠标旁边的圆形菜单。视频展示 GoPieMenu 的默认呼叫方式、自定义动作、二级菜单分类、应用专属菜单与独立外观设置。Windows 开源项目，下载和使用说明：https://github.com/RyuuMeow/GoPieMenu 。录屏中的绘图软件为使用场景示例。
-
-后续配音：用户自有 GPT-SoVITS 模型；尚未生成或接入音频。
+简介：从新建菜单、添加动作，到二级菜单、触发键与应用匹配，再到 Frost、Slate、Ocean、Obsidian 四种外观预设。一分钟认识 GoPieMenu 的简单设置界面。Windows 开源项目，下载和说明：https://github.com/RyuuMeow/GoPieMenu 。绘图软件仅为使用场景示例。

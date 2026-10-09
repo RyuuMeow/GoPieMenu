@@ -17,7 +17,7 @@ export const Submenu = () => {
           top: 100,
           fontSize: 320,
           fontWeight: 900,
-          color: "#7edecb",
+          color: "#507fcf",
           opacity: 0.055,
           letterSpacing: -20,
         }}
@@ -52,7 +52,7 @@ export const Submenu = () => {
               y={605}
               size={560}
               active={expanded ? 1 : -1}
-              tint="#61d9bc"
+              tint="#507fcf"
               labels={["应用", "图层 ›", "文件", "网址"]}
             />
           </div>
@@ -66,7 +66,7 @@ export const Submenu = () => {
                 padding: 14,
                 borderRadius: 22,
                 background: "#edf3fc",
-                boxShadow: "0 30px 100px #0007",
+                boxShadow: "0 30px 100px #355b8520",
                 transform: `perspective(1200px) rotateY(${snap(f, 48, 65, -55, 0)}deg)`,
                 transformOrigin: "left center",
               }}
@@ -116,7 +116,7 @@ export const Submenu = () => {
                     top: 560 - 160,
                     width: 320,
                     height: 320,
-                    border: "2px solid #61d9bc",
+                    border: "2px solid #507fcf",
                     borderRadius: "50%",
                     scale: snap(f, 130 + i * 3, 160, 0.2, 4),
                     opacity: snap(f, 130 + i * 3, 160, 0.8, 0),
@@ -131,7 +131,7 @@ export const Submenu = () => {
                   fontSize: 72,
                   fontWeight: 800,
                   scale: pop(f, 130),
-                  color: "#82efcf",
+                  color: "#507fcf",
                 }}
               >
                 ✓ 新图层
@@ -156,12 +156,12 @@ export const Submenu = () => {
                   borderRadius: 12,
                   background:
                     i === (executed ? 2 : expanded ? 1 : 0)
-                      ? "#268571"
-                      : "#1b2c44",
+                      ? "#507fcf"
+                      : "#e8eef8",
                   color:
                     i === (executed ? 2 : expanded ? 1 : 0)
                       ? "white"
-                      : "#9cb2cf",
+                      : "#64758b",
                 }}
               >
                 {s}
@@ -181,7 +181,7 @@ export const Submenu = () => {
               height: 580,
               overflow: "hidden",
               borderRadius: 22,
-              boxShadow: "0 30px 100px #0008",
+              boxShadow: "0 30px 100px #355b8520",
               transform: `perspective(1800px) rotateY(${snap(f, 160, 181, -16, 0)}deg) translateY(${snap(f, 160, 180, 140, 0)}px)`,
             }}
           >
@@ -207,14 +207,14 @@ export const Submenu = () => {
               top: 425,
               fontSize: 44,
               lineHeight: 1.7,
-              color: "#b7d6ee",
+              color: "#64758b",
             }}
           >
             主菜单负责分类。
             <br />
             子菜单收纳动作。
             <br />
-            <span style={{ color: "#7de6c6" }}>两层，就够顺手。</span>
+            <span style={{ color: "#507fcf" }}>两层，就够顺手。</span>
           </div>
         </>
       )}
@@ -224,7 +224,7 @@ export const Submenu = () => {
           right: 100,
           bottom: 50,
           fontSize: 21,
-          color: "#99b3d2",
+          color: "#64758b",
         }}
       >
         {editor
