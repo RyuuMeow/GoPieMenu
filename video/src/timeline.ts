@@ -62,7 +62,7 @@ const chapters = [
   },
   {
     id: "workflow",
-    seconds: 3,
+    seconds: 16,
     label: "回到创作",
     narration: "回到创作。",
   },

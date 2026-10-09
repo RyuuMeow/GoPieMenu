@@ -74,14 +74,14 @@ export const Gesture = () => {
   );
 };
 export const Workflow = () => (
-  <MotionStage>
+  <MotionStage showBrand={false}>
     <div
       style={{
         position: "absolute",
-        left: 390,
-        top: 280,
-        width: 1140,
-        height: 680,
+        left: 260,
+        top: 2,
+        width: 1400,
+        height: 1076,
         overflow: "hidden",
         borderRadius: 24,
         boxShadow: "0 20px 70px #355b8520",
@@ -89,15 +89,15 @@ export const Workflow = () => (
     >
       <AnimatedImage
         src={staticFile("assets/drawing-demo.gif")}
-        width={1140}
-        height={876}
+        width={1400}
+        height={1076}
         fit="cover"
-        playbackRate={1.6}
+        playbackRate={1}
       />
     </div>
-    <FocalText text="回到创作" x={960} y={860} size={86} badge />
-    <div style={{ ...note, top: 1020, fontSize: 22 }}>
-      实际操作 GIF · 加速演示
+    <div style={{ ...note, left: 40, top: 70, fontSize: 32 }}>回到创作</div>
+    <div style={{ ...note, left: 40, top: 980, fontSize: 20 }}>
+      实际操作 GIF<br />原速播放
     </div>
   </MotionStage>
 );

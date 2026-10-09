@@ -32,9 +32,11 @@ export const pop = (f: number, delay = 0) =>
 export const MotionStage = ({
   children,
   light = true,
+  showBrand = true,
 }: {
   children: ReactNode;
   light?: boolean;
+  showBrand?: boolean;
 }) => {
   const f = useCurrentFrame();
   return (
@@ -72,6 +74,7 @@ export const MotionStage = ({
           position: "absolute",
           left: 80,
           top: 45,
+          display: showBrand ? undefined : "none",
           fontSize: 25,
           fontWeight: 750,
           letterSpacing: 1,

@@ -26,9 +26,9 @@ function save(name,buf,peak=.65){
   writeFileSync(out+name+".wav",data);
   console.log(`${name}: ${(buf[0].length/sr).toFixed(2)}s, peak ${(20*Math.log10(peak)).toFixed(1)} dBFS, RMS ${(20*Math.log10(Math.sqrt(squares/(buf[0].length*2))*gain)).toFixed(1)} dBFS`);
 }
-const music=track(48); // Extra tail accommodates small editorial changes.
+const music=track(60); // Extra tail accommodates small editorial changes.
 const chords=[[62,66,69,73],[59,62,66,69],[55,59,62,66],[57,61,64,66]];
-for(let beat=0;beat<94;beat++){
+for(let beat=0;beat<118;beat++){
   const t=beat*.5,chord=chords[Math.floor(beat/8)%4];
   // Soft four-on-floor kick, offbeat tick and sparse snare.
   if(t<40 || beat%2===0)add(music,t,.23,x=>Math.sin(tau*(48*x+7*(1-Math.exp(-x*24))))*Math.exp(-x*20),.24);
