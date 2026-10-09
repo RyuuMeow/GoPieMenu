@@ -106,7 +106,7 @@ QVariantMap EditorSession::profile() const {
             {"appFilter", p->AppFilter.join(", ")}, {"triggerMode", int(p->Trigger.Mode)},
             {"modifiers", int(ModifierKeyToUint(p->Trigger.Modifiers))},
             {"mouseButton", MouseButtonToString(p->Trigger.Button)}, {"vkCode", p->Trigger.VKCode},
-            {"triggerSummary", TriggerDisplayName(p->Trigger)}, {"customStyle", p->StyleOverride.has_value()}};
+            {"triggerSummary", TriggerDisplayName(p->Trigger)}};
     }
     return {};
 }
@@ -200,6 +200,7 @@ void EditorSession::addProfile() {
         PieMenuConfig p;
         p.Id = NewId(); p.Name = QStringLiteral("New menu"); p.bEnabled = false;
         p.Trigger.Modifiers = ModifierKey::Ctrl;
+        p.StyleOverride = Draft.GlobalStyle;
         CurrentProfile = p.Id; Selected.clear(); Folder.clear(); Draft.Profiles.push_back(std::move(p));
     });
 }
@@ -207,6 +208,7 @@ void EditorSession::duplicateProfile() {
     if (!currentProfile()) return;
     mutate({}, [&] {
         auto copy = *currentProfile();
+        copy.StyleOverride = effectiveStyle();
         copy.Id = NewId(); copy.Name += QStringLiteral(" copy"); copy.bEnabled = false;
         for (auto& item : copy.Items) RenewIds(item);
         CurrentProfile = copy.Id; Selected.clear(); Folder.clear(); Draft.Profiles.push_back(std::move(copy));
@@ -235,10 +237,6 @@ void EditorSession::setProfileField(const QString& field, const QVariant& value)
         else if (field == "triggerMode") p.Trigger.Mode = static_cast<ActivationMode>(std::clamp(value.toInt(), 0, 2));
         else if (field == "modifiers") p.Trigger.Modifiers = UintToModifierKey(value.toUInt() & 15);
         else if (field == "mouseButton") p.Trigger.Button = StringToMouseButton(value.toString());
-        else if (field == "customStyle") {
-            if (value.toBool()) p.StyleOverride = effectiveStyle();
-            else p.StyleOverride.reset();
-        }
     });
 }
 void EditorSession::setTrigger(int mode, int mods, const QString& button, int key) {
@@ -351,11 +349,13 @@ void EditorSession::setStyleField(const QString& field, const QVariant& value) {
     if (!mutableProfile()) return;
     mutate("style/" + CurrentProfile + "/" + field, [&] {
         auto& p = *mutableProfile();
-        auto next = effectiveStyle().ToJson();
+        const auto previous = effectiveStyle().ToJson();
+        auto next = previous;
         if (!next.contains(field)) return;
         next[field] = QJsonValue::fromVariant(value);
-        if (p.StyleOverride) p.StyleOverride = StyleConfig::FromJson(next);
-        else Draft.GlobalStyle = StyleConfig::FromJson(next);
+        if (next == previous) return;
+        // Legacy profiles keep their saved appearance until their first local edit.
+        p.StyleOverride = StyleConfig::FromJson(next);
     });
 }
 void EditorSession::setStylePreset(const QString& name) {
@@ -370,8 +370,7 @@ void EditorSession::setStylePreset(const QString& name) {
         next.HoverColor = preset.HoverColor; next.BorderColor = preset.BorderColor; next.TextColor = preset.TextColor;
         next.CenterColor = preset.CenterColor; next.CenterDotColor = preset.CenterDotColor;
         next.bAutoContrast = preset.bAutoContrast; next.TextOutlineThickness = preset.TextOutlineThickness;
-        if (mutableProfile()->StyleOverride) mutableProfile()->StyleOverride = next;
-        else Draft.GlobalStyle = next;
+        if (next.ToJson() != effectiveStyle().ToJson()) mutableProfile()->StyleOverride = next;
     });
 }
 void EditorSession::setStartWithWindows(bool value) { mutate({}, [&] { Draft.bStartWithWindows = value; }); }

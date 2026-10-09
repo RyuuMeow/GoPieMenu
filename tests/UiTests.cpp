@@ -70,6 +70,44 @@ private slots:
         for (auto* screen : QGuiApplication::screens()) qInfo() << "Screen" << screen->name() << screen->geometry() << screen->availableGeometry() << screen->devicePixelRatio();
     }
     void init() { QTest::failOnWarning(QRegularExpression(".*(qrc:/editor|QQml|Binding loop|ReferenceError|TypeError).*")); }
+    void appearanceFollowsTheSelectedProfile() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        auto initial = config.GetConfig();
+        auto other = initial.Profiles[0]; other.Id = "other-menu"; other.Name = "Other menu";
+        initial.Profiles.push_back(other); QVERIFY(config.Commit(initial));
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* session = editor.session(); const auto first = session->profileId();
+        const auto originalStyle = session->effectiveStyle().ToJson();
+        auto* arrange = find(w, "arrangeButton"); QVERIFY(arrange);
+        auto* arrangeIcon = arrange->findChild<QQuickItem*>("buttonIcon"); QVERIFY(arrangeIcon);
+        QTRY_COMPARE(arrangeIcon->childItems().first()->property("status").toInt(), 1);
+        QVERIFY(click(w, "arrangeButton")); QVERIFY(arrange->property("checked").toBool());
+        QVERIFY(click(w, "arrangeButton")); QVERIFY(!arrange->property("checked").toBool());
+        QVERIFY(click(w, "appearanceButton"));
+        QVERIFY(find(w, "Appearance applies only to this menu.", "text"));
+        QVERIFY(click(w, "Ocean", "text"));
+        auto* size = find(w, "outerRadiusSlider"); QVERIFY(size);
+        QTest::mouseClick(w, Qt::LeftButton, Qt::NoModifier, size->mapToScene(QPointF(size->width() * .65, size->height()/2)).toPoint());
+        QVERIFY(session->effectiveStyle().OuterRadius > 200);
+        const auto firstStyle = session->effectiveStyle().ToJson();
+        session->selectProfile(other.Id);
+        QTRY_COMPARE(size->property("value").toDouble(), initial.GlobalStyle.OuterRadius);
+        QCOMPARE(session->effectiveStyle().ToJson(), originalStyle);
+        QVERIFY(click(w, "Slate", "text"));
+        const auto otherStyle = session->effectiveStyle().ToJson();
+        session->selectProfile(first);
+        QTRY_COMPARE(size->property("value").toDouble(), firstStyle["outerRadius"].toDouble());
+        QCOMPARE(session->effectiveStyle().ToJson(), firstStyle);
+        QVERIFY(snapshot(w, "appearance-profile"));
+        QVERIFY(click(w, "applyButton")); QVERIFY(!session->dirty());
+        QCOMPARE(config.GetConfig().GlobalStyle.ToJson(), originalStyle);
+        PieScene scene;
+        scene.build(config.GetConfig().Profiles[0], config.GetConfig().GlobalStyle);
+        QCOMPARE(scene.style().ToJson(), firstStyle);
+        scene.build(config.GetConfig().Profiles[1], config.GetConfig().GlobalStyle);
+        QCOMPARE(scene.style().ToJson(), otherStyle);
+    }
     void emptyActionsDoNotDispatch() {
         ActionExecutor executor; int validations = 0, executions = 0;
         QSignalSpy failed(&executor, &ActionExecutor::ActionFailed), executed(&executor, &ActionExecutor::ActionExecuted);

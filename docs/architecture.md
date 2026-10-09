@@ -6,6 +6,8 @@
 
 Apply validates non-empty shortcuts/URLs, unique IDs, two-level hierarchy, triggers, and safe geometry. Empty targets and legacy None actions are valid placeholders. `PieItem::IsNoOp` lets the executor skip them before handler validation or dispatch, without a failure notification. `QSaveFile` writes atomically with direct-write fallback disabled. Only a successful commit replaces the runtime configuration and emits `ConfigChanged`. Parse/type errors, invalid imports, write errors, and failed file replacement retain the draft and original file. Configuration JSON remains version 1.0; legacy appearance aliases and existing custom colors are supported. Fresh configurations use Frost at approximately 96% effective sector opacity. Existing saved styles retain their values until edited or replaced by a preset.
 
+Appearance writes always target the current profile's `StyleOverride`, including presets. `GlobalStyle` remains a read-only fallback for legacy profiles and seeds an independent style for newly created profiles. The first local edit copies the effective legacy style before changing a field; loading alone does not rewrite files or mark the draft dirty. Duplicating a profile copies its effective style. There is no shared/custom switch in the UI. Undo/redo, discard, apply, import, reload, profile switching, and runtime rendering preserve this isolation.
+
 ## UI and rendering
 
 `SettingsWindow` owns the QML engine, session, recorder, and icon catalog. QML provides the toolbar, canvas, contextual inspector, organizer, and compact drawer. Shared buttons, menus, tooltips, fields, checkboxes, sliders, switches, and dialogs use `Theme.js` tokens. The three-dot menu toggles and suppresses its button tooltip while open. Apply/Discard keep their toolbar positions when disabled. Advanced controls do not replace the canvas. Submenu containers cannot be nested or converted to actions while they contain children.
@@ -41,18 +43,18 @@ Run `scripts/build.ps1` as described in the README. CTest runs core once and the
 - Dialog/window UI: color conversion, ring/square pointer input, hex validation and focus, confirm/cancel isolation and recent colors, modal shortcut blocking, unsaved exit success/failure/cancel, enabled switch, maximize/work-area/restore, running-app selection dialog, and compact color layout. Existing coverage includes the 800×520 drawer, QML warning detection, high-DPI painted coordinates, four-corner/negative-screen placement, a 100-item list, rapid menu reopen, and closing engines during icon loading.
 - Packaging: `windeployqt --qmldir src/ui/qml` includes QML dependencies. `--smoke-test` uses preview isolation and exits after startup. CI tests the deployed executable with the Qt SDK removed from PATH, then compiles the installer. Screenshots and text logs are retained as artifacts.
 
-Additional checks cover blank-action save/import, no-op dispatch through fake action handlers, selection-preserving sorting/deletion, all three action context-menu locations, disabled-menu hints, and tray Pause behavior. The GitHub test intercepts URL opening rather than launching a browser. Action dispatch is built as `gpm_actions` so the same production dispatcher can be tested without executing real actions.
+Additional checks cover independent profile appearance (including legacy defaults and custom styles), blank-action save/import, no-op dispatch through fake action handlers, selection-preserving sorting/deletion, all three action context-menu locations, disabled-menu hints, and tray Pause behavior. The GitHub test intercepts URL opening rather than launching a browser. Action dispatch is built as `gpm_actions` so the same production dispatcher can be tested without executing real actions.
 
 ## Local Release measurements
 
-Measured on 2026-10-09, Windows 11, Qt 6.9.0 / MSVC 2022, software Qt Quick rendering, 1,376 embedded icons. Same development machine, four scale factors; warm opening sampled three times per scale.
+Measured on 2026-10-09, Windows 11, Qt 6.9.0 / MSVC 2022, software Qt Quick rendering, 1,377 embedded icons. Same development machine, four scale factors; warm opening sampled three times per scale.
 
 | Operation | Observed range | Target |
 | --- | ---: | ---: |
-| Warm picker open and first rendered frame | 46–63ms | <150ms |
-| Search text through filtered model, including 16ms coalescing | 10–35ms | <100ms |
-| Cold metadata index | 54–64ms | Background, UI remains usable |
-| Metadata filter alone | 0.100–0.172ms | <100ms |
+| Warm picker open and first rendered frame | 40–60ms | <150ms |
+| Search text through filtered model, including 16ms coalescing | 21–25ms | <100ms |
+| Cold metadata index | 51–65ms | Background, UI remains usable |
+| Metadata filter alone | 0.089–0.153ms | <100ms |
 
 Warm timing includes the test helper's 30ms layout wait. These are local samples, not latency guarantees or cross-device benchmarks. Logs are in `build/artifacts`; timing values are reported, not enforced as brittle CI thresholds.
 

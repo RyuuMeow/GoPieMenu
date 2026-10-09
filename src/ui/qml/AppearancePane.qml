@@ -8,6 +8,11 @@ ColumnLayout {
     property bool advanced: false
     property var style: editor.style
     spacing: 14
+    Label {
+        Layout.fillWidth: true
+        text: "Appearance applies only to this menu."
+        color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap
+    }
     FieldLabel { text: "Style" }
     Flow {
         Layout.fillWidth: true
@@ -23,7 +28,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: root.advanced
         spacing: 16
-        AppCheckBox { text: "Only customize this menu"; checked: editor.profile.customStyle || false; onClicked: editor.setProfileField("customStyle", checked) }
         NumberSetting { Layout.fillWidth: true; label: "Center radius"; field: "innerRadius"; minimum: 10; maximum: Math.min(150, (root.style.outerRadius || 150) - 9); value: root.style.innerRadius || 45 }
         NumberSetting { Layout.fillWidth: true; label: "Icon size"; field: "iconSize"; minimum: 12; maximum: 96; value: root.style.iconSize || 28 }
         NumberSetting { Layout.fillWidth: true; label: "Text size"; field: "fontSize"; minimum: 8; maximum: 32; value: root.style.fontSize || 11 }
@@ -52,10 +56,5 @@ ColumnLayout {
                 }
             }
         }
-    }
-    Label {
-        Layout.fillWidth: true
-        text: editor.profile.customStyle ? "Appearance applies to this menu." : "Appearance is shared by menus without a custom style."
-        color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap
     }
 }

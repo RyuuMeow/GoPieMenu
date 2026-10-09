@@ -23,7 +23,7 @@ struct AppConfig
 {
     // === Data ===
     std::vector<PieMenuConfig> Profiles;
-    StyleConfig                GlobalStyle;
+    StyleConfig                GlobalStyle; // Legacy fallback and initial appearance for new profiles; editor writes are profile-local.
     bool                       bStartWithWindows = false;
     QString                    Language          = QStringLiteral("en");
 

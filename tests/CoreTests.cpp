@@ -14,6 +14,65 @@ using namespace gpm;
 class CoreTests : public QObject {
     Q_OBJECT
 private slots:
+    void appearanceEditsStayWithEachProfile() {
+        auto config = AppConfig::CreateDefault();
+        config.GlobalStyle.OuterRadius = 200;
+        config.GlobalStyle.Opacity = .73;
+        auto other = config.Profiles[0]; other.Id = "other-menu"; other.Name = "Other menu";
+        auto custom = other; custom.Id = "custom-menu"; custom.Name = "Custom menu";
+        custom.StyleOverride = StyleConfig();
+        config.Profiles.push_back(other); config.Profiles.push_back(custom);
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json"));
+        QVERIFY(manager.Commit(config));
+        EditorSession session(&manager);
+        const auto first = session.profileId();
+        const auto sharedStyle = config.GlobalStyle.ToJson();
+        const auto original = config.Serialize();
+        session.setStyleField("outerRadius", 200);
+        QVERIFY(!session.dirty()); // Editing an unchanged legacy value must not create a draft.
+        session.setStylePreset("Frost");
+        QCOMPARE(session.effectiveStyle().Opacity, .98);
+        QCOMPARE(session.effectiveStyle().OuterRadius, 200.0); // Presets keep geometry.
+        QCOMPARE(session.draft().GlobalStyle.ToJson(), sharedStyle);
+        QCOMPARE(session.draft().Profiles[1].ToJson(), other.ToJson());
+        QCOMPARE(session.draft().Profiles[2].ToJson(), custom.ToJson());
+        QCOMPARE(manager.GetConfig().Serialize(), original);
+        session.undo(); QCOMPARE(session.draft().Serialize(), original);
+        session.redo(); QCOMPARE(session.effectiveStyle().Opacity, .98);
+        session.setStyleField("outerRadius", 245);
+        session.setStyleField("sectorColor", "#ff347a5a");
+        const auto firstStyle = session.effectiveStyle().ToJson();
+        session.selectProfile(other.Id);
+        QCOMPARE(session.effectiveStyle().ToJson(), sharedStyle);
+        session.setStyleField("opacity", .5);
+        const auto otherStyle = session.effectiveStyle().ToJson();
+        session.selectProfile(first); QCOMPARE(session.effectiveStyle().ToJson(), firstStyle);
+        session.selectProfile(custom.Id); QCOMPARE(session.effectiveStyle().ToJson(), custom.StyleOverride->ToJson());
+        QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QCOMPARE(reopened.GetConfig().Serialize(), session.draft().Serialize());
+        QCOMPARE(reopened.GetConfig().GlobalStyle.ToJson(), sharedStyle);
+        QCOMPARE(reopened.GetConfig().Profiles[0].StyleOverride->ToJson(), firstStyle);
+        QCOMPARE(reopened.GetConfig().Profiles[1].StyleOverride->ToJson(), otherStyle);
+
+        session.selectProfile(first); session.duplicateProfile();
+        QCOMPARE(session.effectiveStyle().ToJson(), firstStyle);
+        session.setStyleField("outerRadius", 300);
+        session.selectProfile(first); QCOMPARE(session.effectiveStyle().ToJson(), firstStyle);
+        session.addProfile(); QCOMPARE(session.effectiveStyle().ToJson(), sharedStyle);
+        session.setStylePreset("Ocean");
+        QCOMPARE(session.draft().GlobalStyle.ToJson(), sharedStyle);
+        session.discard(); QCOMPARE(session.draft().Serialize(), reopened.GetConfig().Serialize());
+        QVERIFY(!session.dirty());
+
+        // Import retains legacy/custom appearances; subsequent edits remain isolated.
+        QVERIFY(session.importData(original));
+        QCOMPARE(session.effectiveStyle().ToJson(), sharedStyle);
+        session.setStylePreset("Ocean");
+        QCOMPARE(session.draft().Profiles[1].ToJson(), other.ToJson());
+        QCOMPARE(session.draft().Profiles[2].ToJson(), custom.ToJson());
+        QCOMPARE(session.draft().GlobalStyle.ToJson(), sharedStyle);
+    }
     void emptyActionsCanBeSavedAndImported() {
         auto config = AppConfig::CreateDefault();
         auto& items = config.Profiles[0].Items;
