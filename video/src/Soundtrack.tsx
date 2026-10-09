@@ -10,9 +10,13 @@ const cues: Partial<Record<SceneId, Array<[number, Sound]>>> = {
     [30, "swipe"],
     [60, "confirm"],
   ],
-  overview: [[9, "pop"]],
+  overview: [
+    [9, "pop"],
+    [40, "tick"],
+  ],
   actions: [
     [8, "pop"],
+    [27, "pop"],
     [67, "tick"],
   ],
   arrange: [[10, "swipe"]],

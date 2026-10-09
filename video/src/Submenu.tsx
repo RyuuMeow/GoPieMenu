@@ -1,5 +1,6 @@
 import { FocalText } from "./FocalText";
-import { Img, staticFile, useCurrentFrame } from "remotion";
+import { useCurrentFrame } from "remotion";
+import { field, panel, Keycap } from "./DemoUI";
 import { Cursor, MotionStage, Ring, pop, snap } from "./motion";
 
 // Runtime behavior follows PieMenuWidget: hover a folder, then release on a row.
@@ -132,32 +133,52 @@ export const Submenu = () => {
         <>
           <div
             style={{
-              position: "absolute",
-              left: 300,
-              top: 335,
-              width: 1320,
-              height: 640,
-              overflow: "hidden",
-              borderRadius: 22,
-              boxShadow: "0 30px 100px #355b8520",
-              transform: `perspective(1800px) rotateY(${snap(f, 160, 181, -16, 0)}deg) translateY(${snap(f, 160, 180, 140, 0)}px)`,
+              ...panel,
+              left: 320,
+              top: 385,
+              width: 580,
+              padding: 24,
+              scale: pop(f, 160),
             }}
           >
-            <Img
-              src={staticFile(
-                f < 190
-                  ? "assets/submenu-parent.png"
-                  : f < 225
-                    ? "assets/submenu-live.png"
-                    : "assets/submenu-editor.png",
-              )}
-              style={{
-                width: 1320,
-                transform: `scale(${snap(f, 225, 265, 1, 1.12)})`,
-                transformOrigin: "65% 45%",
-              }}
-            />
+            {["新图层", "切换图层显示", "锁定透明度"].map((t, i) => (
+              <div
+                key={t}
+                style={{
+                  ...field,
+                  margin: 10,
+                  background: i === 0 && f >= 190 ? "#507fcf" : "white",
+                  color: i === 0 && f >= 190 ? "white" : "#253348",
+                }}
+              >
+                {t}
+              </div>
+            ))}
           </div>
+          {f >= 190 && (
+            <div
+              style={{
+                ...panel,
+                left: 1060,
+                top: 390,
+                width: 560,
+                padding: 32,
+                translate: `${snap(f, 190, 210, 120, 0)}px 0`,
+                opacity: snap(f, 190, 202, 0, 1),
+              }}
+            >
+              <div style={{ ...field }}>新图层</div>
+              <div style={{ fontSize: 26, color: "#79889d", margin: "25px 0" }}>
+                Shortcut
+              </div>
+              <div style={{ display: "flex", gap: 12 }}>
+                <Keycap active={f >= 225}>Ctrl</Keycap>
+                <Keycap active={f >= 225}>Shift</Keycap>
+                <Keycap active={f >= 225}>N</Keycap>
+              </div>
+            </div>
+          )}
+          <Cursor x={730} y={475} click={f >= 185 && f < 199} />
         </>
       )}
       <div
@@ -169,7 +190,7 @@ export const Submenu = () => {
           color: "#64758b",
         }}
       >
-        {editor ? "界面截图" : "操作示意"}
+        操作示意
       </div>
     </MotionStage>
   );
