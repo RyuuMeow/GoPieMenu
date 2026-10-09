@@ -20,6 +20,7 @@
     "typescript": "5.9.3"
   },
   "scripts": {
+    "audio": "node scripts/generate-audio.mjs",
     "dev": "remotion studio",
     "render": "remotion render src/index.ts GoPieMenu-Bilibili out/gopiemenu-bilibili.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p",
     "build": "remotion bundle",

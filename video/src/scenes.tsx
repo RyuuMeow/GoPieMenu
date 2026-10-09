@@ -20,12 +20,7 @@ export const Hook = () => {
           scale: snap(f, 30, 59, 1, 1.12),
         }}
       >
-        <Ring
-          x={1320}
-          y={600}
-          size={590}
-          active={f < 24 ? -1 : 0}
-        />
+        <Ring x={1320} y={600} size={590} active={f < 24 ? -1 : 0} />
       </div>
       <Cursor x={snap(f, 8, 30, 1550, 1310)} y={snap(f, 8, 30, 800, 410)} />
       <div style={{ ...note, top: 830, fontSize: 24 }}>动效示意</div>

@@ -10,7 +10,13 @@
 
 在 `video` 目录运行 `npm ci`，然后 `npm run dev -- --no-open --port=3001`。预览地址为 http://localhost:3001/GoPieMenu-Bilibili 。独立于其他 Remotion 示例项目。
 
-`npm run lint` 检查 ESLint 与 TypeScript；`npm run build` 验证 bundle；`npm run render` 输出 `out/gopiemenu-bilibili.mp4`（H.264）。目前交付为 Studio 草稿，未导出或发布。无配音、背景音乐与最终逐句字幕。
+`npm run lint` 检查 ESLint 与 TypeScript；`npm run build` 验证 bundle；`npm run render` 输出 `out/gopiemenu-bilibili.mp4`（H.264）。目前交付为 Studio 草稿，未导出或发布。已加入背景配乐与操作音效；无配音与最终逐句字幕。
+
+## 配乐与音效
+
+`public/audio/` 为本项目原创程序合成素材，无外部采样。120 BPM 轻电子背景包含柔和键盘和弦、低音、轻打击与短旋律；pop、tick、swipe、confirm 分别对应弹出、选择、滑动及完成。运行 `npm run audio` 可用 Node 标准库重建全部 WAV，生成源码为 `scripts/generate-audio.mjs`。
+
+`src/Soundtrack.tsx` 管理混音音量和相对场景的帧级音效时点。背景音量为 0.48，音效为 0.3–0.5；音乐开头淡入、末尾 1.5 秒淡出。检测到某段旁白 WAV 时，该段背景自动降低 55%，边界平滑过渡。独立场景仍用于画面编辑；声音在主合成播放。
 
 ## 导览顺序与配音槽
 
@@ -29,7 +35,7 @@
 | workflow          | 35–38 秒 | 返回绘图工作流                   |
 | outro             | 38–41 秒 | 项目入口                         |
 
-旁白与时长的单一来源为 `src/timeline.ts`，主合成、独立场景和配音起点自动从这里生成。组件映射在 `src/sceneRegistry.ts`。GPT-SoVITS 生成的 PCM WAV 放入 `public/voice/<场景名>.wav`，缺失文件保持静音。音频必须短于对应场景，建议留 0.5 秒余量；实际配音完成后再调整节奏和字幕。独立场景不包含旁白。
+旁白与时长的单一来源为 `src/timeline.ts`，主合成、独立场景和配音起点自动从这里生成。组件映射在 `src/sceneRegistry.ts`。GPT-SoVITS 生成的 PCM WAV 放入 `public/voice/<场景名>.wav`，缺失旁白文件时保留配乐和音效。音频必须短于对应场景，建议留 0.5 秒余量；实际配音完成后再调整节奏和字幕。独立场景不包含旁白。
 
 ## 素材与真实性
 

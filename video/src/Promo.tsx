@@ -8,10 +8,18 @@ import {
 import { Cut } from "./motion";
 import { FPS, scenes } from "./timeline";
 import { sceneComponents } from "./sceneRegistry";
+import { Soundtrack } from "./Soundtrack";
 export const Promo = () => {
   const files = getStaticFiles();
   return (
     <AbsoluteFill>
+      <Soundtrack
+        voiceIds={scenes
+          .filter((scene) =>
+            files.some((file) => file.name === `voice/${scene.id}.wav`),
+          )
+          .map((scene) => scene.id)}
+      />
       <Series>
         {scenes.map((scene, index) => {
           const Component = sceneComponents[scene.id];
