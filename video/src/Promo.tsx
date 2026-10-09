@@ -7,6 +7,7 @@ import {
 } from "remotion";
 import { Actions, Gesture, Hook, Outro, Style, Workflow } from "./scenes";
 import { Cut } from "./motion";
+import { Submenu } from "./Submenu";
 import { FPS, scenes } from "./timeline";
 
 export const Promo = () => {
@@ -24,22 +25,27 @@ export const Promo = () => {
             <Gesture />
           </Cut>
         </Series.Sequence>
-        <Series.Sequence name="03 动作与编辑" durationInFrames={180}>
+        <Series.Sequence name="03 二级菜单" durationInFrames={270}>
+          <Cut duration={270}>
+            <Submenu />
+          </Cut>
+        </Series.Sequence>
+        <Series.Sequence name="04 动作与编辑" durationInFrames={180}>
           <Cut duration={180}>
             <Actions />
           </Cut>
         </Series.Sequence>
-        <Series.Sequence name="04 工作流快切" durationInFrames={180}>
+        <Series.Sequence name="05 工作流快切" durationInFrames={180}>
           <Cut duration={180}>
             <Workflow />
           </Cut>
         </Series.Sequence>
-        <Series.Sequence name="05 连续换色" durationInFrames={180}>
+        <Series.Sequence name="06 连续换色" durationInFrames={180}>
           <Cut duration={180}>
             <Style />
           </Cut>
         </Series.Sequence>
-        <Series.Sequence name="06 项目入口" durationInFrames={150}>
+        <Series.Sequence name="07 项目入口" durationInFrames={150}>
           <Outro />
         </Series.Sequence>
       </Series>

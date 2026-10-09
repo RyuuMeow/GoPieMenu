@@ -1,5 +1,7 @@
 import { Composition, Folder } from "remotion";
 import { Promo } from "./Promo";
+import { Submenu } from "./Submenu";
+import { TOTAL_FRAMES } from "./timeline";
 import { Actions, Gesture, Hook, Outro, Style, Workflow } from "./scenes";
 
 export const RemotionRoot: React.FC = () => {
@@ -11,9 +13,17 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
         fps={30}
-        durationInFrames={960}
+        durationInFrames={TOTAL_FRAMES}
       />
       <Folder name="Scenes">
+        <Composition
+          id="Submenu"
+          component={Submenu}
+          width={1920}
+          height={1080}
+          fps={30}
+          durationInFrames={270}
+        />
         <Composition
           id="Hook"
           component={Hook}

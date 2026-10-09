@@ -232,7 +232,8 @@ export const Ring = ({
             style={{
               transformOrigin: "300px 300px",
               scale: pop(f, delay + i * 3),
-              rotate: `${a + snap(f, delay + i * 3, delay + 28 + i * 3, -30, 0)}deg`,
+              translate: `0 ${snap(f, delay + i * 3, delay + 28 + i * 3, -110, 0)}px`,
+              rotate: `${a + snap(f, delay + i * 3, delay + 28 + i * 3, -75, 0)}deg`,
             }}
           >
             <path
@@ -281,21 +282,30 @@ export const Cut = ({
     <AbsoluteFill style={{ overflow: "hidden" }}>
       <AbsoluteFill
         style={{
-          scale: snap(f, 0, 10, 1.1, 1),
-          translate: `${-end * 160}px 0`,
-          filter: `blur(${end * 5}px)`,
+          scale: snap(f, 0, 14, 1.24, 1) + end * 0.14,
+          rotate: `${snap(f, 0, 14, -2, 0) - end * 3}deg`,
+          translate: `${-end * 260}px 0`,
+          filter: `blur(${end * 9}px)`,
         }}
       >
         {children}
       </AbsoluteFill>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "#5798ff",
-          translate: `${interpolate(f, [0, 8, duration - 8, duration - 1], [100, 110, 110, 0], clamp)}% 0`,
-        }}
-      />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: "-10%",
+            width: "120%",
+            top: i * 216 - 30,
+            height: 250,
+            background: ["#61d9bc", "#5798ff", "#9bafff", "#5798ff", "#61d9bc"][
+              i
+            ],
+            transform: `translateX(${snap(f, duration - 12 + i, duration - 5 + i, 110, 0)}%) skewX(-12deg)`,
+          }}
+        />
+      ))}
     </AbsoluteFill>
   );
 };
