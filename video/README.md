@@ -1,8 +1,10 @@
 # GoPieMenu 功能与设置导览
 
-简体中文视频草稿，1920 × 1080 / 30 fps / 59 秒。主合成为 `GoPieMenu-Bilibili`。全片统一采用白色、浅灰、蓝色强调和深灰文字，对齐软件界面。Slate、Ocean、Obsidian 的深色仅出现在真实菜单预设中。
+简体中文视频草稿，1920 × 1080 / 30 fps / 41 秒。主合成为 `GoPieMenu-Bilibili`。全片统一采用白色、浅灰、蓝色强调和深灰文字，对齐软件界面。Slate、Ocean、Obsidian 的深色仅出现在真实菜单预设中。
 
 每个镜头只保留一个短标题与一个操作焦点，不叠加段落说明、步骤编号或重复标语。设置段裁切放大到具体控件，以游标和高亮引导；复合主题按时间拆成单独镜头。风格段只呈现当前预设名、放大的真实菜单和切换按钮。详细说明保留在旁白稿，不铺满画面。
+
+短字采用约 0.2 秒整体入场，标题位置跟随主角或操作控件：开场左右呼应、手势按拍切字、设置提示靠近高亮、风格名与菜单并置、结尾居中。短段落 1–2 秒完成一个动作，复杂设置保留辨识时间。
 
 ## 启动与验证
 
@@ -14,18 +16,18 @@
 
 | 场景 / WAV 文件名 | 时间     | 介绍                             |
 | ----------------- | -------- | -------------------------------- |
-| hook              | 0–4 秒   | 产品开场                         |
-| gesture           | 4–8 秒   | 默认按住、划过、松开             |
-| overview          | 8–13 秒  | 切换、新建、管理菜单             |
-| actions           | 13–19 秒 | Add action 与右侧动作设置        |
-| arrange           | 19–22 秒 | Arrange actions 拖动排序         |
-| submenu           | 22–31 秒 | 分类、子动作与二级菜单编辑       |
-| trigger           | 31–36 秒 | 触发方式、快捷键、指定应用       |
-| style             | 36–44 秒 | Frost → Slate → Ocean → Obsidian |
-| settings          | 44–48 秒 | 开机启动、导入导出、自定义图标   |
-| apply             | 48–51 秒 | 预览、Apply、Discard             |
-| workflow          | 51–55 秒 | 返回绘图工作流                   |
-| outro             | 55–59 秒 | 项目入口                         |
+| hook              | 0–2 秒   | 产品开场                         |
+| gesture           | 2–5 秒   | 默认按住、划过、松开             |
+| overview          | 5–8 秒   | 切换、新建、管理菜单             |
+| actions           | 8–12 秒  | Add action 与右侧动作设置        |
+| arrange           | 12–14 秒 | Arrange actions 拖动排序         |
+| submenu           | 14–20 秒 | 分类、子动作与二级菜单编辑       |
+| trigger           | 20–24 秒 | 触发方式、快捷键、指定应用       |
+| style             | 24–30 秒 | Frost → Slate → Ocean → Obsidian |
+| settings          | 30–33 秒 | 开机启动、导入导出、自定义图标   |
+| apply             | 33–35 秒 | 预览、Apply、Discard             |
+| workflow          | 35–38 秒 | 返回绘图工作流                   |
+| outro             | 38–41 秒 | 项目入口                         |
 
 旁白与时长的单一来源为 `src/timeline.ts`，主合成、独立场景和配音起点自动从这里生成。组件映射在 `src/sceneRegistry.ts`。GPT-SoVITS 生成的 PCM WAV 放入 `public/voice/<场景名>.wav`，缺失文件保持静音。音频必须短于对应场景，建议留 0.5 秒余量；实际配音完成后再调整节奏和字幕。独立场景不包含旁白。
 
@@ -41,6 +43,6 @@
 
 ## 发布文案草稿
 
-标题：给鼠标装一个快捷菜单！一分钟上手 GoPieMenu
+标题：给鼠标装一个快捷菜单！快速上手 GoPieMenu
 
-简介：从新建菜单、添加动作，到二级菜单、触发键与应用匹配，再到 Frost、Slate、Ocean、Obsidian 四种外观预设。一分钟认识 GoPieMenu 的简单设置界面。Windows 开源项目，下载和说明：https://github.com/RyuuMeow/GoPieMenu 。绘图软件仅为使用场景示例。
+简介：从新建菜单、添加动作，到二级菜单、触发键与应用匹配，再到 Frost、Slate、Ocean、Obsidian 四种外观预设。快速认识 GoPieMenu 的简单设置界面。Windows 开源项目，下载和说明：https://github.com/RyuuMeow/GoPieMenu 。绘图软件仅为使用场景示例。

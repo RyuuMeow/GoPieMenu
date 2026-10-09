@@ -1,16 +1,17 @@
+import { FocalText } from "./FocalText";
 import { Img, staticFile, useCurrentFrame } from "remotion";
-import { Cursor, MotionStage, Ring, Words, pop, snap } from "./motion";
+import { Cursor, MotionStage, Ring, pop, snap } from "./motion";
 
 // Runtime behavior follows PieMenuWidget: hover a folder, then release on a row.
 export const Submenu = () => {
-  const f = useCurrentFrame();
+  const f = useCurrentFrame() * 1.5;
   const expanded = f >= 48;
   const selected = f >= 100;
   const executed = f >= 130;
   const editor = f >= 160;
   return (
     <MotionStage>
-      <Words
+      <FocalText
         text={
           editor
             ? "双击编辑"
@@ -20,9 +21,10 @@ export const Submenu = () => {
                 ? "再选动作"
                 : "打开分类"
         }
-        top={155}
+        x={editor ? 960 : expanded ? 1330 : 740}
+        y={editor ? 255 : expanded ? 345 : 255}
         size={86}
-        delay={editor ? 160 : executed ? 130 : expanded ? 48 : 0}
+        delay={(editor ? 160 : executed ? 130 : expanded ? 48 : 0) / 1.5}
       />
       {!editor && (
         <>

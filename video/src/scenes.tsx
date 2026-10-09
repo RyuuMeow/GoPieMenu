@@ -1,5 +1,6 @@
+import { FocalText } from "./FocalText";
 import { AnimatedImage, Img, staticFile, useCurrentFrame } from "remotion";
-import { Cursor, MotionStage, Ring, Words, pop, snap } from "./motion";
+import { Cursor, MotionStage, Ring, pop, snap } from "./motion";
 const note = {
   position: "absolute" as const,
   left: 96,
@@ -12,59 +13,60 @@ export const Hook = () => {
   const f = useCurrentFrame();
   return (
     <MotionStage>
-      <Words text="就在手边" top={230} size={96} />
+      <FocalText text="就在手边" x={680} y={535} size={140} />
       <div
         style={{
           transformOrigin: "1310px 620px",
-          scale: snap(f, 75, 119, 1, 1.12),
+          scale: snap(f, 30, 59, 1, 1.12),
         }}
       >
         <Ring
           x={1320}
           y={600}
           size={590}
-          active={Math.min(3, Math.floor(f / 30))}
+          active={f < 24 ? -1 : 0}
         />
       </div>
-      <Cursor x={snap(f, 20, 65, 1550, 1310)} y={snap(f, 20, 65, 800, 410)} />
+      <Cursor x={snap(f, 8, 30, 1550, 1310)} y={snap(f, 8, 30, 800, 410)} />
       <div style={{ ...note, top: 830, fontSize: 24 }}>动效示意</div>
     </MotionStage>
   );
 };
 export const Gesture = () => {
   const f = useCurrentFrame();
-  const phase = Math.min(2, Math.floor(f / 40));
+  const phase = Math.min(2, Math.floor(f / 30));
   return (
     <MotionStage>
-      <Words
-        text={["按住。", "划过去。", "松开，执行。"][phase]}
-        top={240}
+      <FocalText
+        text={["按住", "划过", "执行"][phase]}
+        x={phase === 2 ? 960 : 625}
+        y={540}
         size={104}
-        delay={phase * 40}
+        delay={phase * 30}
       />
       <div
         style={{
-          opacity: snap(f, 85, 98, 1, 0),
+          opacity: snap(f, 60, 70, 1, 0),
           transformOrigin: "1300px 560px",
-          scale: snap(f, 85, 100, 1, 1.2),
+          scale: snap(f, 60, 72, 1, 1.2),
         }}
       >
         <Ring x={1300} y={560} size={640} active={phase ? 0 : -1} />
       </div>
       <Cursor
-        x={snap(f, 28, 62, 1430, 1300)}
-        y={snap(f, 28, 62, 720, 355)}
-        click={f > 85}
+        x={snap(f, 22, 48, 1430, 1300)}
+        y={snap(f, 22, 48, 720, 355)}
+        click={f > 60}
       />
       {phase === 2 && (
         <div
           style={{
             position: "absolute",
-            left: 1100,
+            left: 1190,
             top: 480,
             fontSize: 70,
             color: "#507fcf",
-            scale: pop(f, 84),
+            scale: pop(f, 62),
           }}
         >
           ✓
@@ -78,7 +80,6 @@ export const Gesture = () => {
 };
 export const Workflow = () => (
   <MotionStage>
-    <Words text="回到创作" top={150} size={86} />
     <div
       style={{
         position: "absolute",
@@ -99,7 +100,8 @@ export const Workflow = () => (
         playbackRate={1.6}
       />
     </div>
-    <div style={{ ...note, top: 860, fontSize: 22 }}>
+    <FocalText text="回到创作" x={960} y={860} size={86} badge />
+    <div style={{ ...note, top: 1020, fontSize: 22 }}>
       实际操作 GIF · 加速演示
     </div>
   </MotionStage>
@@ -135,7 +137,7 @@ export const Outro = () => {
           scale: pop(f),
         }}
       />
-      <Words text="GoPieMenu" top={410} left={370} size={108} delay={7} />
+      <FocalText text="GoPieMenu" x={960} y={470} size={130} delay={7} />
       <div
         style={{
           position: "absolute",
@@ -151,7 +153,7 @@ export const Outro = () => {
       <div
         style={{
           position: "absolute",
-          left: 450,
+          left: 390,
           top: 745,
           width: 1140,
           padding: "25px 0",

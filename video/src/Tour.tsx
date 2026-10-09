@@ -1,5 +1,6 @@
+import { FocalText } from "./FocalText";
 import { Img, staticFile, useCurrentFrame } from "remotion";
-import { Cursor, MotionStage, Words, snap } from "./motion";
+import { Cursor, MotionStage, snap } from "./motion";
 
 type Focus = { x: number; y: number; w: number; h: number };
 // One headline and one cropped interface target per shot.
@@ -29,12 +30,11 @@ const Guide = ({
   const cy = y + (focus.y + focus.h * 0.65) * zoom;
   return (
     <MotionStage>
-      <Words text={title} top={130} size={88} delay={delay} />
       <div
         style={{
           position: "absolute",
           left: 240,
-          top: 270,
+          top: 200,
           width: 1440,
           height: 720,
           overflow: "hidden",
@@ -73,6 +73,17 @@ const Guide = ({
           y={snap(f, 8, 27, cy + 55, cy)}
         />
       </div>
+      <FocalText
+        text={title}
+        x={Math.max(
+          460,
+          Math.min(1460, 240 + x + (focus.x + focus.w / 2) * zoom),
+        )}
+        y={Math.max(115, 200 + y + focus.y * zoom - 75)}
+        size={70}
+        delay={delay}
+        badge
+      />
     </MotionStage>
   );
 };
@@ -85,7 +96,7 @@ export const Overview = () => (
 );
 export const Actions = () => {
   const f = useCurrentFrame();
-  return f < 90 ? (
+  return f < 60 ? (
     <Guide
       title="添加动作"
       asset="tour-add.png"
@@ -96,7 +107,7 @@ export const Actions = () => {
       title="设个快捷键"
       asset="submenu-editor.png"
       focus={{ x: 970, y: 304, w: 310, h: 94 }}
-      delay={90}
+      delay={60}
     />
   );
 };
@@ -111,14 +122,14 @@ export const Trigger = () => {
   const f = useCurrentFrame();
   return (
     <Guide
-      title={f < 75 ? "设置触发键" : "指定应用"}
+      title={f < 60 ? "设置触发键" : "指定应用"}
       asset="tour-trigger.png"
       focus={
-        f < 75
+        f < 60
           ? { x: 976, y: 492, w: 305, h: 66 }
           : { x: 976, y: 617, w: 305, h: 122 }
       }
-      delay={f < 75 ? 0 : 75}
+      delay={f < 60 ? 0 : 60}
     />
   );
 };
@@ -126,14 +137,14 @@ export const Settings = () => {
   const f = useCurrentFrame();
   return (
     <Guide
-      title={f < 60 ? "开机启动" : "导入 · 导出"}
+      title={f < 45 ? "开机启动" : "导入 · 导出"}
       asset="tour-settings.png"
       focus={
-        f < 60
+        f < 45
           ? { x: 446, y: 341, w: 290, h: 40 }
           : { x: 446, y: 396, w: 220, h: 57 }
       }
-      delay={f < 60 ? 0 : 60}
+      delay={f < 45 ? 0 : 45}
     />
   );
 };
@@ -147,16 +158,16 @@ export const Apply = () => (
 const presets = ["Frost", "Slate", "Ocean", "Obsidian"];
 export const Style = () => {
   const f = useCurrentFrame();
-  const index = Math.min(3, Math.floor(f / 60));
-  const local = f - index * 60;
+  const index = Math.min(3, Math.floor(f / 45));
+  const local = f - index * 45;
   return (
     <MotionStage>
-      <Words
+      <FocalText
         text={presets[index]}
-        top={160}
-        left={1130}
-        size={108}
-        delay={index * 60}
+        x={1400}
+        y={350}
+        size={112}
+        delay={index * 45}
       />
       <div
         style={{

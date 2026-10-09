@@ -265,13 +265,13 @@ export const Cut = ({
   duration: number;
 }) => {
   const f = useCurrentFrame();
-  const end = snap(f, duration - 8, duration - 1, 0, 1);
+  const end = snap(f, duration - 6, duration - 1, 0, 1);
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>
       <AbsoluteFill
         style={{
-          scale: snap(f, 0, 14, 1.24, 1) + end * 0.14,
-          rotate: `${snap(f, 0, 14, -2, 0) - end * 3}deg`,
+          scale: snap(f, 0, 8, 1.08, 1) + end * 0.04,
+          rotate: `${snap(f, 0, 8, -0.5, 0) - end}deg`,
           translate: `${-end * 260}px 0`,
           filter: `blur(${end * 9}px)`,
         }}
@@ -290,7 +290,7 @@ export const Cut = ({
             background: ["#dbe7f8", "#edf2fa", "#c5d7f2", "#edf2fa", "#dbe7f8"][
               i
             ],
-            transform: `translateX(${snap(f, duration - 12 + i, duration - 5 + i, 110, 0)}%) skewX(-12deg)`,
+            transform: `translateX(${snap(f, duration - 8 + i * 0.5, duration - 3 + i * 0.5, 110, 0)}%) skewX(-12deg)`,
           }}
         />
       ))}
