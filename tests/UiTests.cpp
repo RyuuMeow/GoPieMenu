@@ -42,6 +42,16 @@ private:
 
 class UiTests : public QObject {
     Q_OBJECT
+    static bool showEditor(SettingsWindow& editor) {
+        editor.show();
+        auto* window = editor.window();
+        if (!window) return false;
+        // Keep the logical test viewport stable when a CI desktop is scaled.
+        // Small-window behavior is exercised explicitly at 800 x 520 below.
+        window->resize(1160, 760);
+        return QTest::qWaitForWindowExposed(window) &&
+            QTest::qWaitFor([&] { return window->size() == QSize(1160, 760); });
+    }
     static QQuickItem* visibleItem(QQuickItem* root, const QString& value, const char* property = "objectName") {
         if (root->isVisible() && root->property(property).toString() == value) return root;
         for (auto* child : root->childItems()) if (auto* result = visibleItem(child, value, property)) return result;
@@ -54,7 +64,9 @@ class UiTests : public QObject {
         QTest::qWait(30); // Let a newly loaded inspector/menu finish its layout before pointer input.
         auto* item = find(window, name, property);
         if (!item) return false;
-        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, item->mapToScene(QPointF(item->width()/2, item->height()/2)).toPoint());
+        const auto point = item->mapToScene(QPointF(item->width()/2, item->height()/2)).toPoint();
+        if (!QRect(QPoint(), window->size()).contains(point)) return false;
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point);
         QCoreApplication::processEvents();
         return true;
     }
@@ -76,7 +88,7 @@ private slots:
         auto other = initial.Profiles[0]; other.Id = "other-menu"; other.Name = "Other menu";
         initial.Profiles.push_back(other); QVERIFY(config.Commit(initial));
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session(); const auto first = session->profileId();
         const auto originalStyle = session->effectiveStyle().ToJson();
         auto* arrange = find(w, "arrangeButton"); QVERIFY(arrange);
@@ -125,7 +137,7 @@ private slots:
     void actionContextMenusAndPersistentHint() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session(); auto* canvas = w->findChild<PiePreviewItem*>("pieCanvas"); QVERIFY(canvas);
         auto* menu = w->findChild<QObject*>("actionContextMenu"); QVERIFY(menu);
         const auto original = session->items()[0].toMap()["id"].toString();
@@ -168,7 +180,7 @@ private slots:
     void githubLinkAndTrayMenu() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         QVERIFY(click(w, "applicationSettingsButton"));
         auto* github = find(w, "projectGithubButton"); QVERIFY(github);
         auto* githubIcon = github->findChild<QQuickItem*>("buttonIcon"); QVERIFY(githubIcon); QVERIFY(!githubIcon->childItems().isEmpty());
@@ -209,7 +221,7 @@ private slots:
         SettingsWindow editor(&config, &icons);
         editor.setPlatformIntegrationEnabled(false);
         QVERIFY(editor.window());
-        editor.show();
+        QVERIFY(showEditor(editor));
         qInfo() << "Editor window" << editor.window()->geometry() << editor.window()->isVisible() << editor.window()->visibility();
         QVERIFY(QTest::qWaitForWindowExposed(editor.window()));
         auto* canvas = editor.window()->findChild<PiePreviewItem*>("pieCanvas");
@@ -242,7 +254,7 @@ private slots:
     void shortcutIconsSubmenusAndApply() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        QVERIFY(editor.window()); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(editor.window()));
+        QVERIFY(editor.window()); QVERIFY(showEditor(editor));
         auto* w = editor.window(); auto* session = editor.session();
         QVERIFY(click(w, "profileSelector"));
         QTRY_VERIFY(find(w, "New Pie Menu", "text"));
@@ -323,7 +335,7 @@ private slots:
     void menuLifecycleAndStableControls() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session();
         const auto first = session->profileId();
         auto* apply = find(w, "applyButton"); QVERIFY(apply); QVERIFY(!apply->isEnabled());
@@ -365,7 +377,7 @@ private slots:
     void renameKeepsPreviewGeometry() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session();
         session->selectItem(session->items()[1].toMap()["id"].toString());
         auto* canvas = w->findChild<PiePreviewItem*>("pieCanvas"); QVERIFY(canvas);
@@ -393,7 +405,7 @@ private slots:
     void dragRowsToBothBoundariesAndCancel() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session();
         const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
         QStringList ids;
@@ -437,7 +449,7 @@ private slots:
     void dragAutoscrollKeepsGestureAlive() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session();
         const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
         QString first;
@@ -456,7 +468,7 @@ private slots:
     void mouseModifiersAndKeyboardRecordingKeepMode() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session();
         QVERIFY(click(w, "triggerSummaryButton"));
         QVERIFY(click(w, "modifierWin")); QVERIFY(click(w, "modifierShift"));
@@ -493,7 +505,7 @@ private slots:
 
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         auto* session = editor.session();
         session->selectItem(session->items()[0].toMap()["id"].toString());
         QVERIFY(click(w, "itemAdvancedButton"));
@@ -536,7 +548,7 @@ private slots:
     void unifiedExitDialogAndWindowControls() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
-        auto* w = editor.window(); QVERIFY(w); editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+        auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         QVERIFY(w->flags() & Qt::FramelessWindowHint);
         const auto normalSize = w->size();
         QVERIFY(click(w, "windowMaximizeButton")); QTRY_VERIFY(editor.maximized());
@@ -619,7 +631,7 @@ private slots:
             icons.invalidate();
             SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
             auto* w = editor.window(); QVERIFY(w);
-            editor.show(); QVERIFY(QTest::qWaitForWindowExposed(w));
+            QVERIFY(showEditor(editor));
             editor.session()->selectItem(editor.session()->items()[0].toMap()["id"].toString());
             QTest::qWait(20);
             auto* picker = w->findChild<QObject*>("iconPicker"); QVERIFY(picker);
