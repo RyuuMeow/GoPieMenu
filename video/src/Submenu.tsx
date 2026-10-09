@@ -10,29 +10,15 @@ export const Submenu = () => {
   const editor = f >= 160;
   return (
     <MotionStage>
-      <div
-        style={{
-          position: "absolute",
-          left: 70,
-          top: 100,
-          fontSize: 320,
-          fontWeight: 900,
-          color: "#507fcf",
-          opacity: 0.055,
-          letterSpacing: -20,
-        }}
-      >
-        LEVEL 02
-      </div>
       <Words
         text={
           editor
-            ? "双击子菜单，继续编辑。"
+            ? "双击编辑"
             : executed
-              ? "松开，执行。"
+              ? "松开执行"
               : expanded
-                ? "一层分类，再选动作。"
-                : "一个扇形，还能装更多。"
+                ? "再选动作"
+                : "打开分类"
         }
         top={155}
         size={86}
@@ -138,36 +124,6 @@ export const Submenu = () => {
               </div>
             </>
           )}
-          <div
-            style={{
-              position: "absolute",
-              left: 110,
-              bottom: 140,
-              display: "flex",
-              gap: 20,
-              fontSize: 28,
-            }}
-          >
-            {["01  移向分类", "02  进入列表", "03  松开执行"].map((s, i) => (
-              <div
-                key={s}
-                style={{
-                  padding: "16px 25px",
-                  borderRadius: 12,
-                  background:
-                    i === (executed ? 2 : expanded ? 1 : 0)
-                      ? "#507fcf"
-                      : "#e8eef8",
-                  color:
-                    i === (executed ? 2 : expanded ? 1 : 0)
-                      ? "white"
-                      : "#64758b",
-                }}
-              >
-                {s}
-              </div>
-            ))}
-          </div>
         </>
       )}
       {editor && (
@@ -175,10 +131,10 @@ export const Submenu = () => {
           <div
             style={{
               position: "absolute",
-              left: 640,
+              left: 300,
               top: 335,
-              width: 1160,
-              height: 580,
+              width: 1320,
+              height: 640,
               overflow: "hidden",
               borderRadius: 22,
               boxShadow: "0 30px 100px #355b8520",
@@ -194,27 +150,11 @@ export const Submenu = () => {
                     : "assets/submenu-editor.png",
               )}
               style={{
-                width: 1160,
+                width: 1320,
                 transform: `scale(${snap(f, 225, 265, 1, 1.12)})`,
                 transformOrigin: "65% 45%",
               }}
             />
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              left: 100,
-              top: 425,
-              fontSize: 44,
-              lineHeight: 1.7,
-              color: "#64758b",
-            }}
-          >
-            主菜单负责分类。
-            <br />
-            子菜单收纳动作。
-            <br />
-            <span style={{ color: "#507fcf" }}>两层，就够顺手。</span>
           </div>
         </>
       )}
@@ -227,9 +167,7 @@ export const Submenu = () => {
           color: "#64758b",
         }}
       >
-        {editor
-          ? "真实编辑器截图 · 镜头推近"
-          : "二级菜单操作示意 · 默认按住模式"}
+        {editor ? "界面截图" : "操作示意"}
       </div>
     </MotionStage>
   );

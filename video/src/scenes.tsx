@@ -12,12 +12,7 @@ export const Hook = () => {
   const f = useCurrentFrame();
   return (
     <MotionStage>
-      <Words text="常用操作，就在手边。" top={230} size={96} />
-      <div style={note}>
-        GoPieMenu
-        <br />
-        一分钟，设置你的快捷菜单。
-      </div>
+      <Words text="就在手边" top={230} size={96} />
       <div
         style={{
           transformOrigin: "1310px 620px",
@@ -32,9 +27,7 @@ export const Hook = () => {
         />
       </div>
       <Cursor x={snap(f, 20, 65, 1550, 1310)} y={snap(f, 20, 65, 800, 410)} />
-      <div style={{ ...note, top: 830, fontSize: 24 }}>
-        Windows · 开源 · 菜单动效示意
-      </div>
+      <div style={{ ...note, top: 830, fontSize: 24 }}>动效示意</div>
     </MotionStage>
   );
 };
@@ -49,11 +42,6 @@ export const Gesture = () => {
         size={104}
         delay={phase * 40}
       />
-      <div style={note}>
-        默认 Ctrl + 鼠标右键
-        <br />
-        也可以设置自己的触发键。
-      </div>
       <div
         style={{
           opacity: snap(f, 85, 98, 1, 0),
@@ -79,29 +67,24 @@ export const Gesture = () => {
             scale: pop(f, 84),
           }}
         >
-          ✓ 执行动作
+          ✓
         </div>
       )}
       <div style={{ ...note, top: 850, fontSize: 24 }}>
-        默认按住模式示意 · Escape 取消
+        Ctrl + 右键 · 操作示意
       </div>
     </MotionStage>
   );
 };
 export const Workflow = () => (
   <MotionStage>
-    <Words text="设置好，回到创作。" top={150} size={86} />
-    <div style={{ ...note, top: 430 }}>
-      图层、工具、快捷键。
-      <br />
-      常用操作围着你转。
-    </div>
+    <Words text="回到创作" top={150} size={86} />
     <div
       style={{
         position: "absolute",
-        left: 770,
+        left: 390,
         top: 280,
-        width: 1020,
+        width: 1140,
         height: 680,
         overflow: "hidden",
         borderRadius: 24,
@@ -110,8 +93,8 @@ export const Workflow = () => (
     >
       <AnimatedImage
         src={staticFile("assets/drawing-demo.gif")}
-        width={1020}
-        height={784}
+        width={1140}
+        height={876}
         fit="cover"
         playbackRate={1.6}
       />
@@ -152,13 +135,7 @@ export const Outro = () => {
           scale: pop(f),
         }}
       />
-      <Words
-        text="让操作，跟上你的手。"
-        top={410}
-        left={370}
-        size={108}
-        delay={7}
-      />
+      <Words text="GoPieMenu" top={410} left={370} size={108} delay={7} />
       <div
         style={{
           position: "absolute",
@@ -169,14 +146,14 @@ export const Outro = () => {
           color: "#68788e",
         }}
       >
-        GoPieMenu / Windows 开源圆形快捷菜单
+        Windows 开源快捷菜单
       </div>
       <div
         style={{
           position: "absolute",
           left: 450,
           top: 745,
-          width: 1020,
+          width: 1140,
           padding: "25px 0",
           borderRadius: 14,
           background: "#507fcf",
@@ -198,7 +175,7 @@ export const Outro = () => {
           color: "#68788e",
         }}
       >
-        项目地址见简介 · 做一个属于你的菜单
+        项目地址见简介
       </div>
     </MotionStage>
   );

@@ -82,18 +82,6 @@ export const MotionStage = ({
           WINDOWS
         </span>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          right: 80,
-          top: 45,
-          fontSize: 18,
-          letterSpacing: 3,
-          opacity: 0.5,
-        }}
-      >
-        MAKE IT YOURS.
-      </div>
     </AbsoluteFill>
   );
 };
@@ -134,9 +122,9 @@ export const Words = ({
           key={i}
           style={{
             display: "inline-block",
-            opacity: snap(f, delay + i * 2, delay + i * 2 + 5, 0, 1),
-            translate: `0 ${snap(f, delay + i * 2, delay + i * 2 + 12, 80, 0)}px`,
-            rotate: `${snap(f, delay + i * 2, delay + i * 2 + 12, 8, 0)}deg`,
+            opacity: snap(f, delay, delay + 5, 0, 1),
+            translate: `0 ${snap(f, delay, delay + 10, 25, 0)}px`,
+            rotate: `${snap(f, delay, delay + 12, 8, 0)}deg`,
           }}
         >
           {c}
