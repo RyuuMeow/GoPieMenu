@@ -11,7 +11,7 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
         fps={30}
-        durationInFrames={1440}
+        durationInFrames={960}
       />
       <Folder name="Scenes">
         <Composition
@@ -20,7 +20,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           fps={30}
-          durationInFrames={180}
+          durationInFrames={120}
         />
         <Composition
           id="Gesture"
@@ -28,7 +28,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           fps={30}
-          durationInFrames={240}
+          durationInFrames={150}
         />
         <Composition
           id="Actions"
@@ -36,7 +36,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           fps={30}
-          durationInFrames={270}
+          durationInFrames={180}
         />
         <Composition
           id="Workflow"
@@ -44,7 +44,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           fps={30}
-          durationInFrames={270}
+          durationInFrames={180}
         />
         <Composition
           id="Style"
@@ -52,7 +52,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           fps={30}
-          durationInFrames={240}
+          durationInFrames={180}
         />
         <Composition
           id="Outro"
@@ -60,7 +60,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           fps={30}
-          durationInFrames={240}
+          durationInFrames={150}
         />
       </Folder>
     </>

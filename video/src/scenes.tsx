@@ -1,443 +1,585 @@
 import {
   AnimatedImage,
   Img,
-  Interactive,
   interpolate,
   staticFile,
   useCurrentFrame,
 } from "remotion";
-import { clamp, ease, Heading, Picture, Pill, Reveal, Stage } from "./visuals";
+import { clamp, Cursor, MotionStage, pop, Ring, snap, Words } from "./motion";
 
 export const Hook = () => {
-  const frame = useCurrentFrame();
+  const f = useCurrentFrame();
   return (
-    <Stage>
-      <Reveal style={{ position: "absolute", left: 96, top: 285, zIndex: 2 }}>
-        <div
-          style={{
-            fontSize: 24,
-            letterSpacing: 5,
-            color: "#477ddd",
-            marginBottom: 28,
-          }}
-        >
-          把常用操作，带到手边
-        </div>
-        <Interactive.H1
-          name="开场标题"
-          style={{
-            fontSize: 102,
-            lineHeight: 1.18,
-            letterSpacing: -5,
-            margin: 0,
-          }}
-        >
-          让操作，
-          <br />
-          跟上灵感。
-        </Interactive.H1>
-        <div style={{ fontSize: 32, color: "#61718a", marginTop: 35 }}>
-          一个圆形菜单，接住你的工作流。
-        </div>
-      </Reveal>
-      <Interactive.Div
-        name="真实操作画面"
+    <MotionStage>
+      <div
         style={{
           position: "absolute",
-          left: 805,
-          top: 193,
-          width: 1060,
-          height: 680,
-          borderRadius: 30,
-          overflow: "hidden",
-          boxShadow: "0 38px 100px #25466b30",
-          scale: interpolate(frame, [0, 180], [1.02, 1.08], {
-            extrapolateRight: "clamp",
-          }),
+          inset: 0,
+          opacity: 0.38,
+          scale: 1.25 + f * 0.001,
+          filter: "blur(2px)",
         }}
       >
-        <Img
-          src={staticFile("assets/drawing.png")}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "62% center",
-          }}
+        <AnimatedImage
+          src={staticFile("assets/drawing-demo.gif")}
+          width={1920}
+          height={1475}
+          fit="cover"
+          playbackRate={2}
         />
-      </Interactive.Div>
-      <Reveal delay={32} style={{ position: "absolute", left: 100, top: 775 }}>
-        <Pill>Ctrl ＋ 鼠标右键</Pill>
-      </Reveal>
-    </Stage>
-  );
-};
-
-// An explicitly labelled motion diagram explains the gesture; actual UI is shown in the other scenes.
-export const Gesture = () => {
-  const frame = useCurrentFrame();
-  const phase = frame < 75 ? 0 : frame < 155 ? 1 : 2;
-  const cursorX = interpolate(
-    frame,
-    [35, 65, 95, 125],
-    [1350, 1310, 1310, 1310],
-    clamp,
-  );
-  const cursorY = interpolate(frame, [35, 65, 95, 125], [695, 550, 550, 375], {
-    ...clamp,
-    easing: ease,
-  });
-  return (
-    <Stage>
-      <Heading eyebrow="01 / 随手调用">按住。移向。松开。</Heading>
-      <div style={{ position: "absolute", left: 98, top: 430, width: 680 }}>
-        {["按住 Ctrl + 鼠标右键", "移向需要的动作", "松开，执行"].map(
-          (text, i) => (
-            <div
-              key={text}
-              style={{
-                display: "flex",
-                gap: 28,
-                alignItems: "center",
-                marginBottom: 28,
-                opacity: phase === i ? 1 : 0.38,
-                color: phase === i ? "#477ddd" : "#152845",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 23,
-                  border: "1px solid currentColor",
-                  borderRadius: "50%",
-                  width: 56,
-                  height: 56,
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                0{i + 1}
-              </div>
-              <div style={{ fontSize: 37, fontWeight: 600 }}>{text}</div>
-            </div>
-          ),
-        )}
-        <div style={{ fontSize: 24, color: "#61718a", marginTop: 48 }}>
-          默认按住模式 · Escape 取消
-        </div>
       </div>
       <div
         style={{
           position: "absolute",
-          left: 1030,
-          top: 278,
-          opacity:
-            phase === 2
-              ? interpolate(frame, [155, 173], [1, 0], clamp)
-              : interpolate(frame, [25, 50], [0, 1], clamp),
+          inset: 0,
+          background: "linear-gradient(90deg,#09172aec,transparent)",
+        }}
+      />
+      <Words
+        text={f < 42 ? "还在找菜单？" : "直接，叫到手边。"}
+        top={190}
+        size={110}
+        delay={f < 42 ? 0 : 42}
+      />
+      <div
+        style={{
+          scale: interpolate(f, [0, 10, 83, 108], [0.7, 1, 1, 1.4], clamp),
+          transformOrigin: "1250px 590px",
         }}
       >
-        <svg width="560" height="560" viewBox="0 0 560 560">
-          {[0, 90, 180, 270].map((angle, i) => (
-            <path
-              key={angle}
-              transform={`rotate(${angle} 280 280)`}
-              d="M 101 92 A 260 260 0 0 1 459 92 L 342 216 A 90 90 0 0 0 218 216 Z"
-              fill={phase === 1 && i === 0 ? "#5489e6" : "#e1e8f3"}
-              stroke="#a6bad7"
-              strokeWidth="2"
-            />
-          ))}
-          <text
-            x="280"
-            y="123"
-            textAnchor="middle"
-            fontSize="34"
-            fill={phase === 1 ? "white" : "#294363"}
-          >
-            应用
-          </text>
-          <text
-            x="447"
-            y="292"
-            textAnchor="middle"
-            fontSize="34"
-            fill="#294363"
-          >
-            网址
-          </text>
-          <text
-            x="280"
-            y="463"
-            textAnchor="middle"
-            fontSize="34"
-            fill="#294363"
-          >
-            文件
-          </text>
-          <text
-            x="110"
-            y="292"
-            textAnchor="middle"
-            fontSize="30"
-            fill="#294363"
-          >
-            快捷键
-          </text>
-        </svg>
+        <Ring
+          x={1250}
+          y={585}
+          size={590}
+          active={f < 47 ? 0 : f < 74 ? 3 : 2}
+          delay={9}
+        />
       </div>
-      <svg
-        width="55"
-        height="65"
+      <Cursor
+        x={interpolate(
+          f,
+          [0, 30, 49, 72, 96],
+          [1550, 1250, 1010, 1250, 1250],
+          clamp,
+        )}
+        y={interpolate(
+          f,
+          [0, 30, 49, 72, 96],
+          [820, 400, 585, 805, 805],
+          clamp,
+        )}
+        click={f > 70}
+      />
+      <div
         style={{
           position: "absolute",
-          left: cursorX,
-          top: cursorY,
-          opacity: phase === 2 ? 0 : 1,
-          filter: "drop-shadow(0 4px 6px #0003)",
+          left: 95,
+          top: 520,
+          fontSize: 40,
+          lineHeight: 1.8,
+          color: "#c1d8ff",
         }}
       >
-        <path
-          d="M5 3 L7 48 L20 36 L30 58 L39 53 L28 32 L47 29 Z"
-          fill="#fff"
-          stroke="#264f86"
-          strokeWidth="3"
-        />
-      </svg>
+        快捷键、应用、文件
+        <br />
+        一个动作，触手可及。
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 95,
+          top: 805,
+          padding: "16px 30px",
+          background: "#5798ff",
+          borderRadius: 10,
+          fontSize: 31,
+          scale: pop(f, 30),
+        }}
+      >
+        Ctrl + 鼠标右键
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          right: 110,
+          bottom: 75,
+          fontSize: 21,
+          color: "#bfd0e9",
+        }}
+      >
+        菜单动效示意 / 背景为实际操作
+      </div>
+    </MotionStage>
+  );
+};
+
+export const Gesture = () => {
+  const f = useCurrentFrame();
+  const phase = f < 45 ? 0 : f < 90 ? 1 : 2;
+  const words = ["按住。", "划过去。", "松开，执行。"];
+  return (
+    <MotionStage light>
+      <div
+        style={{
+          position: "absolute",
+          left: 80,
+          top: 145,
+          fontSize: 330,
+          fontWeight: 900,
+          opacity: 0.055,
+          lineHeight: 1,
+        }}
+      >
+        0{phase + 1}
+      </div>
+      <Words
+        key={phase}
+        text={words[phase]}
+        top={270}
+        size={116}
+        delay={phase * 45}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 96,
+          top: 485,
+          fontSize: 33,
+          color: "#587294",
+        }}
+      >
+        Ctrl + 右键 · 默认按住模式
+      </div>
+      <div
+        style={{
+          opacity: snap(f, 90, 103, 1, 0),
+          scale: 1 + snap(f, 90, 105, 0, 0.2),
+          transformOrigin: "1280px 520px",
+        }}
+      >
+        <Ring x={1290} y={535} size={690} active={phase === 0 ? -1 : 0} />
+      </div>
+      <Cursor
+        x={snap(f, 30, 65, 1490, 1290)}
+        y={snap(f, 30, 65, 720, 318)}
+        click={f < 28 || f > 92}
+      />
       {phase === 2 && (
-        <Reveal
+        <div
           style={{
             position: "absolute",
-            left: 1090,
-            top: 455,
-            fontSize: 70,
+            left: 1060,
+            top: 350,
+            fontSize: 80,
             color: "#477ddd",
+            scale: pop(f, 94),
+            background: "white",
+            padding: "45px 55px",
+            borderRadius: 24,
+            boxShadow: "0 22px 65px #29466c20",
           }}
         >
-          ✓ 执行动作
-        </Reveal>
+          ✓ 已调用
+        </div>
       )}
       <div
         style={{
           position: "absolute",
-          left: 1160,
-          top: 866,
-          fontSize: 21,
-          color: "#8491a5",
+          left: 95,
+          bottom: 145,
+          display: "flex",
+          gap: 20,
         }}
       >
-        操作示意 · 菜单内容可自定义
+        {["按住", "移向", "松开"].map((t, i) => (
+          <div
+            key={t}
+            style={{
+              padding: "14px 30px",
+              fontSize: 27,
+              background: i === phase ? "#477ddd" : "#dce5f3",
+              color: i === phase ? "white" : "#7a8da9",
+              borderRadius: 40,
+            }}
+          >
+            {t}
+          </div>
+        ))}
       </div>
-    </Stage>
+      <div
+        style={{
+          position: "absolute",
+          right: 100,
+          bottom: 85,
+          fontSize: 22,
+          color: "#7a8da9",
+        }}
+      >
+        操作示意 · Escape 取消
+      </div>
+    </MotionStage>
   );
 };
 
 export const Actions = () => {
-  const frame = useCurrentFrame();
+  const f = useCurrentFrame();
+  const shot = f < 72 ? 0 : f < 126 ? 1 : 2;
+  const scale =
+    shot === 0
+      ? snap(f, 0, 18, 0.7, 1)
+      : shot === 1
+        ? snap(f, 72, 85, 1, 1.48)
+        : snap(f, 126, 138, 1.48, 1.1);
   return (
-    <Stage>
-      <Heading eyebrow="02 / 自定义动作">常用操作，一个圈。</Heading>
-      <Reveal
-        delay={10}
+    <MotionStage light>
+      <div
         style={{
           position: "absolute",
-          left: 96,
-          top: 394,
-          display: "flex",
-          flexDirection: "column",
-          gap: 23,
+          left: 250,
+          top: 175,
+          width: 1400,
+          height: 917,
+          scale,
+          transformOrigin: shot === 1 ? "88% 38%" : "70% 10%",
+          translate: `${shot === 1 ? -140 : 0}px ${shot === 2 ? 80 : 0}px`,
+          boxShadow: "0 25px 100px #29466c30",
+          borderRadius: 20,
+          overflow: "hidden",
         }}
       >
-        {[
-          "⌘   录制快捷键",
-          "↗   启动应用程序",
-          "▱   打开文件 / 网址",
-          ">_   执行指令",
-        ].map((t) => (
-          <Pill key={t}>{t}</Pill>
+        <Img src={staticFile("assets/editor.png")} style={{ width: "100%" }} />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 340,
+          background: "linear-gradient(#edf2fb 65%,transparent)",
+        }}
+      />
+      <Words
+        text={
+          [
+            "把操作，装进一个圈。",
+            "点选。改名。设动作。",
+            "Apply，让设置生效。",
+          ][shot]
+        }
+        top={128}
+        size={88}
+        delay={shot === 0 ? 0 : shot === 1 ? 72 : 126}
+      />
+      {shot === 0 &&
+        ["快捷键", "应用", "文件 / 网址", "指令"].map((t, i) => (
+          <div
+            key={t}
+            style={{
+              position: "absolute",
+              left: 100 + i * 440,
+              top: 865,
+              background: "#13284d",
+              color: "white",
+              fontSize: 34,
+              padding: "22px 30px",
+              borderRadius: 12,
+              translate: `0 ${snap(f, i * 9, i * 9 + 16, 220, 0)}px`,
+              rotate: `${snap(f, i * 9, i * 9 + 16, -12, 0)}deg`,
+            }}
+          >
+            {t}
+          </div>
         ))}
-        <div style={{ fontSize: 28, color: "#61718a", marginTop: 14 }}>
-          点击扇区编辑，Apply 后生效。
-        </div>
-      </Reveal>
-      <Picture
-        src="editor.png"
-        style={{
-          left: 700,
-          top: 272,
-          width: 1125,
-          height: 737,
-          scale: interpolate(frame, [0, 270], [0.96, 1], clamp),
-          transformOrigin: "top right",
-        }}
-      />
-    </Stage>
-  );
-};
-
-export const Workflow = () => (
-  <Stage dark>
-    <Reveal style={{ position: "absolute", left: 96, top: 160 }}>
-      <div
-        style={{
-          fontSize: 23,
-          color: "#a9c9ff",
-          letterSpacing: 4,
-          marginBottom: 18,
-        }}
-      >
-        03 / 应用专属菜单
-      </div>
-      <Interactive.H1
-        name="工作流标题"
-        style={{ fontSize: 75, lineHeight: 1.2, letterSpacing: -3, margin: 0 }}
-      >
-        让工具，围绕你的工作。
-      </Interactive.H1>
-    </Reveal>
-    <div
-      style={{
-        position: "absolute",
-        left: 96,
-        top: 358,
-        borderRadius: 20,
-        overflow: "hidden",
-        boxShadow: "0 24px 90px #0005",
-      }}
-    >
-      <AnimatedImage
-        src={staticFile("assets/drawing-demo.gif")}
-        width={780}
-        height={599}
-        fit="contain"
-      />
-    </div>
-    <Reveal delay={18} style={{ position: "absolute", left: 1010, top: 414 }}>
-      <div style={{ color: "#a9c9ff", fontSize: 26, marginBottom: 27 }}>
-        绘画工作流 / 实际操作片段
-      </div>
-      <div style={{ fontSize: 58, lineHeight: 1.5, fontWeight: 650 }}>
-        图层、工具、快捷键
-        <br />
-        就在鼠标身边。
-      </div>
-      <div
-        style={{
-          fontSize: 30,
-          color: "#bed0e6",
-          lineHeight: 1.7,
-          marginTop: 33,
-        }}
-      >
-        按应用设置菜单范围
-        <br />
-        专属配置优先于全局配置
-      </div>
-    </Reveal>
-  </Stage>
-);
-
-export const Style = () => {
-  const frame = useCurrentFrame();
-  return (
-    <Stage>
-      <Heading eyebrow="04 / 独立外观">你的菜单，你的风格。</Heading>
-      <Picture
-        src="colors.png"
-        style={{ left: 760, top: 287, width: 1050, height: 688 }}
-      />
-      <Reveal delay={10} style={{ position: "absolute", left: 96, top: 439 }}>
-        <div style={{ fontSize: 43, fontWeight: 650, lineHeight: 1.7 }}>
-          颜色 / 透明度 / 尺寸
-        </div>
+      {shot === 1 && (
         <div
           style={{
-            fontSize: 30,
-            color: "#61718a",
-            marginTop: 22,
-            lineHeight: 1.7,
+            position: "absolute",
+            left: 1015,
+            top: 310,
+            width: 545,
+            height: 405,
+            border: "5px solid #478aff",
+            borderRadius: 16,
+            opacity: Math.min(1, (f - 72) / 8),
           }}
-        >
-          每个菜单独立设置
-          <br />
-          复制之后，也能各有风格。
-        </div>
-        <div style={{ display: "flex", gap: 23, marginTop: 60 }}>
-          {["#5485d0", "#68a991", "#c392ce", "#dcab73"].map((color, i) => (
-            <div
-              key={color}
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                background: color,
-                scale: interpolate(frame, [18 + i * 7, 35 + i * 7], [0, 1], {
-                  ...clamp,
-                  easing: ease,
-                }),
-                boxShadow: "0 8px 24px #2342",
-              }}
-            />
-          ))}
-        </div>
-      </Reveal>
-    </Stage>
+        />
+      )}
+      {shot === 2 && (
+        <Cursor
+          x={snap(f, 126, 149, 1100, 1510)}
+          y={snap(f, 126, 149, 600, 350)}
+          click={f > 149}
+        />
+      )}
+      <div
+        style={{
+          position: "absolute",
+          right: 80,
+          bottom: 45,
+          fontSize: 20,
+          color: "#61718a",
+          background: "#edf2fbdc",
+          padding: 10,
+        }}
+      >
+        真实界面截图 / 镜头与指针为演示标注
+      </div>
+    </MotionStage>
   );
 };
 
-export const Outro = () => (
-  <Stage dark>
-    <Reveal
-      style={{
-        position: "absolute",
-        inset: "215px 96px auto",
-        textAlign: "center",
-      }}
-    >
+export const Workflow = () => {
+  const f = useCurrentFrame();
+  const beat = Math.min(2, Math.floor(f / 60));
+  return (
+    <MotionStage>
+      <div
+        style={{
+          position: "absolute",
+          left: 370,
+          top: -150,
+          scale: 1.15 + beat * 0.08,
+          translate: `${-beat * 85}px ${beat * 35}px`,
+          transformOrigin: "center",
+        }}
+      >
+        <AnimatedImage
+          src={staticFile("assets/drawing-demo.gif")}
+          width={1350}
+          height={1037}
+          playbackRate={1.8}
+          fit="contain"
+        />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(90deg,#0a1528 2%,#0a1528ed 24%,transparent 70%),linear-gradient(0deg,#0a1528,transparent 45%)",
+        }}
+      />
+      <Words
+        text={["图层。", "工具。", "专属工作流。"][beat]}
+        top={270}
+        size={118}
+        delay={beat * 60}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 95,
+          top: 460,
+          fontSize: 35,
+          color: "#a8caff",
+          lineHeight: 1.7,
+        }}
+      >
+        手不必离开画面。
+        <br />
+        常用操作就在旁边。
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 95,
+          bottom: 160,
+          fontSize: 31,
+          background: "#356fd6",
+          padding: "16px 28px",
+          borderRadius: 10,
+          translate: `${snap(f, 65, 80, -700, 0)}px 0`,
+        }}
+      >
+        按应用匹配专属菜单
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          right: 90,
+          bottom: 85,
+          fontSize: 22,
+          color: "#b8c9e6",
+        }}
+      >
+        实际操作素材 · 加速演示
+      </div>
+    </MotionStage>
+  );
+};
+
+export const Style = () => {
+  const f = useCurrentFrame();
+  const index = Math.min(3, Math.floor(f / 40));
+  const colors = ["#5798ff", "#56bca2", "#bb83df", "#f0a650"];
+  return (
+    <MotionStage>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse at 70% 50%,${colors[index]}38,transparent 65%)`,
+        }}
+      />
+      <Words
+        text={
+          ["换个配色。", "换个心情。", "每个菜单，", "都能有自己的风格。"][
+            index
+          ]
+        }
+        top={185}
+        size={index === 3 ? 84 : 104}
+        delay={index * 40}
+      />
+      <div
+        style={{
+          rotate: `${snap(f % 40, 0, 15, -10, 0)}deg`,
+          scale: 0.92 + Math.sin(f / 17) * 0.035,
+          transformOrigin: "1260px 570px",
+        }}
+      >
+        <Ring x={1260} y={575} size={620} tint={colors[index]} active={index} />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 95,
+          top: 410,
+          width: 615,
+          height: 385,
+          overflow: "hidden",
+          borderRadius: 18,
+          rotate: "-3deg",
+          boxShadow: "0 30px 80px #0005",
+        }}
+      >
+        <Img
+          src={staticFile("assets/colors.png")}
+          style={{ position: "absolute", width: 1100, left: -255, top: -95 }}
+        />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 110,
+          top: 850,
+          display: "flex",
+          gap: 28,
+        }}
+      >
+        {colors.map((c, i) => (
+          <div
+            key={c}
+            style={{
+              width: 70,
+              height: 70,
+              borderRadius: "50%",
+              background: c,
+              scale: i === index ? 1.3 : 1,
+              border: i === index ? "4px solid white" : "4px solid transparent",
+            }}
+          />
+        ))}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          right: 150,
+          bottom: 85,
+          fontSize: 22,
+          color: "#aac1df",
+        }}
+      >
+        配色动效示意 · 各菜单外观独立设置
+      </div>
+    </MotionStage>
+  );
+};
+
+export const Outro = () => {
+  const f = useCurrentFrame();
+  return (
+    <MotionStage>
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: 960 - (250 + i * 100),
+            top: 460 - (250 + i * 100),
+            width: 500 + i * 200,
+            height: 500 + i * 200,
+            border: "1px solid #75a5ff",
+            borderRadius: "50%",
+            scale: snap(f, i * 6, 90, 0, 2),
+            opacity: snap(f, i * 6, 110, 0.4, 0),
+          }}
+        />
+      ))}
       <Img
         src={staticFile("assets/logo.png")}
         style={{
-          width: 140,
-          height: 140,
-          objectFit: "contain",
-          marginBottom: 25,
+          position: "absolute",
+          left: 875,
+          top: 190,
+          width: 170,
+          height: 170,
+          scale: pop(f),
+          rotate: `${snap(f, 0, 23, -100, 0)}deg`,
         }}
       />
-      <Interactive.H1
-        name="片尾标题"
-        style={{ fontSize: 99, lineHeight: 1.25, letterSpacing: -4, margin: 0 }}
-      >
-        少一点寻找，多一点专注。
-      </Interactive.H1>
-      <div style={{ fontSize: 34, color: "#bfd0e7", marginTop: 35 }}>
-        GoPieMenu · Windows 开源圆形快捷菜单
-      </div>
-    </Reveal>
-    <Reveal
-      delay={30}
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: 725,
-        textAlign: "center",
-      }}
-    >
+      <Words
+        text="让操作，跟上你的手。"
+        top={425}
+        left={370}
+        size={108}
+        delay={8}
+      />
       <div
         style={{
-          display: "inline-block",
-          background: "#edf4ff",
-          color: "#19385d",
+          position: "absolute",
+          top: 600,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontSize: 36,
+          color: "#accbff",
+          opacity: snap(f, 25, 34, 0, 1),
+        }}
+      >
+        GoPieMenu / Windows 开源圆形快捷菜单
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          top: 760,
+          left: 455,
+          width: 1010,
+          textAlign: "center",
+          fontSize: 38,
+          padding: "22px 0",
+          background: "#5c96fc",
           borderRadius: 15,
-          padding: "21px 38px",
-          fontSize: 35,
-          fontWeight: 600,
+          scale: pop(f, 40),
         }}
       >
         github.com/RyuuMeow/GoPieMenu
       </div>
-      <div style={{ fontSize: 25, color: "#bfd0e7", marginTop: 24 }}>
-        下载与项目地址，见视频简介。
+      <div
+        style={{
+          position: "absolute",
+          top: 875,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontSize: 25,
+          color: "#9bb7df",
+          opacity: snap(f, 45, 55, 0, 1),
+        }}
+      >
+        项目地址见简介 · 做一个属于你的菜单
       </div>
-    </Reveal>
-  </Stage>
-);
+    </MotionStage>
+  );
+};
