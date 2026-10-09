@@ -168,7 +168,7 @@ ApplicationWindow {
                     Item { Layout.fillWidth: true }
                     AppButton {
                         objectName: "arrangeButton"
-                        iconName: "list.svg"; hint: "Arrange actions"; checked: root.listVisible
+                        iconName: "layers.svg"; hint: "Arrange actions"; checked: root.listVisible
                         onClicked: root.listVisible = !root.listVisible
                     }
                     AppButton {
