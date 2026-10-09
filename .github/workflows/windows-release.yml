@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - name: Validate release tag and notes
@@ -31,7 +31,7 @@ jobs:
           arch: win64_msvc2022_64
       - name: Build and test core and QML at four DPI scales
         shell: pwsh
-        run: ./scripts/build.ps1
+        run: ./scripts/build.ps1 -QtRoot $env:Qt6_DIR
       - name: Upload test results and UI screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -44,7 +44,7 @@ jobs:
             build/artifacts/*.txt
       - name: Package installer and verify deployed startup
         shell: pwsh
-        run: ./scripts/package.ps1
+        run: ./scripts/package.ps1 -QtRoot $env:Qt6_DIR
       - uses: actions/upload-artifact@v4
         with:
           name: windows-package
