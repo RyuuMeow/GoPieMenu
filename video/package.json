@@ -26,6 +26,7 @@
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc",
-    "format": "prettier --write src README.md package.json"
+    "format": "prettier --write src README.md package.json",
+    "render:en": "remotion render src/index.ts GoPieMenu-English out/gopiemenu-english.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p"
   }
 }

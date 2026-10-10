@@ -1,3 +1,4 @@
+import { Copy } from "./Language";
 import { useCurrentFrame } from "remotion";
 import { FocalText } from "./FocalText";
 import { Cursor, pop, snap } from "./motion";
@@ -32,7 +33,7 @@ export const Overview = () => {
                   background: i === 1 && f >= 30 ? "#e6eefb" : "white",
                 }}
               >
-                {t}
+                <Copy>{t}</Copy>
               </div>
             ))}
           </div>
@@ -96,7 +97,9 @@ export const Actions = () => {
               translate: `0 ${snap(f, 27, 38, 35, 0)}px`,
             }}
           >
-            <div style={{ ...field, marginTop: 24 }}>新图层</div>
+            <div style={{ ...field, marginTop: 24 }}>
+              <Copy>新图层</Copy>
+            </div>
             <div
               style={{ fontSize: 24, color: "#79889d", margin: "25px 0 15px" }}
             >
@@ -170,7 +173,7 @@ export const Arrange = () => {
               }}
             >
               <span style={{ marginRight: 32, color: "#8b97a8" }}>☰</span>
-              {t}
+              <Copy>{t}</Copy>
             </div>
           );
         })}

@@ -1,3 +1,4 @@
+import { Copy } from "./Language";
 import type { CSSProperties, ReactNode } from "react";
 import { interpolateColors, useCurrentFrame } from "remotion";
 import { MotionStage, snap } from "./motion";
@@ -29,7 +30,7 @@ export const DemoStage = ({ children }: { children: ReactNode }) => (
         color: "#8b97a8",
       }}
     >
-      操作示意
+      <Copy>操作示意</Copy>
     </div>
   </MotionStage>
 );
@@ -157,7 +158,7 @@ export const LivePie = ({
               fontSize="32"
               fill={active === i ? "white" : color("text")}
             >
-              {label}
+              <Copy>{label}</Copy>
             </text>
           </g>
         );

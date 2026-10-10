@@ -1,3 +1,4 @@
+import { Copy } from "./Language";
 import type { ReactNode } from "react";
 import {
   AbsoluteFill,
@@ -242,7 +243,7 @@ export const Ring = ({
               fill={active === i ? "white" : "#21385d"}
               transform={`rotate(${-a} 300 120)`}
             >
-              {labels[i]}
+              <Copy>{labels[i]}</Copy>
             </text>
           </g>
         ))}

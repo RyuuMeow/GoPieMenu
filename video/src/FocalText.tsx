@@ -1,3 +1,4 @@
+import { useCopy, useLanguage } from "./Language";
 import { useCurrentFrame } from "remotion";
 import { snap } from "./motion";
 
@@ -17,6 +18,9 @@ export const FocalText = ({
   delay?: number;
   badge?: boolean;
 }) => {
+  const copy = useCopy();
+  const english = useLanguage() === "en";
+  const title = copy(text);
   const frame = useCurrentFrame() - delay;
   return (
     <div
@@ -27,7 +31,9 @@ export const FocalText = ({
         zIndex: 12,
         transform: `translate(-50%, -50%) translateY(${snap(frame, 0, 6, 18, 0)}px) scale(${snap(frame, 0, 7, 0.92, 1)})`,
         opacity: snap(frame, 0, 4, 0, 1),
-        fontSize: size,
+        fontSize: english
+          ? Math.min(size, 105, 760 / Math.max(1, title.length * 0.53))
+          : size,
         fontWeight: 850,
         lineHeight: 1.1,
         letterSpacing: -2,
@@ -39,7 +45,7 @@ export const FocalText = ({
         boxShadow: badge ? "0 8px 32px #33547a14" : undefined,
       }}
     >
-      {text}
+      {title}
     </div>
   );
 };

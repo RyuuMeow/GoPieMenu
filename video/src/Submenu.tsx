@@ -1,3 +1,4 @@
+import { Copy } from "./Language";
 import { FocalText } from "./FocalText";
 import { useCurrentFrame } from "remotion";
 import { field, panel, Keycap } from "./DemoUI";
@@ -78,7 +79,9 @@ export const Submenu = () => {
                     translate: `${snap(f, 50 + i * 5, 70 + i * 5, 130, 0)}px 0`,
                   }}
                 >
-                  <span>{label}</span>
+                  <span>
+                    <Copy>{label}</Copy>
+                  </span>
                   <span style={{ fontSize: 25, opacity: 0.6 }}>
                     {["Ctrl+Shift+N", "", ""][i]}
                   </span>
@@ -123,7 +126,7 @@ export const Submenu = () => {
                   color: "#507fcf",
                 }}
               >
-                ✓ 新图层
+                <Copy>✓ 新图层</Copy>
               </div>
             </>
           )}
@@ -151,7 +154,7 @@ export const Submenu = () => {
                   color: i === 0 && f >= 190 ? "white" : "#253348",
                 }}
               >
-                {t}
+                <Copy>{t}</Copy>
               </div>
             ))}
           </div>
@@ -167,7 +170,9 @@ export const Submenu = () => {
                 opacity: snap(f, 190, 202, 0, 1),
               }}
             >
-              <div style={{ ...field }}>新图层</div>
+              <div style={{ ...field }}>
+                <Copy>新图层</Copy>
+              </div>
               <div style={{ fontSize: 26, color: "#79889d", margin: "25px 0" }}>
                 Shortcut
               </div>
@@ -190,7 +195,7 @@ export const Submenu = () => {
           color: "#64758b",
         }}
       >
-        操作示意
+        <Copy>操作示意</Copy>
       </div>
     </MotionStage>
   );

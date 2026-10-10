@@ -1,3 +1,4 @@
+import { useLanguage } from "./Language";
 import {
   AbsoluteFill,
   Audio,
@@ -11,12 +12,15 @@ import { sceneComponents } from "./sceneRegistry";
 import { Soundtrack } from "./Soundtrack";
 export const Promo = () => {
   const files = getStaticFiles();
+  const voiceFolder = useLanguage() === "en" ? "voice/en" : "voice";
   return (
     <AbsoluteFill>
       <Soundtrack
         voiceIds={scenes
           .filter((scene) =>
-            files.some((file) => file.name === `voice/${scene.id}.wav`),
+            files.some(
+              (file) => file.name === `${voiceFolder}/${scene.id}.wav`,
+            ),
           )
           .map((scene) => scene.id)}
       />
@@ -42,7 +46,7 @@ export const Promo = () => {
       </Series>
       {scenes.map((scene) => {
         const voice = files.find(
-          (file) => file.name === `voice/${scene.id}.wav`,
+          (file) => file.name === `${voiceFolder}/${scene.id}.wav`,
         );
         return voice ? (
           <Sequence

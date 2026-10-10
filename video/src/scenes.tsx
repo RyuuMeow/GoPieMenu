@@ -1,3 +1,4 @@
+import { Copy } from "./Language";
 import { FocalText } from "./FocalText";
 import { AnimatedImage, Img, staticFile, useCurrentFrame } from "remotion";
 import { Cursor, MotionStage, Ring, pop, snap } from "./motion";
@@ -23,7 +24,9 @@ export const Hook = () => {
         <Ring x={1320} y={600} size={590} active={f < 24 ? -1 : 0} />
       </div>
       <Cursor x={snap(f, 8, 30, 1550, 1310)} y={snap(f, 8, 30, 800, 410)} />
-      <div style={{ ...note, top: 830, fontSize: 24 }}>动效示意</div>
+      <div style={{ ...note, top: 830, fontSize: 24 }}>
+        <Copy>动效示意</Copy>
+      </div>
     </MotionStage>
   );
 };
@@ -68,7 +71,7 @@ export const Gesture = () => {
         </div>
       )}
       <div style={{ ...note, top: 850, fontSize: 24 }}>
-        Ctrl + 右键 · 操作示意
+        <Copy>Ctrl + 右键 · 操作示意</Copy>
       </div>
     </MotionStage>
   );
@@ -95,9 +98,13 @@ export const Workflow = () => (
         playbackRate={1}
       />
     </div>
-    <div style={{ ...note, left: 40, top: 70, fontSize: 32 }}>回到创作</div>
+    <div style={{ ...note, left: 40, top: 70, width: 200, fontSize: 32 }}>
+      <Copy>回到创作</Copy>
+    </div>
     <div style={{ ...note, left: 40, top: 980, fontSize: 20 }}>
-      实际操作 GIF<br />原速播放
+      <Copy>实际操作 GIF</Copy>
+      <br />
+      <Copy>原速播放</Copy>
     </div>
   </MotionStage>
 );
@@ -143,7 +150,7 @@ export const Outro = () => {
           color: "#68788e",
         }}
       >
-        Windows 开源快捷菜单
+        <Copy>Windows 开源快捷菜单</Copy>
       </div>
       <div
         style={{
@@ -172,7 +179,7 @@ export const Outro = () => {
           color: "#68788e",
         }}
       >
-        项目地址见简介
+        <Copy>项目地址见简介</Copy>
       </div>
     </MotionStage>
   );

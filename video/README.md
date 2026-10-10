@@ -10,7 +10,7 @@
 
 在 `video` 目录运行 `npm ci`，然后 `npm run dev -- --no-open --port=3001`。预览地址为 http://localhost:3001/GoPieMenu-Bilibili 。独立于其他 Remotion 示例项目。
 
-`npm run lint` 检查 ESLint 与 TypeScript；`npm run build` 验证 bundle；`npm run render` 输出 `out/gopiemenu-bilibili.mp4`（H.264）。目前交付为 Studio 草稿，未导出或发布。已加入背景配乐与操作音效；无配音与最终逐句字幕。
+`npm run lint` 检查 ESLint 与 TypeScript；`npm run build` 验证 bundle；`npm run render` 输出 `out/gopiemenu-bilibili.mp4`（H.264）。中文版保留 Studio 草稿；英文版提供本地 MP4，未发布至平台。已加入背景配乐与操作音效；无配音与最终逐句字幕。
 
 ## 配乐与音效
 
@@ -54,3 +54,9 @@
 标题：给鼠标装一个快捷菜单！快速上手 GoPieMenu
 
 简介：从新建菜单、添加动作，到二级菜单、触发键与应用匹配，再到 Frost、Slate、Ocean、Obsidian 四种外观预设。快速认识 GoPieMenu 的简单设置界面。Windows 开源项目，下载和说明：https://github.com/RyuuMeow/GoPieMenu 。绘图软件仅为使用场景示例。
+
+## English version
+
+`GoPieMenu-English` shares the 54-second animation, music, and full-speed drawing demo with the Chinese composition. Titles, illustrative menu labels, and captions are localized through `src/Language.tsx`. The original drawing recording retains its captured application UI. No narration is included; optional English narration belongs in `public/voice/en/<scene>.wav`, separate from Chinese audio.
+
+Preview: http://localhost:3001/GoPieMenu-English . Run `npm run render:en` to export `out/gopiemenu-english.mp4` (1080p, 30 fps, H.264).
