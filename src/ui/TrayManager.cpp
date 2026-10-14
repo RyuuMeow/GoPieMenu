@@ -50,9 +50,18 @@ void TrayManager::CreateTrayIcon()
     auto* LocalSettingsAction = TrayMenu->addAction(tr("Settings"));
     connect(LocalSettingsAction, &QAction::triggered, this, &TrayManager::SettingsRequested);
 
+    UpdateAction = TrayMenu->addAction(QString());
+    UpdateAction->setObjectName("trayUpdateAction");
+    UpdateAction->setVisible(false);
+    connect(UpdateAction, &QAction::triggered, this, &TrayManager::UpdateRequested);
+    connect(TrayIcon, &QSystemTrayIcon::messageClicked, this, [this] {
+        if (UpdateAction->isVisible()) emit UpdateRequested();
+    });
+
     TrayMenu->addSeparator();
 
     PauseAction = TrayMenu->addAction(tr("Pause"));
+    PauseAction->setObjectName("trayPauseAction");
     PauseAction->setCheckable(true);
     connect(PauseAction, &QAction::toggled, this, [this](bool bChecked) 
     {
@@ -75,6 +84,18 @@ void TrayManager::CreateTrayIcon()
 void TrayManager::Show()
 {
     TrayIcon->show();
+}
+
+void TrayManager::SetUpdateAvailable(const QString& version) {
+    UpdateAction->setText(tr("Update available: %1").arg(version));
+    UpdateAction->setVisible(!version.isEmpty());
+}
+
+void TrayManager::ShowUpdateNotification(const QString& version) {
+    SetUpdateAvailable(version);
+    TrayIcon->showMessage(tr("Update available"),
+        tr("GoPieMenu %1 is available. Click to view what's new.").arg(version),
+        QSystemTrayIcon::Information, 10000);
 }
 
 void TrayManager::OnTrayActivated(QSystemTrayIcon::ActivationReason Reason)

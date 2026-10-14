@@ -14,6 +14,7 @@
 #include <QIcon>
 #include <QTimer>
 #include <QStyleHints>
+#include <QSslSocket>
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -26,6 +27,7 @@ int main(int argc, char* argv[]) {
     app.styleHints()->setColorScheme(Qt::ColorScheme::Light);
     QQuickStyle::setStyle("Basic");
     const bool smokeTest = app.arguments().contains("--smoke-test");
+    if (smokeTest && !QSslSocket::supportsSsl()) return 1;
     const bool preview = smokeTest || app.arguments().contains("--preview");
     app.setQuitOnLastWindowClosed(preview);
     gpm::TranslationManager translations;
@@ -42,12 +44,21 @@ int main(int argc, char* argv[]) {
     executor.RegisterBuiltins();
     gpm::IconService icons;
     gpm::PieMenuWidget pie(&icons);
-    gpm::SettingsWindow editor(&config, &icons);
+    gpm::UpdateOptions updateOptions;
+    updateOptions.language = gpm::ResolveLanguage(config.GetConfig().Language);
+    std::unique_ptr<gpm::UpdateManager> updates;
+    if (!preview) updates = std::make_unique<gpm::UpdateManager>(updateOptions);
+    gpm::SettingsWindow editor(&config, &icons, nullptr, updates.get());
     editor.setPlatformIntegrationEnabled(!preview);
     editor.setPreviewMode(preview);
     if (!editor.window()) return 1;
     gpm::HookManager hooks(&config);
     gpm::TrayManager tray;
+    QObject::connect(&editor, &gpm::SettingsWindow::updateToastRequested, &tray, &gpm::TrayManager::ShowUpdateNotification);
+    QObject::connect(&tray, &gpm::TrayManager::UpdateRequested, &editor, &gpm::SettingsWindow::showUpdate);
+    if (updates) QObject::connect(updates.get(), &gpm::UpdateManager::changed, &tray, [&] {
+        tray.SetUpdateAvailable(updates->available() ? updates->version() : QString());
+    });
     QObject::connect(&hooks, &gpm::HookManager::Triggered, &pie, [&](const QString& id, const QPoint& pos) {
         if (hooks.IsSuspended()) return;
         if (const auto* profile = config.FindProfile(id)) pie.ShowAt(pos, *profile, config.GetConfig().GlobalStyle);
@@ -78,5 +89,6 @@ int main(int argc, char* argv[]) {
     if (preview || app.arguments().contains("--settings") || !QFileInfo::exists(config.GetConfigFilePath()) || !config.LoadError().isEmpty())
         editor.show();
     if (smokeTest) QTimer::singleShot(1000, &app, &QCoreApplication::quit);
+    if (updates) QTimer::singleShot(0, updates.get(), [&] { updates->check(); });
     return app.exec();
 }

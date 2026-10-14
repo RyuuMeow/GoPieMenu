@@ -27,7 +27,20 @@ ApplicationWindow {
     property bool compactMode: width < 1000
     property bool listVisible: false
     property string previousSelection: ""
-    readonly property bool dialogOpen: iconPicker.visible || colorPicker.visible || exitDialog.visible || runningApps.visible || settings.visible || about.visible
+    property bool pendingUpdate: false
+    readonly property bool dialogOpen: iconPicker.visible || colorPicker.visible || exitDialog.visible || runningApps.visible || settings.visible || about.visible || updateDialog.visible
+    function tryOpenUpdate() {
+        if (pendingUpdate && visible && !dialogOpen && !recorder.active && appController.updater && appController.updater.available) {
+            pendingUpdate = false
+            updateDialog.open()
+        }
+    }
+    onDialogOpenChanged: Qt.callLater(tryOpenUpdate)
+    onVisibleChanged: Qt.callLater(tryOpenUpdate)
+    Connections {
+        target: recorder
+        function onChanged() { Qt.callLater(root.tryOpenUpdate) }
+    }
     onClosing: function(event) {
         root.contentItem.forceActiveFocus()
         recorder.cancel()
@@ -273,11 +286,13 @@ ApplicationWindow {
     ColorPicker { id: colorPicker }
     ExitDialog { id: exitDialog }
     RunningAppsDialog { id: runningApps }
+    UpdateDialog { id: updateDialog }
     Connections {
         target: appController
         function onColorRequested(color) { colorPicker.begin(color) }
         function onConfirmExitRequested() { exitDialog.open() }
         function onRunningAppsRequested() { runningApps.open() }
+        function onUpdateDialogRequested() { root.pendingUpdate = true; Qt.callLater(root.tryOpenUpdate) }
     }
     WindowResizeHandles { anchors.fill: parent; targetWindow: root; z: 1000 }
     AppDialog {
@@ -305,6 +320,25 @@ ApplicationWindow {
             }
             Label { Layout.fillWidth: true; text: qsTr("Language changes take effect after restarting GoPieMenu."); color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap }
             AppCheckBox { text: qsTr("Start with Windows"); checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
+            AppButton {
+                objectName: "checkUpdatesButton"
+                visible: appController.updater !== null
+                enabled: appController.updater && !appController.updater.checking && !appController.updater.downloading && !appController.updater.ready
+                text: qsTr("Check for updates"); kind: "secondary"
+                onClicked: appController.updater.check(true)
+            }
+            AppButton {
+                objectName: "viewUpdateButton"
+                visible: appController.updater && appController.updater.available
+                text: qsTr("View available update")
+                onClicked: { settings.close(); appController.showUpdate() }
+            }
+            Label {
+                Layout.fillWidth: true
+                visible: appController.updater && appController.updater.status.length > 0
+                text: appController.updater ? appController.updater.status : ""
+                wrapMode: Text.WordWrap; color: T.muted; font.pixelSize: 12
+            }
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
             RowLayout {
                 AppButton { text: qsTr("Import"); iconName: "import.svg"; kind: "secondary"; onClicked: { settings.close(); appController.importConfig() } }

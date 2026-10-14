@@ -6,6 +6,7 @@
 #include "core/EditorSession.h"
 #include "icons/IconCatalog.h"
 #include "InputRecorder.h"
+#include "update/UpdateManager.h"
 
 namespace gpm {
 class SettingsWindow : public QObject {
@@ -16,14 +17,21 @@ class SettingsWindow : public QObject {
     Q_PROPERTY(QStringList recentColors READ recentColors NOTIFY recentColorsChanged)
     Q_PROPERTY(QStringList runningApplications READ runningApplications NOTIFY runningApplicationsChanged)
     Q_PROPERTY(bool maximized READ maximized NOTIFY windowStateChanged)
+    Q_PROPERTY(gpm::UpdateManager* updater READ updater CONSTANT)
 public:
-    explicit SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent = nullptr);
+    explicit SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent = nullptr, UpdateManager* updates = nullptr);
     ~SettingsWindow() override;
     void show();
     void raise();
     void activateWindow();
     Q_INVOKABLE void requestExit();
     Q_INVOKABLE bool resolveExit(const QString& choice);
+    Q_INVOKABLE void cancelExit();
+    Q_INVOKABLE void showUpdate();
+    Q_INVOKABLE void requestUpdateInstall();
+    Q_INVOKABLE void openReleasePage();
+    Q_INVOKABLE void openReleaseLink(const QUrl& url);
+    UpdateManager* updater() const { return Updates; }
     Q_INVOKABLE void toggleMaximized();
     bool maximized() const;
     QQuickWindow* window() const { return Window; }
@@ -57,11 +65,16 @@ signals:
     void recentColorsChanged();
     void runningApplicationsChanged();
     void windowStateChanged();
+    void updateDialogRequested();
+    void updateToastRequested(const QString& version);
 private:
+    void presentPendingUpdate();
+    bool finishExit();
     void addAppFilter(const QString& name);
     void installAutoStart();
     ConfigManager* Manager;
     IconService* Icons;
+    QPointer<UpdateManager> Updates;
     EditorSession Session;
     InputRecorder Recorder;
     IconCatalog Catalog;
@@ -70,6 +83,8 @@ private:
     bool PlatformIntegration = true;
     bool PreviewMode = false;
     bool FirstShow = true;
+    bool PendingUpdate = false;
+    bool InstallOnExit = false;
     QString ColorField, ColorProfile, ColorItem;
     QStringList RecentColors, Applications;
 };

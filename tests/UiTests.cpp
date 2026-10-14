@@ -18,6 +18,7 @@
 #include "ui/TrayManager.h"
 #include "core/ActionExecutor.h"
 #include "core/TranslationManager.h"
+#include "UpdateTestSupport.h"
 
 using namespace gpm;
 class UrlReceiver : public QObject {
@@ -83,6 +84,102 @@ private slots:
         for (auto* screen : QGuiApplication::screens()) qInfo() << "Screen" << screen->name() << screen->geometry() << screen->availableGeometry() << screen->devicePixelRatio();
     }
     void init() { QTest::failOnWarning(QRegularExpression(".*(qrc:/editor|QQml|Binding loop|ReferenceError|TypeError).*")); }
+    void hiddenUpdatesUseTrayAndReopenTheirNotes() {
+        QTemporaryDir dir; update_test::Network network; network.responses = {{update_test::Release()}};
+        UpdateManager updates(update_test::Options(dir.path()), &network);
+        ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
+        QSignalSpy toast(&editor, &SettingsWindow::updateToastRequested);
+        QSignalSpy dialog(&editor, &SettingsWindow::updateDialogRequested);
+        updates.check(); QTRY_COMPARE(toast.count(), 1); QCOMPARE(dialog.count(), 0);
+        QCOMPARE(toast[0][0].toString(), "2.1.0");
+        QVERIFY(showEditor(editor)); QTRY_COMPARE(dialog.count(), 1);
+        auto* popup = editor.window()->findChild<QObject*>("updateDialog"); QVERIFY(popup);
+        QTRY_VERIFY(popup->property("visible").toBool());
+        QVERIFY(click(editor.window(), "skipUpdateButton"));
+        QVERIFY(!updates.available()); QTRY_VERIFY(!popup->property("visible").toBool());
+        TrayManager tray;
+        auto* icon = tray.findChild<QSystemTrayIcon*>(); QVERIFY(icon);
+        auto* action = icon->contextMenu()->findChild<QAction*>("trayUpdateAction"); QVERIFY(action);
+        QVERIFY(!action->isVisible()); tray.SetUpdateAvailable("2.1.0"); QVERIFY(action->isVisible());
+        QSignalSpy clicked(&tray, &TrayManager::UpdateRequested);
+        action->trigger(); QCOMPARE(clicked.count(), 1);
+        QVERIFY(QMetaObject::invokeMethod(icon, "messageClicked")); QCOMPARE(clicked.count(), 2);
+        tray.SetUpdateAvailable({}); QVERIFY(QMetaObject::invokeMethod(icon, "messageClicked"));
+        QCOMPARE(clicked.count(), 2);
+    }
+    void visibleUpdatesWaitForDialogsAndUseTheInterfaceLanguage() {
+        for (const auto& language : {QString("en"), QString("zh-TW"), QString("zh-CN")}) {
+            TranslationManager translations; QVERIFY(translations.load(language));
+            QTemporaryDir dir; update_test::Network network; network.responses = {{update_test::Release()}};
+            UpdateManager updates(update_test::Options(dir.path(), language), &network);
+            ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+            SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
+            QVERIFY(showEditor(editor)); auto* w = editor.window();
+            QSignalSpy toast(&editor, &SettingsWindow::updateToastRequested);
+            QVERIFY(click(w, "applicationSettingsButton"));
+            updates.check(); QTRY_VERIFY(updates.available());
+            auto* popup = w->findChild<QObject*>("updateDialog"); QVERIFY(popup);
+            QVERIFY(!popup->property("visible").toBool()); QCOMPARE(toast.count(), 0);
+            QTest::keyClick(w, Qt::Key_Escape);
+            QTRY_VERIFY(popup->property("visible").toBool());
+            QCOMPARE(popup->property("title").toString(), QCoreApplication::translate("UpdateDialog", "Update available"));
+            auto* notes = find(w, "updateReleaseNotes"); QVERIFY(notes);
+            // TextArea canonicalizes Markdown paragraph spacing when exposing text.
+            QCOMPARE(notes->property("text").toString().simplified(), updates.notes().simplified());
+            QVERIFY(!updates.notes().contains("gpm:lang"));
+            w->resize(800, 520); QTRY_COMPARE(w->size(), QSize(800, 520));
+            QVERIFY(snapshot(w, "update-" + language));
+            QVERIFY(click(w, "skipUpdateButton")); QVERIFY(!updates.available());
+        }
+    }
+    void installingUpdatesProtectsDraftsAndHandlesCancellation() {
+        QTemporaryDir dir; update_test::Network network;
+        network.responses = {{update_test::Release()}, {update_test::Checksum()}, {update_test::Installer}};
+        auto options = update_test::Options(dir.path()); int launches = 0; bool allowInstall = false;
+        options.launchInstaller = [&](const QString&, QString* error) {
+            ++launches; if (!allowInstall) *error = "Simulated cancelled permission prompt"; return allowInstall;
+        };
+        UpdateManager updates(options, &network);
+        ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
+        QVERIFY(showEditor(editor)); auto* w = editor.window();
+        auto* session = editor.session(); session->setProfileField("name", "Draft name");
+        updates.check(); QTRY_VERIFY(updates.available());
+        QTRY_VERIFY(find(w, "downloadUpdateButton")); QVERIFY(click(w, "downloadUpdateButton"));
+        QTRY_VERIFY(updates.ready()); QCOMPARE(launches, 0);
+        QSignalSpy exits(&editor, &SettingsWindow::exitConfirmed);
+        QVERIFY(click(w, "installUpdateButton"));
+        QTRY_VERIFY(find(w, "exitCancelButton")); QVERIFY(click(w, "exitCancelButton"));
+        QTest::qWait(100); QCOMPARE(launches, 0); QCOMPARE(exits.count(), 0); QVERIFY(session->dirty());
+        // Cancelling installation must not turn a subsequent ordinary Quit into an install.
+        editor.requestExit(); QVERIFY(editor.resolveExit("discard")); QCOMPARE(launches, 0); QCOMPARE(exits.count(), 1);
+        auto* exitPopup = w->findChild<QObject*>("exitDialog"); QVERIFY(exitPopup);
+        QVERIFY(QMetaObject::invokeMethod(exitPopup, "close")); QTest::qWait(100);
+        exits.clear(); session->setProfileField("name", ""); // Applying this draft is invalid.
+        editor.showUpdate(); QTRY_VERIFY(find(w, "installUpdateButton")); QVERIFY(click(w, "installUpdateButton"));
+        QTRY_VERIFY(find(w, "exitApplyButton")); QVERIFY(click(w, "exitApplyButton"));
+        QCOMPARE(exits.count(), 0); QCOMPARE(launches, 0); QVERIFY(session->dirty());
+        session->setProfileField("name", "Saved name");
+        QVERIFY(click(w, "exitApplyButton")); QCOMPARE(exits.count(), 0); QCOMPARE(launches, 1);
+        QVERIFY(!session->dirty()); QVERIFY(updates.ready());
+        QVERIFY(click(w, "exitCancelButton")); QTest::qWait(100);
+        allowInstall = true; editor.showUpdate(); QTRY_VERIFY(find(w, "installUpdateButton"));
+        QVERIFY(click(w, "installUpdateButton")); QCOMPARE(exits.count(), 1); QCOMPARE(launches, 2);
+    }
+    void longReleaseNotesKeepUpdateActionsVisible() {
+        QTemporaryDir dir; update_test::Network network;
+        auto body = update_test::Notes;
+        body.replace("- English update.", QString("- A detailed release change with enough text to wrap in a compact window.\n").repeated(80));
+        network.responses = {{update_test::Release("v2.1.0", body)}};
+        UpdateManager updates(update_test::Options(dir.path()), &network);
+        ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
+        QVERIFY(showEditor(editor)); auto* w = editor.window(); w->resize(800, 520);
+        updates.check(); QTRY_VERIFY(find(w, "skipUpdateButton"));
+        QVERIFY(snapshot(w, "update-long-notes"));
+        QVERIFY(click(w, "skipUpdateButton")); QVERIFY(!updates.available());
+    }
     void chineseEditorsAndLanguageSelection() {
         for (const auto& language : {QString("zh-TW"), QString("zh-CN")}) {
             TranslationManager translations; QVERIFY(translations.load(language));
@@ -220,7 +317,8 @@ private slots:
         menu->popup(w->mapToGlobal(QPoint(100,160))); QTRY_VERIFY(menu->isVisible());
         menu->setActiveAction(menu->actions()[0]); QTest::qWait(30);
         QVERIFY(menu->grab().save("artifacts/tray-menu-" + QString::number(w->devicePixelRatio()) + ".png"));
-        QTest::mouseClick(menu, Qt::LeftButton, Qt::NoModifier, menu->actionGeometry(menu->actions()[2]).center());
+        auto* pauseAction = menu->findChild<QAction*>("trayPauseAction"); QVERIFY(pauseAction);
+        QTest::mouseClick(menu, Qt::LeftButton, Qt::NoModifier, menu->actionGeometry(pauseAction).center());
         QCOMPARE(pause.count(), 1); QVERIFY(pause[0][0].toBool());
         QVERIFY(!menu->isVisible());
     }
