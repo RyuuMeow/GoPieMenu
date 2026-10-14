@@ -1,6 +1,7 @@
 #include <QtTest>
 #include <QTemporaryDir>
 #include <QFile>
+#include <QRegularExpression>
 #include "UpdateTestSupport.h"
 
 using namespace gpm;
@@ -47,7 +48,12 @@ private slots:
     void extractsRealChangelogLanguageBlocks() {
         QFile file(QStringLiteral(GPM_SOURCE_DIR) + "/CHANGELOG.md"); QVERIFY(file.open(QIODevice::ReadOnly));
         const auto text = QString::fromUtf8(file.readAll());
-        const auto current = text.section("## [Unreleased]", 1, 1).section("## [2.0.0]", 0, 0);
+        const QRegularExpression section(
+            "^## \\[" + QRegularExpression::escape(QStringLiteral(APP_VERSION)) + "\\][^\\r\\n]*\\r?\\n(.*?)(?=^## \\[|\\z)",
+            QRegularExpression::MultilineOption | QRegularExpression::DotMatchesEverythingOption);
+        const auto match = section.match(text);
+        QVERIFY2(match.hasMatch(), "The application version must have release notes.");
+        const auto current = match.captured(1);
         for (const auto& language : {"en", "zh-TW", "zh-CN"}) {
             const auto notes = LocalizedReleaseNotes(current, language);
             QVERIFY(!notes.isEmpty()); QVERIFY(notes.contains("Validation")); QVERIFY(!notes.contains("gpm:lang"));
