@@ -4,7 +4,7 @@
 
 A customizable Windows radial menu for shortcuts, applications, files, websites, and commands.
 
-[Download v2.0.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.0.0) · [What's new and upgrading](CHANGELOG.md#200)
+[Download v2.1.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0) · [What's new and upgrading](CHANGELOG.md#210)
 
 ![Light editor](resources/demo/Editor2.png)
 
