@@ -181,24 +181,68 @@ private slots:
         QVERIFY(click(w, "skipUpdateButton")); QVERIFY(!updates.available());
     }
     void chineseEditorsAndLanguageSelection() {
+        const auto previousFont = QGuiApplication::font();
         for (const auto& language : {QString("zh-TW"), QString("zh-CN")}) {
             TranslationManager translations; QVERIFY(translations.load(language));
+            QGuiApplication::setFont(QFont(InterfaceFontFamily(language)));
             QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+            auto initial = config.GetConfig(); initial.Language = language; QVERIFY(config.Commit(initial));
             SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+            QCOMPARE(editor.fontFamily(), "Microsoft JhengHei UI");
             QVERIFY(showEditor(editor)); auto* w = editor.window();
             auto* apply = find(w, "applyButton"); QVERIFY(apply);
             QCOMPARE(apply->property("text").toString(), QCoreApplication::translate("Main", "Apply"));
             QVERIFY(apply->property("text").toString() != "Apply");
             QVERIFY(click(w, "applicationSettingsButton"));
             auto* combo = find(w, "languageCombo"); QVERIFY(combo);
-            QTRY_COMPARE(combo->property("currentValue").toString(), "system");
-            combo->setProperty("currentIndex", language == "zh-TW" ? 2 : 3);
+            QTRY_COMPARE(combo->property("currentValue").toString(), language);
+            combo->setProperty("currentIndex", 1);
             QVERIFY(QMetaObject::invokeMethod(combo, "activated", Q_ARG(int, combo->property("currentIndex").toInt())));
-            QCOMPARE(editor.session()->language(), language);
+            QCOMPARE(editor.session()->language(), "en");
             QVERIFY(editor.session()->dirty());
-            QCOMPARE(config.GetConfig().Language, "system");
-            QVERIFY(snapshot(w, "settings-" + language));
+            QCOMPARE(config.GetConfig().Language, language);
+            QTRY_VERIFY(find(w, "restartNowButton"));
+            QCOMPARE(find(w, "restartNowButton")->property("kind").toString(), "primary");
+            QVERIFY(snapshot(w, "restart-" + language));
+            QVERIFY(click(w, "restartLaterButton"));
+            QVERIFY(editor.session()->dirty());
+            QCOMPARE(config.GetConfig().Language, language);
         }
+        QGuiApplication::setFont(previousFont);
+    }
+    void languageRestartSavesBeforeLaunching() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        QSignalSpy exited(&editor, &SettingsWindow::exitConfirmed);
+        QVERIFY(editor.chooseLanguage("zh-TW"));
+        QVERIFY(!editor.chooseLanguage("zh-TW"));
+        int launches = 0;
+        editor.setRestartHandler([&] {
+            ++launches;
+            return config.GetConfig().Language == "zh-TW" && !editor.session()->dirty();
+        });
+        QVERIFY(editor.restartForLanguage());
+        QCOMPARE(launches, 1); QCOMPARE(exited.count(), 1);
+        ConfigManager saved(nullptr, dir.filePath("config.json"));
+        QCOMPARE(saved.GetConfig().Language, "zh-TW");
+        QVERIFY(editor.chooseLanguage("en"));
+        editor.setRestartHandler([] { return false; });
+        QVERIFY(!editor.restartForLanguage());
+        QCOMPARE(exited.count(), 1);
+        QCOMPARE(config.GetConfig().Language, "en");
+        QVERIFY(!editor.session()->error().isEmpty());
+    }
+    void languageRestartSaveFailureKeepsDraft() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.path()); IconService icons;
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        QSignalSpy exited(&editor, &SettingsWindow::exitConfirmed);
+        bool launched = false;
+        editor.setRestartHandler([&] { launched = true; return true; });
+        QVERIFY(editor.chooseLanguage("zh-TW"));
+        QVERIFY(!editor.restartForLanguage());
+        QVERIFY(!launched); QCOMPARE(exited.count(), 0);
+        QVERIFY(editor.session()->dirty());
+        QCOMPARE(config.GetConfig().Language, "system");
     }
     void appearanceFollowsTheSelectedProfile() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;

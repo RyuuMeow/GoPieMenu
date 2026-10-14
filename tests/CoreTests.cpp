@@ -16,6 +16,9 @@ class CoreTests : public QObject {
     Q_OBJECT
 private slots:
     void resolvesUiLanguage() {
+        QCOMPARE(InterfaceFontFamily("zh-TW"), "Microsoft JhengHei UI");
+        QCOMPARE(InterfaceFontFamily("zh-CN"), "Microsoft JhengHei UI");
+        QCOMPARE(InterfaceFontFamily("en"), "Segoe UI");
         QCOMPARE(ResolveLanguage("system", {"zh-TW"}), "zh_TW");
         QCOMPARE(ResolveLanguage("system", {"zh-HK"}), "zh_TW");
         QCOMPARE(ResolveLanguage("system", {"zh-Hant-MO"}), "zh_TW");

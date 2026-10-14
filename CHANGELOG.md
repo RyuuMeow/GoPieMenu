@@ -9,6 +9,9 @@ GoPieMenu now supports English, Traditional Chinese, and Simplified Chinese. New
 
 #### What's new
 
+- Chinese interfaces use Microsoft JhengHei UI. Changing language offers Later or a blue Restart button; Restart saves all pending edits first.
+- Manual launches show the editor, including when already running. Windows autostart stays in the tray.
+
 - GoPieMenu checks for stable releases automatically at startup. When an update is available, it shows a tray notification if the window is hidden or a dialog if the window is open.
 - Release notes appear in the current UI language, with English used when a translation is unavailable.
 - Skip a release to stop being notified about that version.
@@ -22,6 +25,9 @@ GoPieMenu now supports English, Traditional Chinese, and Simplified Chinese. New
 GoPieMenu 現在支援英文、繁體中文與簡體中文。新設定預設依照系統語言顯示，不支援的語言則使用英文。你也可以在「設定」中選擇語言，套用後重新啟動應用程式生效。選單編輯仍須明確按下「套用」，結束應用程式前也會處理尚未套用的變更。
 
 #### 新功能
+
+- 中文介面使用微軟正黑體 UI。切換語言會提供「稍後」與藍色「重新啟動」按鈕，重新啟動前會套用所有待存變更。
+- 手動開啟會顯示編輯器，已在背景執行時也會喚回；Windows 自動啟動則留在系統匣。
 
 - GoPieMenu 會在啟動時自動檢查穩定版更新。若有更新可用，視窗隱藏時會顯示系統匣通知；視窗開啟時則會顯示對話方塊。
 - 發行說明會以目前介面語言顯示；若缺少該語言的翻譯，則改用英文。
@@ -37,6 +43,9 @@ GoPieMenu 现在支持英语、繁体中文和简体中文。新配置默认跟�
 
 #### 新功能
 
+- 中文界面使用 Microsoft JhengHei UI。切换语言会提供“稍后”与蓝色“重新启动”按钮，重新启动前会应用所有待保存更改。
+- 手动打开会显示编辑器，已在后台运行时也会唤回；Windows 自动启动则留在系统托盘。
+
 - GoPieMenu 会在启动时自动检查稳定版更新。如果有可用更新，窗口隐藏时会显示系统托盘通知；窗口打开时则会显示对话框。
 - 发布说明会以当前界面语言显示；如果没有对应语言的翻译，则使用英语。
 - 可以跳过某个版本，之后不再收到该版本的通知。
@@ -49,7 +58,7 @@ GoPieMenu 现在支持英语、繁体中文和简体中文。新配置默认跟�
 
 The local Release build and all seven CTest entries passed, including core and update regression tests, release-note extraction, and UI tests at 100%, 125%, 150%, and 200% scaling. Deployed startup with the SDK removed from PATH, TLS backend loading, and installer packaging also passed.
 
-Update tests use simulated network responses and installer launches. Actual Windows notification delivery and an elevated installation remain manual acceptance checks.
+Language tests cover Later, save-before-restart, save failure, and launch failure at all four scales. A deployed process also passed the wait-for-parent restart check. Update tests use simulated network responses and installer launches. Actual Windows sign-in startup, notification delivery, and an elevated installation remain manual acceptance checks.
 
 <!-- gpm:endlang -->
 

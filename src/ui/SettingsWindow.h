@@ -3,6 +3,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QPointer>
+#include <functional>
 #include "core/EditorSession.h"
 #include "icons/IconCatalog.h"
 #include "InputRecorder.h"
@@ -13,6 +14,7 @@ class SettingsWindow : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString iconDirectory READ iconDirectory CONSTANT)
     Q_PROPERTY(QString version READ version CONSTANT)
+    Q_PROPERTY(QString fontFamily READ fontFamily CONSTANT)
     Q_PROPERTY(bool previewMode READ previewMode WRITE setPreviewMode NOTIFY previewModeChanged)
     Q_PROPERTY(QStringList recentColors READ recentColors NOTIFY recentColorsChanged)
     Q_PROPERTY(QStringList runningApplications READ runningApplications NOTIFY runningApplicationsChanged)
@@ -27,6 +29,10 @@ public:
     Q_INVOKABLE void requestExit();
     Q_INVOKABLE bool resolveExit(const QString& choice);
     Q_INVOKABLE void cancelExit();
+    Q_INVOKABLE bool chooseLanguage(const QString& language);
+    Q_INVOKABLE bool restartForLanguage();
+    void setRestartHandler(std::function<bool()> handler) { RestartHandler = std::move(handler); }
+    QString fontFamily() const { return FontFamily; }
     Q_INVOKABLE void showUpdate();
     Q_INVOKABLE void requestUpdateInstall();
     Q_INVOKABLE void openReleasePage();
@@ -37,6 +43,7 @@ public:
     QQuickWindow* window() const { return Window; }
     EditorSession* session() { return &Session; }
     void setPlatformIntegrationEnabled(bool enabled) { PlatformIntegration = enabled; }
+    void syncAutoStart() { installAutoStart(); }
     bool previewMode() const { return PreviewMode; }
     void setPreviewMode(bool enabled) { PreviewMode = enabled; emit previewModeChanged(); }
     QString iconDirectory() const { return Icons->directory(); }
@@ -85,6 +92,8 @@ private:
     bool FirstShow = true;
     bool PendingUpdate = false;
     bool InstallOnExit = false;
+    QString FontFamily;
+    std::function<bool()> RestartHandler;
     QString ColorField, ColorProfile, ColorItem;
     QStringList RecentColors, Applications;
 };

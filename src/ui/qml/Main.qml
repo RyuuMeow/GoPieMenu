@@ -13,7 +13,7 @@ ApplicationWindow {
     title: "GoPieMenu"
     flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowMinMaxButtonsHint
     color: T.background
-    font.family: "Segoe UI"
+    font.family: appController.fontFamily
     font.pixelSize: 14
     palette.window: T.background
     palette.base: T.surface
@@ -28,7 +28,7 @@ ApplicationWindow {
     property bool listVisible: false
     property string previousSelection: ""
     property bool pendingUpdate: false
-    readonly property bool dialogOpen: iconPicker.visible || colorPicker.visible || exitDialog.visible || runningApps.visible || settings.visible || about.visible || updateDialog.visible
+    readonly property bool dialogOpen: iconPicker.visible || colorPicker.visible || exitDialog.visible || runningApps.visible || settings.visible || about.visible || updateDialog.visible || restartDialog.visible
     function tryOpenUpdate() {
         if (pendingUpdate && visible && !dialogOpen && !recorder.active && appController.updater && appController.updater.available) {
             pendingUpdate = false
@@ -287,6 +287,7 @@ ApplicationWindow {
     ExitDialog { id: exitDialog }
     RunningAppsDialog { id: runningApps }
     UpdateDialog { id: updateDialog }
+    RestartDialog { id: restartDialog }
     Connections {
         target: appController
         function onColorRequested(color) { colorPicker.begin(color) }
@@ -315,7 +316,12 @@ ApplicationWindow {
                     {label: qsTr("简体中文"), value: "zh-CN"}
                 ]
                 selectionValue: editor.language
-                onActivated: editor.setLanguage(currentValue)
+                onActivated: {
+                    if (appController.chooseLanguage(currentValue)) {
+                        settings.close()
+                        restartDialog.open()
+                    }
+                }
                 Accessible.name: qsTr("Language")
             }
             Label { Layout.fillWidth: true; text: qsTr("Language changes take effect after restarting GoPieMenu."); color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap }

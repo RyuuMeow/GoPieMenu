@@ -15,6 +15,10 @@ QString ResolveLanguage(const QString& preference, const QStringList& systemLang
         ? QStringLiteral("zh_TW") : QStringLiteral("zh_CN");
 }
 TranslationManager::TranslationManager() { InitializeTranslations(); }
+QString InterfaceFontFamily(const QString& preference) {
+    return ResolveLanguage(preference).startsWith("zh_")
+        ? QStringLiteral("Microsoft JhengHei UI") : QStringLiteral("Segoe UI");
+}
 bool TranslationManager::load(const QString& preference) {
     QCoreApplication::removeTranslator(&Translator);
     const auto language = ResolveLanguage(preference);

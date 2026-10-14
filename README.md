@@ -8,7 +8,9 @@ A customizable Windows radial menu for shortcuts, applications, files, websites,
 
 ![Light editor](resources/demo/Editor2.png)
 
-The interface supports English, Traditional Chinese, and Simplified Chinese. New configurations follow the system UI language; unsupported languages use English. Settings → Language lets you override this. Apply the change and restart GoPieMenu. Existing configurations with an explicit language keep that choice. Your saved menu and action names are not retranslated.
+The interface supports English, Traditional Chinese, and Simplified Chinese. New configurations follow the system UI language; unsupported languages use English. Settings → Language offers **Later** or a blue **Restart** button. Restart applies all pending changes; Later keeps the draft for further editing. Chinese interfaces use Microsoft JhengHei UI. Existing configurations with an explicit language keep that choice. Your saved menu and action names are not retranslated.
+
+Opening GoPieMenu manually shows the editor, including when it is already running in the tray. Windows startup keeps it in the tray.
 
 ## Edit your menu
 

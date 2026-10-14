@@ -2,6 +2,7 @@
 #include "quick/PiePreviewItem.h"
 #include "quick/ColorWheelItem.h"
 #include "RunningApplications.h"
+#include "core/TranslationManager.h"
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QFileDialog>
@@ -26,6 +27,7 @@ namespace gpm {
 SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent, UpdateManager* updates)
     : QObject(parent), Manager(manager), Icons(icons), Updates(updates), Session(manager), Recorder(&Session), Catalog(icons) {
     InitializeEditorResources();
+    FontFamily = InterfaceFontFamily(manager->GetConfig().Language);
     QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Light);
     for (const auto& value : QSettings().value("editor/recentColors").toStringList()) {
         if (QColor(value).isValid() && !RecentColors.contains(value)) RecentColors.append(value);
@@ -127,6 +129,20 @@ bool SettingsWindow::resolveExit(const QString& choice) {
     return finishExit();
 }
 void SettingsWindow::cancelExit() { InstallOnExit = false; }
+bool SettingsWindow::chooseLanguage(const QString& language) {
+    const auto previous = Session.language();
+    Session.setLanguage(language);
+    return Session.language() != previous;
+}
+bool SettingsWindow::restartForLanguage() {
+    if (!Session.apply()) return false;
+    if (!RestartHandler || !RestartHandler()) {
+        Session.reportError(tr("Could not restart GoPieMenu. Your changes are saved; please reopen the app manually."));
+        return false;
+    }
+    emit exitConfirmed();
+    return true;
+}
 bool SettingsWindow::finishExit() {
     if (InstallOnExit && (!Updates || !Updates->launchInstaller())) {
         if (Updates) Session.reportError(Updates->error());
@@ -252,7 +268,7 @@ void SettingsWindow::installAutoStart() {
 #ifdef Q_OS_WIN
     QSettings registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if (Manager->GetConfig().bStartWithWindows)
-        registry.setValue("GoPieMenu", "\"" + QDir::toNativeSeparators(QCoreApplication::applicationFilePath()) + "\"");
+        registry.setValue("GoPieMenu", "\"" + QDir::toNativeSeparators(QCoreApplication::applicationFilePath()) + "\" --autostart");
     else registry.remove("GoPieMenu");
     registry.sync();
     if (registry.status() != QSettings::NoError) Session.reportError(tr("Settings were saved, but Windows startup could not be updated."));

@@ -1,5 +1,6 @@
 #include "MenuScene.h"
 #include <QFontMetricsF>
+#include <QGuiApplication>
 #include <algorithm>
 #include <cmath>
 #include <numbers>
@@ -72,7 +73,7 @@ void PieScene::build(const PieMenuConfig& config, const StyleConfig& globalStyle
     if (Config.Items.empty()) return;
     const auto span = 2 * Pi / Config.Items.size();
     const auto gap = std::min(Style.GapAngle * Pi / 180, span * .8);
-    QFont font(Style.FontFamily); font.setPointSizeF(Style.FontSize); font.setWeight(QFont::Medium);
+    QFont font(Style.FontFamily == "Segoe UI" ? QGuiApplication::font().family() : Style.FontFamily); font.setPointSizeF(Style.FontSize); font.setWeight(QFont::Medium);
     auto bold = font; bold.setWeight(QFont::DemiBold);
     for (int i = 0; i < Sectors.size(); ++i) {
         auto& sector = Sectors[i];
@@ -182,7 +183,7 @@ void ListScene::draw(QPainter& p, int first, int visibleRows, int hovered, qreal
     const QRectF bounds(QPointF(), size(visibleRows));
     p.setPen(QPen(Style.BorderColor, Style.BorderWidth)); p.setBrush(Style.BackgroundColor);
     p.drawRoundedRect(bounds, 10, 10);
-    QFont font(Style.FontFamily); font.setPointSizeF(Style.FontSize); font.setWeight(QFont::Medium);
+    QFont font(Style.FontFamily == "Segoe UI" ? QGuiApplication::font().family() : Style.FontFamily); font.setPointSizeF(Style.FontSize); font.setWeight(QFont::Medium);
     for (int row = 0; row < visibleRows; ++row) {
         const int index = first + row;
         if (index < 0 || index >= count()) break;
