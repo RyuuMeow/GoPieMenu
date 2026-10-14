@@ -15,7 +15,7 @@ RowLayout {
             compact: true
             checkable: true
             checked: (root.modifiers & modelData.bit) !== 0
-            Accessible.name: modelData.label + " modifier"
+            Accessible.name: qsTr("%1 modifier").arg(modelData.label)
             onClicked: root.edited(root.modifiers ^ modelData.bit)
         }
     }

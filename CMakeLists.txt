@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 include(CTest)
 option(GPM_BUILD_DESKTOP "Build the Windows desktop application" ON)
-find_package(Qt6 6.9 REQUIRED COMPONENTS Core Gui)
+find_package(Qt6 6.9 REQUIRED COMPONENTS Core Gui LinguistTools)
 
 add_library(gpm_core STATIC
     src/core/ConfigValidation.cpp
@@ -15,9 +15,22 @@ add_library(gpm_core STATIC
     src/core/EditorSession.cpp
     src/core/InputState.cpp
     src/core/Shortcut.cpp
+    src/core/TranslationManager.cpp
 )
 target_include_directories(gpm_core PUBLIC src)
 target_link_libraries(gpm_core PUBLIC Qt6::Core Qt6::Gui)
+
+set(GPM_TRANSLATIONS
+    resources/i18n/gopiemenu_zh_TW.ts
+    resources/i18n/gopiemenu_zh_CN.ts
+)
+qt_add_lrelease(TS_FILES ${GPM_TRANSLATIONS} QM_FILES_OUTPUT_VARIABLE GPM_QM_FILES)
+qt_add_resources(gpm_core "translations" PREFIX "/i18n"
+    BASE "${CMAKE_CURRENT_BINARY_DIR}" FILES ${GPM_QM_FILES})
+add_custom_target(update-translations
+    COMMAND Qt6::lupdate src -no-obsolete -ts ${GPM_TRANSLATIONS}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Update translation catalogs from C++ and QML sources")
 target_compile_definitions(gpm_core PUBLIC UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN APP_VERSION="${PROJECT_VERSION}")
 if(MSVC)
     target_compile_options(gpm_core PUBLIC /utf-8 /W4)

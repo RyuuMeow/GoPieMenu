@@ -1,4 +1,6 @@
+#include <QCoreApplication>
 #include "EditorSession.h"
+#include "TranslationManager.h"
 #include <QFileInfo>
 #include <QUrl>
 #include <algorithm>
@@ -15,13 +17,13 @@ void RenewIds(PieItem& item) {
 }
 QString ActionName(ActionType type) {
     switch (type) {
-    case ActionType::LaunchApp: return QStringLiteral("Open application");
-    case ActionType::SendHotkey: return QStringLiteral("Keyboard shortcut");
-    case ActionType::OpenFile: return QStringLiteral("Open file or folder");
-    case ActionType::OpenURL: return QStringLiteral("Open website");
-    case ActionType::RunCommand: return QStringLiteral("Run command");
-    case ActionType::ListMenu: return QStringLiteral("Submenu");
-    default: return QStringLiteral("Choose an action");
+    case ActionType::LaunchApp: return QCoreApplication::translate("EditorSession", "Open application");
+    case ActionType::SendHotkey: return QCoreApplication::translate("EditorSession", "Keyboard shortcut");
+    case ActionType::OpenFile: return QCoreApplication::translate("EditorSession", "Open file or folder");
+    case ActionType::OpenURL: return QCoreApplication::translate("EditorSession", "Open website");
+    case ActionType::RunCommand: return QCoreApplication::translate("EditorSession", "Run command");
+    case ActionType::ListMenu: return QCoreApplication::translate("EditorSession", "Submenu");
+    default: return QCoreApplication::translate("EditorSession", "Choose an action");
     }
 }
 QString DefaultIcon(ActionType type) {
@@ -37,7 +39,7 @@ QString DefaultIcon(ActionType type) {
 }
 }
 QString KeyDisplayName(uint32_t vkCode) {
-    if (!vkCode) return QStringLiteral("Not set");
+    if (!vkCode) return QCoreApplication::translate("EditorSession", "Not set");
 #ifdef Q_OS_WIN
     UINT scan = MapVirtualKeyW(vkCode, MAPVK_VK_TO_VSC);
     if (vkCode == VK_LEFT || vkCode == VK_RIGHT || vkCode == VK_UP || vkCode == VK_DOWN ||
@@ -46,10 +48,19 @@ QString KeyDisplayName(uint32_t vkCode) {
     wchar_t name[128]{};
     if (GetKeyNameTextW(LONG(scan << 16), name, 128)) return QString::fromWCharArray(name);
 #endif
-    return QStringLiteral("Key %1").arg(vkCode);
+    return QCoreApplication::translate("EditorSession", "Key %1").arg(vkCode);
 }
 QString TriggerDisplayName(const TriggerDef& trigger) {
-    QString key = trigger.Mode == ActivationMode::MouseHold ? MouseButtonToString(trigger.Button) + " mouse" : KeyDisplayName(trigger.VKCode);
+    QString mouse;
+    switch (trigger.Button) {
+    case MouseButton::Left: mouse = QCoreApplication::translate("EditorSession", "Left mouse"); break;
+    case MouseButton::Right: mouse = QCoreApplication::translate("EditorSession", "Right mouse"); break;
+    case MouseButton::Middle: mouse = QCoreApplication::translate("EditorSession", "Middle mouse"); break;
+    case MouseButton::X1: mouse = QCoreApplication::translate("EditorSession", "Side button 1 (X1)"); break;
+    case MouseButton::X2: mouse = QCoreApplication::translate("EditorSession", "Side button 2 (X2)"); break;
+    default: mouse = QCoreApplication::translate("EditorSession", "Not set"); break;
+    }
+    QString key = trigger.Mode == ActivationMode::MouseHold ? mouse : KeyDisplayName(trigger.VKCode);
     const auto mods = ModifierKeyToString(trigger.Modifiers);
     if (!mods.isEmpty()) key.prepend(mods + " + ");
     return key;
@@ -59,7 +70,7 @@ EditorSession::EditorSession(ConfigManager* manager, QObject* parent)
     : QObject(parent), Manager(manager), Draft(manager->GetConfig()), AppliedBytes(Draft.Serialize()) {
     normalizeSelection();
     if (!manager->LoadError().isEmpty())
-        Error = QStringLiteral("Your configuration could not be loaded. The original file has not been changed. ") + manager->LoadError();
+        Error = QCoreApplication::translate("EditorSession", "Your configuration could not be loaded. The original file has not been changed. ") + manager->LoadError();
 }
 const PieMenuConfig* EditorSession::currentProfile() const {
     auto it = std::ranges::find_if(Draft.Profiles, [&](const auto& p) { return p.Id == CurrentProfile; });
@@ -134,7 +145,7 @@ QVariantMap EditorSession::selectedItem() const {
     return {};
 }
 QVariantList EditorSession::destinations() const {
-    QVariantList result{QVariantMap{{"id", ""}, {"name", "Main menu"}}};
+    QVariantList result{QVariantMap{{"id", ""}, {"name", tr("Main menu")}}};
     if (const auto* p = currentProfile()) for (const auto& item : p->Items)
         if (item.Action == ActionType::ListMenu) result.append(QVariantMap{{"id", item.Id}, {"name", item.Name}});
     return result;
@@ -198,7 +209,7 @@ void EditorSession::leaveFolder() {
 void EditorSession::addProfile() {
     mutate({}, [&] {
         PieMenuConfig p;
-        p.Id = NewId(); p.Name = QStringLiteral("New menu"); p.bEnabled = false;
+        p.Id = NewId(); p.Name = QCoreApplication::translate("EditorSession", "New menu"); p.bEnabled = false;
         p.Trigger.Modifiers = ModifierKey::Ctrl;
         p.StyleOverride = Draft.GlobalStyle;
         CurrentProfile = p.Id; Selected.clear(); Folder.clear(); Draft.Profiles.push_back(std::move(p));
@@ -209,13 +220,13 @@ void EditorSession::duplicateProfile() {
     mutate({}, [&] {
         auto copy = *currentProfile();
         copy.StyleOverride = effectiveStyle();
-        copy.Id = NewId(); copy.Name += QStringLiteral(" copy"); copy.bEnabled = false;
+        copy.Id = NewId(); copy.Name = tr("%1 copy").arg(copy.Name); copy.bEnabled = false;
         for (auto& item : copy.Items) RenewIds(item);
         CurrentProfile = copy.Id; Selected.clear(); Folder.clear(); Draft.Profiles.push_back(std::move(copy));
     });
 }
 void EditorSession::removeProfile() {
-    if (Draft.Profiles.size() <= 1) { reportError("Keep at least one menu."); return; }
+    if (Draft.Profiles.size() <= 1) { reportError(tr("Keep at least one menu.")); return; }
     mutate({}, [&] {
         std::erase_if(Draft.Profiles, [&](const auto& p) { return p.Id == CurrentProfile; });
         CurrentProfile.clear(); Selected.clear(); Folder.clear();
@@ -248,11 +259,11 @@ QString EditorSession::addItem(int action) {
     auto* values = container(Folder);
     if (!values) return {};
     const auto type = static_cast<ActionType>(std::clamp(action, 1, 6));
-    if (type == ActionType::ListMenu && !Folder.isEmpty()) { reportError("Submenus can only contain actions."); return {}; }
-    if (Folder.isEmpty() && values->size() >= PieMenuConfig::MaxItems) { reportError("A pie can have at most 12 items."); return {}; }
+    if (type == ActionType::ListMenu && !Folder.isEmpty()) { reportError(tr("Submenus can only contain actions.")); return {}; }
+    if (Folder.isEmpty() && values->size() >= PieMenuConfig::MaxItems) { reportError(tr("A pie can have at most 12 items.")); return {}; }
     QString id;
     mutate({}, [&] {
-        auto item = PieItem::Create(type == ActionType::ListMenu ? "New submenu" : "New action", type, {}, DefaultIcon(type));
+        auto item = PieItem::Create(type == ActionType::ListMenu ? tr("New submenu") : tr("New action"), type, {}, DefaultIcon(type));
         id = item.Id; Selected = id; container(Folder)->push_back(std::move(item));
     });
     return id;
@@ -270,9 +281,9 @@ void EditorSession::duplicateItem(const QString& id) {
     auto* values = owner(id);
     const auto* item = findItem(id);
     if (!values || !item) return;
-    if (values == &mutableProfile()->Items && values->size() >= PieMenuConfig::MaxItems) { reportError("A pie can have at most 12 items."); return; }
+    if (values == &mutableProfile()->Items && values->size() >= PieMenuConfig::MaxItems) { reportError(tr("A pie can have at most 12 items.")); return; }
     mutate({}, [&] {
-        auto copy = *findItem(id); RenewIds(copy); copy.Name += " copy";
+        auto copy = *findItem(id); RenewIds(copy); copy.Name = tr("%1 copy").arg(copy.Name);
         Selected = copy.Id; owner(id)->push_back(std::move(copy));
     });
 }
@@ -280,10 +291,10 @@ void EditorSession::setItemField(const QString& field, const QVariant& value) {
     auto* item = mutableItem(Selected);
     if (!item) return;
     if (field == "action" && item->Action == ActionType::ListMenu && !item->SubItems.empty()) {
-        reportError("Move or remove the submenu actions before changing its type."); return;
+        reportError(tr("Move or remove the submenu actions before changing its type.")); return;
     }
     if (field == "action" && value.toInt() == int(ActionType::ListMenu) && !Folder.isEmpty()) {
-        reportError("Submenus can only contain actions."); return;
+        reportError(tr("Submenus can only contain actions.")); return;
     }
     mutate(CurrentProfile + "/" + Selected + "/" + field, [&] {
         auto& i = *mutableItem(Selected);
@@ -306,11 +317,11 @@ void EditorSession::setItemField(const QString& field, const QVariant& value) {
                 if (i.Action == ActionType::SendHotkey) return target;
                 return QFileInfo(target).completeBaseName();
             };
-            const bool autoName = i.Name.isEmpty() || i.Name == "New action" || i.Name == suggested(i.ActionData);
+            const bool autoName = i.Name.isEmpty() || (i.Name == "New action" || i.Name == tr("New action")) || i.Name == suggested(i.ActionData);
             i.ActionData = value.toString();
             if (autoName) {
                 i.Name = suggested(i.ActionData);
-                if (i.Name.isEmpty()) i.Name = "New action";
+                if (i.Name.isEmpty()) i.Name = tr("New action");
             }
         }
     });
@@ -320,10 +331,10 @@ bool EditorSession::moveItem(const QString& id, const QString& destinationFolder
     auto* from = owner(id); auto* to = container(destinationFolder);
     if (!item || !from || !to || id == destinationFolder) return false;
     if (!destinationFolder.isEmpty() && item->Action == ActionType::ListMenu) {
-        reportError("A submenu cannot be placed inside another submenu."); return false;
+        reportError(tr("A submenu cannot be placed inside another submenu.")); return false;
     }
     if (destinationFolder.isEmpty() && from != to && to->size() >= PieMenuConfig::MaxItems) {
-        reportError("A pie can have at most 12 items."); return false;
+        reportError(tr("A pie can have at most 12 items.")); return false;
     }
     mutate({}, [&] {
         auto copy = *findItem(id);
@@ -372,6 +383,14 @@ void EditorSession::setStylePreset(const QString& name) {
         next.bAutoContrast = preset.bAutoContrast; next.TextOutlineThickness = preset.TextOutlineThickness;
         if (next.ToJson() != effectiveStyle().ToJson()) mutableProfile()->StyleOverride = next;
     });
+}
+QString EditorSession::language() const {
+    if (Draft.Language.isEmpty() || Draft.Language == "system") return QStringLiteral("system");
+    return ResolveLanguage(Draft.Language).replace('_', '-');
+}
+void EditorSession::setLanguage(const QString& language) {
+    if (language != "system" && language != "en" && language != "zh-TW" && language != "zh-CN") return;
+    mutate("language", [&] { Draft.Language = language; });
 }
 void EditorSession::setStartWithWindows(bool value) { mutate({}, [&] { Draft.bStartWithWindows = value; }); }
 void EditorSession::undo() {

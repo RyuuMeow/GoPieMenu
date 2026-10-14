@@ -71,7 +71,7 @@ ApplicationWindow {
             spacing: 8
             AppButton {
                 objectName: "newMenuButton"
-                iconName: "plus.svg"; hint: "New menu"
+                iconName: "plus.svg"; hint: qsTr("New menu")
                 onClicked: { editor.addProfile(); root.panelMode = "menu" }
             }
             AppCombo {
@@ -81,20 +81,20 @@ ApplicationWindow {
                 textRole: "name"; valueRole: "id"
                 selectionValue: editor.profileId
                 onActivated: editor.selectProfile(currentValue)
-                Accessible.name: "Current menu"
+                Accessible.name: qsTr("Current menu")
             }
             AppMenuButton {
                 objectName: "manageMenusButton"
-                iconName: "more-horiz.svg"; hint: "Manage menus"
+                iconName: "more-horiz.svg"; hint: qsTr("Manage menus")
                 menu: profileMenu
                 AppMenu {
                     id: profileMenu
                     objectName: "profileMenu"
-                    AppMenuItem { text: "New menu"; onTriggered: { editor.addProfile(); root.panelMode = "menu" } }
-                    AppMenuItem { text: "Menu settings"; onTriggered: root.panelMode = "menu" }
-                    AppMenuItem { text: "Duplicate menu"; onTriggered: { editor.duplicateProfile(); root.panelMode = "menu" } }
+                    AppMenuItem { text: qsTr("New menu"); onTriggered: { editor.addProfile(); root.panelMode = "menu" } }
+                    AppMenuItem { text: qsTr("Menu settings"); onTriggered: root.panelMode = "menu" }
+                    AppMenuItem { text: qsTr("Duplicate menu"); onTriggered: { editor.duplicateProfile(); root.panelMode = "menu" } }
                     AppMenuSeparator {}
-                    AppMenuItem { text: "Delete menu"; destructive: true; enabled: editor.profiles.length > 1; onTriggered: editor.removeProfile() }
+                    AppMenuItem { text: qsTr("Delete menu"); destructive: true; enabled: editor.profiles.length > 1; onTriggered: editor.removeProfile() }
                 }
             }
             Rectangle { Layout.preferredHeight: 24; implicitWidth: 1; color: T.line; Layout.leftMargin: 3; Layout.rightMargin: 3 }
@@ -102,16 +102,16 @@ ApplicationWindow {
                 objectName: "triggerSummaryButton"
                 iconName: "key-command.svg"
                 text: root.width < 1000 ? "" : editor.profile.triggerSummary || ""
-                hint: "Edit trigger and application scope"
+                hint: qsTr("Edit trigger and application scope")
                 onClicked: root.panelMode = root.panelMode === "menu" ? "" : "menu"
                 checked: root.panelMode === "menu"
             }
             Item { Layout.fillWidth: true }
-            AppButton { objectName: "undoButton"; iconName: "undo.svg"; hint: "Undo · Ctrl+Z"; enabled: editor.canUndo; onClicked: editor.undo() }
-            AppButton { iconName: "redo.svg"; hint: "Redo · Ctrl+Y"; enabled: editor.canRedo; onClicked: editor.redo() }
-            AppButton { objectName: "discardButton"; enabled: editor.dirty; text: "Discard"; onClicked: { root.contentItem.forceActiveFocus(); editor.discard() } }
-            AppButton { objectName: "applyButton"; enabled: editor.dirty; text: "Apply"; iconName: "check.svg"; kind: "primary"; onClicked: root.applyDraft() }
-            AppButton { objectName: "applicationSettingsButton"; iconName: "settings.svg"; hint: "Application settings"; onClicked: settings.open() }
+            AppButton { objectName: "undoButton"; iconName: "undo.svg"; hint: qsTr("Undo · Ctrl+Z"); enabled: editor.canUndo; onClicked: editor.undo() }
+            AppButton { iconName: "redo.svg"; hint: qsTr("Redo · Ctrl+Y"); enabled: editor.canRedo; onClicked: editor.redo() }
+            AppButton { objectName: "discardButton"; enabled: editor.dirty; text: qsTr("Discard"); onClicked: { root.contentItem.forceActiveFocus(); editor.discard() } }
+            AppButton { objectName: "applyButton"; enabled: editor.dirty; text: qsTr("Apply"); iconName: "check.svg"; kind: "primary"; onClicked: root.applyDraft() }
+            AppButton { objectName: "applicationSettingsButton"; iconName: "settings.svg"; hint: qsTr("Application settings"); onClicked: settings.open() }
         }
     }
 
@@ -129,7 +129,7 @@ ApplicationWindow {
                 anchors.left: parent.left; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
                 anchors.leftMargin: 20; anchors.rightMargin: 12
                 Label { text: editor.error; color: "#954c41"; font.pixelSize: 13; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                AppButton { iconName: "cancel.svg"; compact: true; hint: "Dismiss message"; onClicked: editor.clearError() }
+                AppButton { iconName: "cancel.svg"; compact: true; hint: qsTr("Dismiss message"); onClicked: editor.clearError() }
             }
         }
         RowLayout {
@@ -145,36 +145,36 @@ ApplicationWindow {
                     AppButton {
                         objectName: "backToMenuButton"
                         visible: editor.folderId.length > 0
-                        iconName: "arrow-left.svg"; hint: "Back to main menu"
+                        iconName: "arrow-left.svg"; hint: qsTr("Back to main menu")
                         text: editor.folderName
                         maximumTextWidth: 140
                         onClicked: editor.leaveFolder()
                     }
                     AppMenuButton {
                         objectName: "addActionButton"
-                        iconName: "plus.svg"; text: "Add action"; kind: "secondary"
+                        iconName: "plus.svg"; text: qsTr("Add action"); kind: "secondary"
                         menu: addMenu
                         AppMenu {
                             id: addMenu
-                            AppMenuItem { text: "Keyboard shortcut"; onTriggered: editor.addItem(3) }
-                            AppMenuItem { text: "Open application"; onTriggered: editor.addItem(1) }
-                            AppMenuItem { text: "Open file or folder"; onTriggered: editor.addItem(4) }
-                            AppMenuItem { text: "Open website"; onTriggered: editor.addItem(5) }
-                            AppMenuItem { text: "Run command"; onTriggered: editor.addItem(2) }
+                            AppMenuItem { text: qsTr("Keyboard shortcut"); onTriggered: editor.addItem(3) }
+                            AppMenuItem { text: qsTr("Open application"); onTriggered: editor.addItem(1) }
+                            AppMenuItem { text: qsTr("Open file or folder"); onTriggered: editor.addItem(4) }
+                            AppMenuItem { text: qsTr("Open website"); onTriggered: editor.addItem(5) }
+                            AppMenuItem { text: qsTr("Run command"); onTriggered: editor.addItem(2) }
                             AppMenuSeparator { visible: editor.folderId.length === 0 }
-                            AppMenuItem { text: "New submenu"; visible: editor.folderId.length === 0; onTriggered: editor.addItem(6) }
+                            AppMenuItem { text: qsTr("New submenu"); visible: editor.folderId.length === 0; onTriggered: editor.addItem(6) }
                         }
                     }
                     Item { Layout.fillWidth: true }
                     AppButton {
                         objectName: "arrangeButton"
-                        iconName: "layers.svg"; hint: "Arrange actions"; checked: root.listVisible
+                        iconName: "layers.svg"; hint: qsTr("Arrange actions"); checked: root.listVisible
                         onClicked: root.listVisible = !root.listVisible
                     }
                     AppButton {
                         objectName: "appearanceButton"
-                        iconName: "palette.svg"; text: canvasColumn.width > 680 ? "Appearance" : ""
-                        hint: "Appearance"; checked: root.panelMode === "appearance"
+                        iconName: "palette.svg"; text: canvasColumn.width > 680 ? qsTr("Appearance") : ""
+                        hint: qsTr("Appearance"); checked: root.panelMode === "appearance"
                         onClicked: root.panelMode = root.panelMode === "appearance" ? "" : "appearance"
                     }
                 }
@@ -196,9 +196,9 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         spacing: 14
                         IconImage { name: "add-circle.svg"; width: 40; height: 40; tint: "#91a7c5"; Layout.alignment: Qt.AlignHCenter }
-                        Label { text: editor.folderId.length ? "Add an action to this submenu" : "Build your menu"; color: T.ink; font.pixelSize: 20; font.weight: Font.DemiBold; Layout.alignment: Qt.AlignHCenter }
-                        Label { text: "Start with a shortcut, an app, or a website."; color: T.muted; font.pixelSize: 14; Layout.alignment: Qt.AlignHCenter }
-                        AppButton { text: "Add action"; iconName: "plus.svg"; kind: "primary"; Layout.alignment: Qt.AlignHCenter; onClicked: addMenu.open() }
+                        Label { text: editor.folderId.length ? qsTr("Add an action to this submenu") : qsTr("Build your menu"); color: T.ink; font.pixelSize: 20; font.weight: Font.DemiBold; Layout.alignment: Qt.AlignHCenter }
+                        Label { text: qsTr("Start with a shortcut, an app, or a website."); color: T.muted; font.pixelSize: 14; Layout.alignment: Qt.AlignHCenter }
+                        AppButton { text: qsTr("Add action"); iconName: "plus.svg"; kind: "primary"; Layout.alignment: Qt.AlignHCenter; onClicked: addMenu.open() }
                     }
                     DropArea {
                         anchors.fill: parent
@@ -220,7 +220,7 @@ ApplicationWindow {
                     }
                     Label {
                         objectName: "previewHint"
-                        text: editor.selectedId.length ? "Changes stay in preview until you apply." : editor.folderId.length ? "Click an action to edit" : "Click a slice to edit"
+                        text: editor.selectedId.length ? qsTr("Changes stay in preview until you apply.") : editor.folderId.length ? qsTr("Click an action to edit") : qsTr("Click a slice to edit")
                         color: T.muted; font.pixelSize: 13
                     }
                 }
@@ -282,25 +282,41 @@ ApplicationWindow {
     WindowResizeHandles { anchors.fill: parent; targetWindow: root; z: 1000 }
     AppDialog {
         id: settings
-        title: "Settings"
+        title: qsTr("Settings")
         width: Math.min(440, root.width - 32)
         ColumnLayout {
             id: settingsContent
             Layout.fillWidth: true
             spacing: 14
-            AppCheckBox { text: "Start with Windows"; checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
-            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
-            RowLayout {
-                AppButton { text: "Import"; iconName: "import.svg"; kind: "secondary"; onClicked: { settings.close(); appController.importConfig() } }
-                AppButton { text: "Export"; iconName: "upload.svg"; kind: "secondary"; onClicked: appController.exportConfig() }
+            FieldLabel { text: qsTr("Language") }
+            AppCombo {
+                objectName: "languageCombo"
+                Layout.fillWidth: true
+                textRole: "label"; valueRole: "value"
+                model: [
+                    {label: qsTr("Follow system"), value: "system"},
+                    {label: qsTr("English"), value: "en"},
+                    {label: qsTr("繁體中文"), value: "zh-TW"},
+                    {label: qsTr("简体中文"), value: "zh-CN"}
+                ]
+                selectionValue: editor.language
+                onActivated: editor.setLanguage(currentValue)
+                Accessible.name: qsTr("Language")
             }
-            AppButton { text: "Open custom icon folder"; iconName: "folder.svg"; onClicked: appController.openIconDirectory() }
+            Label { Layout.fillWidth: true; text: qsTr("Language changes take effect after restarting GoPieMenu."); color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap }
+            AppCheckBox { text: qsTr("Start with Windows"); checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
             RowLayout {
-                AppButton { text: "About"; onClicked: { settings.close(); about.open() } }
+                AppButton { text: qsTr("Import"); iconName: "import.svg"; kind: "secondary"; onClicked: { settings.close(); appController.importConfig() } }
+                AppButton { text: qsTr("Export"); iconName: "upload.svg"; kind: "secondary"; onClicked: appController.exportConfig() }
+            }
+            AppButton { text: qsTr("Open custom icon folder"); iconName: "folder.svg"; onClicked: appController.openIconDirectory() }
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: T.line }
+            RowLayout {
+                AppButton { text: qsTr("About"); onClicked: { settings.close(); about.open() } }
                 AppButton {
                     objectName: "projectGithubButton"
-                    iconName: "github.svg"; hint: "Open GoPieMenu on GitHub"
+                    iconName: "github.svg"; hint: qsTr("Open GoPieMenu on GitHub")
                     onClicked: Qt.openUrlExternally("https://github.com/RyuuMeow/GoPieMenu")
                 }
             }
@@ -308,15 +324,15 @@ ApplicationWindow {
     }
     AppDialog {
         id: about
-        title: "About"
+        title: qsTr("About")
         width: 340
         ColumnLayout {
             id: aboutContent
             Layout.fillWidth: true; spacing: 12
             Label { text: "GoPieMenu"; font.pixelSize: 22; font.weight: Font.DemiBold; color: T.ink }
-            Label { text: "Version " + appController.version; color: T.muted }
-            Label { text: "GoPieMenu · GPL-3.0\nIcons by Iconoir · MIT"; color: T.muted; font.pixelSize: 13 }
-            AppButton { text: "Close"; kind: "secondary"; onClicked: about.close() }
+            Label { text: qsTr("Version %1").arg(appController.version); color: T.muted }
+            Label { text: qsTr("GoPieMenu · GPL-3.0") + "\n" + qsTr("Icons by Iconoir · MIT"); color: T.muted; font.pixelSize: 13 }
+            AppButton { text: qsTr("Close"); kind: "secondary"; onClicked: about.close() }
         }
     }
 }

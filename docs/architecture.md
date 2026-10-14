@@ -24,6 +24,14 @@ The QWidget tray menu matches the QML menu's light surface, spacing, corner radi
 
 `PieScene` and `ListScene` share drawing, colors, geometry, and hit testing between `PiePreviewItem` and the runtime QWidget menus. Icons are supplied before painting. The preview composes its logical transform with the Qt Quick device-pixel transform and uses fixed label bounds centered on the menu origin, so renaming does not move or scale the menu. Runtime bounds still follow rendered text. Window placement accounts for negative monitor coordinates, label extents, screen edges, and small work areas. Long submenu lists page with the wheel or edge scrolling. Paint requests occur on changes, animation, or input; there is no idle repaint timer.
 
+## Localization
+
+`TranslationManager` installs an embedded Qt `.qm` catalog before constructing the editor and tray. English uses source strings; `zh-Hant` (including Taiwan, Hong Kong, and Macao) selects Traditional Chinese, and `zh-Hans` (including China and Singapore) selects Simplified Chinese. The first system UI language determines the automatic choice; unsupported languages fall back to English, as do missing translation entries. Explicit script subtags take precedence over region.
+
+The existing JSON `language` field accepts `system` (new/missing-field default), `en`, `zh-TW`, or `zh-CN`. Existing explicit preferences are retained. The editor saves language through its normal draft/undo/apply flow; restart applies the saved choice. Unknown imported language tags fall back to English. User-authored names, action payloads, shortcut tokens, and JSON enum values are never translated. New default names use the current interface language.
+
+Translations live in `resources/i18n`. With the Qt Linguist Tools component installed, run `cmake --build build --target update-translations` after changing C++ or QML text, then fill both TS catalogs. Normal builds compile and embed them, so deployment needs no separate application translation files. Core tests cover locale resolution, fallback, embedded catalogs and preference persistence; UI tests open both Chinese editors and exercise the language selector at all four scale factors.
+
 ## Input and asynchronous work
 
 `InputState` is a pure state machine behind the Win32 hook adapter. It handles sided modifiers, repeat suppression, matching swallowed releases, app-specific priority, hold/toggle confirmation, and Escape cancellation. The active trigger is a value snapshot. Self-generated input carries `OwnInputTag`, so sending an action does not retrigger the hook. Recording suspends hooks. Runtime widgets consume a selection before dispatch and reject input while closing.

@@ -1,4 +1,5 @@
 #include "core/ConfigManager.h"
+#include "core/TranslationManager.h"
 #include "core/HookManager.h"
 #include "core/ActionExecutor.h"
 #include "ui/PieMenuWidget.h"
@@ -27,13 +28,16 @@ int main(int argc, char* argv[]) {
     const bool smokeTest = app.arguments().contains("--smoke-test");
     const bool preview = smokeTest || app.arguments().contains("--preview");
     app.setQuitOnLastWindowClosed(preview);
+    gpm::TranslationManager translations;
+    translations.load("system");
     QSharedMemory instance("GoPieMenu_SingleInstance");
     if (!preview && !instance.create(1)) {
-        QMessageBox::information(nullptr, "GoPieMenu", "GoPieMenu is already running.");
+        QMessageBox::information(nullptr, "GoPieMenu", QCoreApplication::translate("Application", "GoPieMenu is already running."));
         return 0;
     }
     QTemporaryDir previewDir;
     gpm::ConfigManager config(nullptr, preview ? previewDir.filePath("config.json") : QString());
+    translations.load(config.GetConfig().Language);
     gpm::ActionExecutor executor;
     executor.RegisterBuiltins();
     gpm::IconService icons;
@@ -65,11 +69,11 @@ int main(int argc, char* argv[]) {
     QObject::connect(&tray, &gpm::TrayManager::SettingsRequested, &editor, &gpm::SettingsWindow::show);
     QObject::connect(&tray, &gpm::TrayManager::PauseToggled, &hooks, [&](bool paused) {
         if (paused) hooks.Uninstall();
-        else if (!preview && !hooks.Install()) editor.session()->reportError("Could not install global input hooks.");
+        else if (!preview && !hooks.Install()) editor.session()->reportError(QCoreApplication::translate("Application", "Could not install global input hooks."));
     });
     QObject::connect(&tray, &gpm::TrayManager::QuitRequested, &editor, &gpm::SettingsWindow::requestExit);
     QObject::connect(&editor, &gpm::SettingsWindow::exitConfirmed, &app, &QCoreApplication::quit);
-    if (!preview && !hooks.Install()) editor.session()->reportError("Could not install global input hooks.");
+    if (!preview && !hooks.Install()) editor.session()->reportError(QCoreApplication::translate("Application", "Could not install global input hooks."));
     if (!preview) tray.Show();
     if (preview || app.arguments().contains("--settings") || !QFileInfo::exists(config.GetConfigFilePath()) || !config.LoadError().isEmpty())
         editor.show();

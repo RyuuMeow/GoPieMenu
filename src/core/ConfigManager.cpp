@@ -1,3 +1,4 @@
+#include <QCoreApplication>
 #include "ConfigManager.h"
 #include <QDir>
 #include <QFile>
@@ -24,7 +25,7 @@ ConfigLoadResult ConfigManager::Load() {
 ConfigSaveResult ConfigManager::Save(const AppConfig& config) {
     if (auto error = ValidateConfig(config); !error.isEmpty()) return {false, error};
     if (!QDir().mkpath(QFileInfo(ConfigPath).absolutePath()))
-        return {false, QStringLiteral("Cannot create the configuration folder.")};
+        return {false, QCoreApplication::translate("ConfigManager", "Cannot create the configuration folder.")};
     QSaveFile file(ConfigPath);
     file.setDirectWriteFallback(false);
     if (!file.open(QIODevice::WriteOnly)) return {false, file.errorString()};

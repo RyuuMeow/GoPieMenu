@@ -29,7 +29,7 @@ void TrayManager::CreateTrayIcon()
 {
     TrayIcon = new QSystemTrayIcon(this);
     TrayIcon->setIcon(QIcon(QStringLiteral(":/logo/tray-color.ico")));
-    TrayIcon->setToolTip(QStringLiteral("GoPieMenu - Active"));
+    TrayIcon->setToolTip(tr("GoPieMenu - Active"));
 
     TrayMenu = new QMenu;
     TrayMenu->setObjectName(QStringLiteral("trayContextMenu"));
@@ -47,25 +47,25 @@ void TrayManager::CreateTrayIcon()
         "QMenu::indicator:checked { background: #4e80c8; border-color: #4e80c8; }"
     ));
 
-    auto* LocalSettingsAction = TrayMenu->addAction(QStringLiteral("Settings"));
+    auto* LocalSettingsAction = TrayMenu->addAction(tr("Settings"));
     connect(LocalSettingsAction, &QAction::triggered, this, &TrayManager::SettingsRequested);
 
     TrayMenu->addSeparator();
 
-    PauseAction = TrayMenu->addAction(QStringLiteral("Pause"));
+    PauseAction = TrayMenu->addAction(tr("Pause"));
     PauseAction->setCheckable(true);
     connect(PauseAction, &QAction::toggled, this, [this](bool bChecked) 
     {
         bIsPaused = bChecked;
-        PauseAction->setText(bChecked ? QStringLiteral("Resume") : QStringLiteral("Pause"));
-        TrayIcon->setToolTip(bChecked ? QStringLiteral("GoPieMenu - Paused")
-                                      : QStringLiteral("GoPieMenu - Active"));
+        PauseAction->setText(bChecked ? tr("Resume") : tr("Pause"));
+        TrayIcon->setToolTip(bChecked ? tr("GoPieMenu - Paused")
+                                      : tr("GoPieMenu - Active"));
         emit PauseToggled(bChecked);
     });
 
     TrayMenu->addSeparator();
 
-    auto* LocalQuitAction = TrayMenu->addAction(QStringLiteral("Quit"));
+    auto* LocalQuitAction = TrayMenu->addAction(tr("Quit"));
     connect(LocalQuitAction, &QAction::triggered, this, &TrayManager::QuitRequested);
 
     TrayIcon->setContextMenu(TrayMenu);

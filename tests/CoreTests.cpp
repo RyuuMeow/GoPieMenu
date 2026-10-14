@@ -5,6 +5,7 @@
 #include "core/ConfigValidation.h"
 #include "core/InputState.h"
 #include "core/Shortcut.h"
+#include "core/TranslationManager.h"
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -14,6 +15,51 @@ using namespace gpm;
 class CoreTests : public QObject {
     Q_OBJECT
 private slots:
+    void resolvesUiLanguage() {
+        QCOMPARE(ResolveLanguage("system", {"zh-TW"}), "zh_TW");
+        QCOMPARE(ResolveLanguage("system", {"zh-HK"}), "zh_TW");
+        QCOMPARE(ResolveLanguage("system", {"zh-Hant-MO"}), "zh_TW");
+        QCOMPARE(ResolveLanguage("system", {"zh-CN"}), "zh_CN");
+        QCOMPARE(ResolveLanguage("system", {"zh-SG"}), "zh_CN");
+        QCOMPARE(ResolveLanguage("system", {"zh-Hans-TW"}), "zh_CN");
+        QCOMPARE(ResolveLanguage("system", {"ja-JP", "zh-TW"}), "en");
+        QCOMPARE(ResolveLanguage("system", {}), "en");
+        QCOMPARE(ResolveLanguage("en", {"zh-TW"}), "en");
+        QCOMPARE(ResolveLanguage("zh_CN", {"en-US"}), "zh_CN");
+        QCOMPARE(ResolveLanguage("unknown", {"zh-TW"}), "en");
+    }
+    void languagePreferenceIsAnUndoableDraft() {
+        auto config = AppConfig::CreateDefault();
+        QCOMPARE(config.Language, "system");
+        auto json = config.ToJson(); json.remove("language");
+        QCOMPARE(AppConfig::FromJson(json).Language, "system");
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json"));
+        EditorSession session(&manager);
+        session.setLanguage("zh-TW");
+        QCOMPARE(session.language(), "zh-TW");
+        QCOMPARE(manager.GetConfig().Language, "system");
+        session.undo(); QCOMPARE(session.language(), "system");
+        session.redo(); QCOMPARE(session.language(), "zh-TW");
+        QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QCOMPARE(reopened.GetConfig().Language, "zh-TW");
+        session.setLanguage("zh-CN"); session.discard();
+        QCOMPARE(session.language(), "zh-TW");
+        session.setLanguage("unsupported"); QVERIFY(!session.dirty());
+    }
+    void embeddedTranslationsLoadAndFallBack() {
+        TranslationManager translations;
+        QVERIFY(translations.load("zh-TW"));
+        const auto traditional = QCoreApplication::translate("Main", "Settings");
+        QVERIFY(traditional != "Settings");
+        QVERIFY(translations.load("zh-CN"));
+        const auto simplified = QCoreApplication::translate("Main", "Settings");
+        QVERIFY(simplified != "Settings");
+        QVERIFY(traditional != simplified);
+        QCOMPARE(QCoreApplication::translate("MissingContext", "Untranslated text"), "Untranslated text");
+        QVERIFY(translations.load("ja"));
+        QCOMPARE(QCoreApplication::translate("Main", "Settings"), "Settings");
+    }
     void appearanceEditsStayWithEachProfile() {
         auto config = AppConfig::CreateDefault();
         config.GlobalStyle.OuterRadius = 200;

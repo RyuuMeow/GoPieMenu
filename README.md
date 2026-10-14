@@ -8,6 +8,8 @@ A customizable Windows radial menu for shortcuts, applications, files, websites,
 
 ![Light editor](resources/demo/Editor2.png)
 
+The interface supports English, Traditional Chinese, and Simplified Chinese. New configurations follow the system UI language; unsupported languages use English. Settings → Language lets you override this. Apply the change and restart GoPieMenu. Existing configurations with an explicit language keep that choice. Your saved menu and action names are not retranslated.
+
 ## Edit your menu
 
 1. Open **Settings** from the tray icon. Use **+** beside the menu selector to create and select a menu. The adjacent three-dot menu contains New, Duplicate, and Delete; deleting selects the first remaining menu.

@@ -26,6 +26,7 @@ class EditorSession : public QObject {
     Q_PROPERTY(bool dirty READ dirty NOTIFY changed)
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY changed)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY changed)
+    Q_PROPERTY(QString language READ language NOTIFY changed)
     Q_PROPERTY(bool startWithWindows READ startWithWindows NOTIFY changed)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
 public:
@@ -44,6 +45,8 @@ public:
     bool canUndo() const { return !Undo.empty(); }
     bool canRedo() const { return !Redo.empty(); }
     bool startWithWindows() const { return Draft.bStartWithWindows; }
+    QString language() const;
+    Q_INVOKABLE void setLanguage(const QString& language);
     QString error() const { return Error; }
     const AppConfig& draft() const { return Draft; }
     const PieMenuConfig* currentProfile() const;

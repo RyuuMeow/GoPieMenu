@@ -25,7 +25,7 @@ struct AppConfig
     std::vector<PieMenuConfig> Profiles;
     StyleConfig                GlobalStyle; // Legacy fallback and initial appearance for new profiles; editor writes are profile-local.
     bool                       bStartWithWindows = false;
-    QString                    Language          = QStringLiteral("en");
+    QString                    Language          = QStringLiteral("system");
 
     // === Factory ===
     [[nodiscard]] static AppConfig CreateDefault() 
@@ -73,7 +73,7 @@ struct AppConfig
         }
 
         Config.bStartWithWindows = Obj["startWithWindows"].toBool(false);
-        Config.Language          = Obj["language"].toString(QStringLiteral("en"));
+        Config.Language          = Obj["language"].toString(QStringLiteral("system"));
 
         return Config;
     }

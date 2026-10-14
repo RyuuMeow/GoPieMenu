@@ -1,0 +1,1436 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="zh_TW">
+<context>
+    <name>ActionContextMenu</name>
+    <message>
+        <location filename="../../src/ui/qml/ActionContextMenu.qml" line="17"/>
+        <source>Duplicate</source>
+        <translation>複製</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ActionContextMenu.qml" line="22"/>
+        <source>Delete action</source>
+        <translation>刪除動作</translation>
+    </message>
+</context>
+<context>
+    <name>ActionExecutor</name>
+    <message>
+        <location filename="../../src/core/ActionExecutor.cpp" line="37"/>
+        <source>No handler for action type: %1</source>
+        <translation>沒有可處理動作類型「%1」的處理程序</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ActionExecutor.cpp" line="47"/>
+        <source>Invalid action data for: %1</source>
+        <translation>「%1」的動作資料無效</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ActionExecutor.cpp" line="60"/>
+        <source>Execution failed</source>
+        <translation>執行失敗</translation>
+    </message>
+</context>
+<context>
+    <name>AppDialog</name>
+    <message>
+        <location filename="../../src/ui/qml/AppDialog.qml" line="35"/>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+</context>
+<context>
+    <name>AppearancePane</name>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="13"/>
+        <source>Appearance applies only to this menu.</source>
+        <translation>外觀設定僅套用至此選單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="16"/>
+        <source>Style</source>
+        <translation>樣式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="22"/>
+        <source>Frost</source>
+        <translation>霧面</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="22"/>
+        <source>Slate</source>
+        <translation>石板</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="23"/>
+        <source>Ocean</source>
+        <translation>海洋</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="23"/>
+        <source>Obsidian</source>
+        <translation>黑曜石</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="28"/>
+        <source>Size</source>
+        <translation>大小</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="29"/>
+        <source>Advanced</source>
+        <translation>進階</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="34"/>
+        <source>Center radius</source>
+        <translation>中心半徑</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="35"/>
+        <source>Icon size</source>
+        <translation>圖示大小</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="36"/>
+        <source>Text size</source>
+        <translation>文字大小</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="37"/>
+        <source>Slice gap</source>
+        <translation>扇形間距</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="38"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="39"/>
+        <source>Animation</source>
+        <translation>動畫</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="40"/>
+        <source>Text outline</source>
+        <translation>文字外框</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="41"/>
+        <source>Border width</source>
+        <translation>邊框寬度</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="42"/>
+        <source>Hover size</source>
+        <translation>懸停縮放</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="43"/>
+        <source>Automatic text contrast</source>
+        <translation>自動調整文字對比</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="46"/>
+        <source>Slices</source>
+        <translation>扇形</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="46"/>
+        <source>Highlight</source>
+        <translation>醒目顯示</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="47"/>
+        <source>Text</source>
+        <translation>文字</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="47"/>
+        <source>Center</source>
+        <translation>中心</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="48"/>
+        <source>Border</source>
+        <translation>邊框</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="48"/>
+        <source>Submenu</source>
+        <translation>子選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="56"/>
+        <source>Change %1 color</source>
+        <translation>變更%1顏色</translation>
+    </message>
+</context>
+<context>
+    <name>Application</name>
+    <message>
+        <location filename="../../src/main.cpp" line="35"/>
+        <source>GoPieMenu is already running.</source>
+        <translation>GoPieMenu 已在執行中。</translation>
+    </message>
+    <message>
+        <location filename="../../src/main.cpp" line="72"/>
+        <location filename="../../src/main.cpp" line="76"/>
+        <source>Could not install global input hooks.</source>
+        <translation>無法安裝全域輸入攔截器。</translation>
+    </message>
+</context>
+<context>
+    <name>ColorPicker</name>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="10"/>
+        <source>Choose color</source>
+        <translation>選擇顏色</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="40"/>
+        <source>Hex · RRGGBB / RRGGBBAA</source>
+        <translation>十六進位色碼 · RRGGBB / RRGGBBAA</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="54"/>
+        <source>Hex color</source>
+        <translation>十六進位色碼</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="58"/>
+        <source>Enter 6 hex digits, or 8 including opacity.</source>
+        <translation>請輸入 6 位十六進位數字，若包含透明度則輸入 8 位。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="65"/>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="67"/>
+        <source>Recent colors</source>
+        <translation>最近使用的顏色</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="78"/>
+        <source>Use %1</source>
+        <translation>使用 %1</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="83"/>
+        <source>Colors you use will appear here.</source>
+        <translation>使用過的顏色會顯示在這裡。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="87"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ColorPicker.qml" line="88"/>
+        <source>Use color</source>
+        <translation>使用顏色</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigManager</name>
+    <message>
+        <location filename="../../src/core/ConfigManager.cpp" line="28"/>
+        <source>Cannot create the configuration folder.</source>
+        <translation>無法建立設定資料夾。</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigValidation</name>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="18"/>
+        <source>Invalid value type for %1.</source>
+        <translation>「%1」的值類型無效。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="30"/>
+        <source>Submenus can contain actions, but cannot contain other submenus.</source>
+        <translation>子選單可以包含動作，但不能包含其他子選單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="34"/>
+        <source>Unknown action type: %1</source>
+        <translation>未知的動作類型：%1</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="36"/>
+        <source>Submenu items must be a list.</source>
+        <translation>子選單項目必須是清單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="38"/>
+        <source>Each submenu item must be an object.</source>
+        <translation>每個子選單項目都必須是物件。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="46"/>
+        <source>The inner radius must be smaller than the outer radius (80–400).</source>
+        <translation>內半徑必須小於外半徑（80–400）。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="48"/>
+        <source>Choose an icon size of 12–96 and a font size of 8–32.</source>
+        <translation>圖示大小請設為 12–96，字型大小請設為 8–32。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="50"/>
+        <source>The gap must be smaller than each sector.</source>
+        <translation>間距必須小於每個扇形的角度。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="54"/>
+        <source>The appearance contains an out-of-range value.</source>
+        <translation>外觀設定含有超出範圍的數值。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="57"/>
+        <source>The appearance contains an invalid color.</source>
+        <translation>外觀設定含有無效的顏色。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="61"/>
+        <source>Keep at least one menu.</source>
+        <translation>至少保留一個選單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="66"/>
+        <source>Menu IDs must be unique.</source>
+        <translation>選單 ID 不可重複。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="68"/>
+        <source>Give each menu a name.</source>
+        <translation>請為每個選單命名。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="69"/>
+        <source>A pie can have at most 12 items.</source>
+        <translation>圓餅選單最多只能有 12 個項目。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="71"/>
+        <source>Choose a valid trigger.</source>
+        <translation>請選擇有效的觸發方式。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="72"/>
+        <source>Add an action or disable this empty menu.</source>
+        <translation>請新增動作，或停用這個空選單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="77"/>
+        <source>Item IDs must be unique within a menu.</source>
+        <translation>同一選單內的項目 ID 不可重複。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="79"/>
+        <source>A submenu can only contain actions.</source>
+        <translation>子選單只能包含動作。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="80"/>
+        <source>Only submenus can have children.</source>
+        <translation>只有子選單可以包含子項目。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="81"/>
+        <source>An item contains an invalid color.</source>
+        <translation>項目含有無效的顏色。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="83"/>
+        <source>Give each action a name.</source>
+        <translation>請為每個動作命名。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="85"/>
+        <source>: record a valid keyboard shortcut.</source>
+        <translation>: 請錄製有效的鍵盤快捷鍵。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="88"/>
+        <source>: enter a valid URL.</source>
+        <translation>: 請輸入有效的 URL。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="102"/>
+        <source>Invalid JSON at byte %1: %2</source>
+        <translation>位元組 %1 的 JSON 無效：%2</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="103"/>
+        <source>The configuration must be a JSON object.</source>
+        <translation>設定必須是 JSON 物件。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="108"/>
+        <source>This configuration version is not supported.</source>
+        <translation>不支援此設定版本。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="109"/>
+        <source>The configuration must contain a profiles list.</source>
+        <translation>設定必須包含 profiles 清單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="111"/>
+        <source>The global appearance must be an object.</source>
+        <translation>全域外觀設定必須是物件。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="114"/>
+        <source>Each menu must be an object.</source>
+        <translation>每個選單都必須是物件。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="120"/>
+        <source>Application filters must be text.</source>
+        <translation>應用程式篩選條件必須是文字。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="122"/>
+        <source>Each menu must contain an items list.</source>
+        <translation>每個選單都必須包含 items 清單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="127"/>
+        <source>Unknown activation mode: %1</source>
+        <translation>未知的啟用模式：%1</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="129"/>
+        <source>Invalid trigger modifiers.</source>
+        <translation>觸發修飾鍵無效。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="131"/>
+        <source>Invalid trigger key.</source>
+        <translation>觸發按鍵無效。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="133"/>
+        <source>Each action must be an object.</source>
+        <translation>每個動作都必須是物件。</translation>
+    </message>
+</context>
+<context>
+    <name>DefaultMenu</name>
+    <message>
+        <location filename="../../src/models/PieMenuConfig.h" line="45"/>
+        <source>New Pie Menu</source>
+        <translation>新圓餅選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/models/PieMenuConfig.h" line="51"/>
+        <source>Notepad</source>
+        <translation>記事本</translation>
+    </message>
+    <message>
+        <location filename="../../src/models/PieMenuConfig.h" line="54"/>
+        <source>Calculator</source>
+        <translation>計算機</translation>
+    </message>
+    <message>
+        <location filename="../../src/models/PieMenuConfig.h" line="57"/>
+        <source>Explorer</source>
+        <translation>檔案總管</translation>
+    </message>
+    <message>
+        <location filename="../../src/models/PieMenuConfig.h" line="111"/>
+        <source>Unnamed</source>
+        <translation>未命名</translation>
+    </message>
+</context>
+<context>
+    <name>EditorSession</name>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="20"/>
+        <source>Open application</source>
+        <translation>開啟應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="21"/>
+        <source>Keyboard shortcut</source>
+        <translation>鍵盤快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="22"/>
+        <source>Open file or folder</source>
+        <translation>開啟檔案或資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="23"/>
+        <source>Open website</source>
+        <translation>開啟網站</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="24"/>
+        <source>Run command</source>
+        <translation>執行命令</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="25"/>
+        <source>Submenu</source>
+        <translation>子選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="26"/>
+        <source>Choose an action</source>
+        <translation>選擇動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="42"/>
+        <location filename="../../src/core/EditorSession.cpp" line="61"/>
+        <source>Not set</source>
+        <translation>未設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="51"/>
+        <source>Key %1</source>
+        <translation>%1 鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="56"/>
+        <source>Left mouse</source>
+        <translation>滑鼠左鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="57"/>
+        <source>Right mouse</source>
+        <translation>滑鼠右鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="58"/>
+        <source>Middle mouse</source>
+        <translation>滑鼠中鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="59"/>
+        <source>Side button 1 (X1)</source>
+        <translation>側鍵 1 (X1)</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="60"/>
+        <source>Side button 2 (X2)</source>
+        <translation>側鍵 2 (X2)</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="73"/>
+        <source>Your configuration could not be loaded. The original file has not been changed. </source>
+        <translation>無法載入設定，原始檔案未遭變更。 </translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="212"/>
+        <source>New menu</source>
+        <translation>新增選單</translation>
+    </message>
+</context>
+<context>
+    <name>ExitDialog</name>
+    <message>
+        <location filename="../../src/ui/qml/ExitDialog.qml" line="9"/>
+        <source>Unsaved changes</source>
+        <translation>尚有未儲存的變更</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ExitDialog.qml" line="10"/>
+        <source>Apply your changes before quitting?</source>
+        <translation>要先套用變更再結束嗎？</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ExitDialog.qml" line="13"/>
+        <source>Discard</source>
+        <translation>捨棄</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ExitDialog.qml" line="15"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ExitDialog.qml" line="16"/>
+        <source>Apply &amp; quit</source>
+        <translation>套用並結束</translation>
+    </message>
+</context>
+<context>
+    <name>IconPicker</name>
+    <message>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="9"/>
+        <source>Choose icon</source>
+        <translation>選擇圖示</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="22"/>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="24"/>
+        <source>Search icons</source>
+        <translation>搜尋圖示</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="61"/>
+        <source>Loading icons…</source>
+        <translation>正在載入圖示…</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="61"/>
+        <source>No matching icons</source>
+        <translation>找不到相符的圖示</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="67"/>
+        <source>Clear icon</source>
+        <translation>清除圖示</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/IconPicker.qml" line="70"/>
+        <source>%1 icons</source>
+        <translation>%1 個圖示</translation>
+    </message>
+</context>
+<context>
+    <name>InspectorPanel</name>
+    <message>
+        <location filename="../../src/ui/qml/InspectorPanel.qml" line="20"/>
+        <source>Appearance</source>
+        <translation>外觀</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/InspectorPanel.qml" line="20"/>
+        <source>Menu settings</source>
+        <translation>選單設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/InspectorPanel.qml" line="24"/>
+        <source>Close panel</source>
+        <translation>關閉面板</translation>
+    </message>
+</context>
+<context>
+    <name>ItemInspector</name>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="19"/>
+        <source>Choose icon</source>
+        <translation>選擇圖示</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="29"/>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="32"/>
+        <source>Action name</source>
+        <translation>動作名稱</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="35"/>
+        <source>Action</source>
+        <translation>動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="41"/>
+        <source>Open application</source>
+        <translation>開啟應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="42"/>
+        <source>Keyboard shortcut</source>
+        <translation>鍵盤快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="43"/>
+        <source>Open file or folder</source>
+        <translation>開啟檔案或資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="44"/>
+        <source>Open website</source>
+        <translation>開啟網站</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="45"/>
+        <source>Run command</source>
+        <translation>執行命令</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="46"/>
+        <source>Submenu</source>
+        <translation>子選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="51"/>
+        <source>Action type</source>
+        <translation>動作類型</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="55"/>
+        <source>Shortcut</source>
+        <translation>快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="55"/>
+        <source>Website</source>
+        <translation>網站</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="55"/>
+        <source>Command</source>
+        <translation>命令</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="55"/>
+        <source>Target</source>
+        <translation>目標</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="63"/>
+        <source>Press a shortcut…</source>
+        <translation>請按下快捷鍵…</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="63"/>
+        <source>Record shortcut</source>
+        <translation>錄製快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="71"/>
+        <source>Enter a command</source>
+        <translation>輸入命令</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="71"/>
+        <source>Choose a target or paste a path</source>
+        <translation>選擇目標或貼上路徑</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="73"/>
+        <source>Action target</source>
+        <translation>動作目標</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="79"/>
+        <source>Choose application</source>
+        <translation>選擇應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="79"/>
+        <source>Choose file</source>
+        <translation>選擇檔案</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="84"/>
+        <source>Choose folder</source>
+        <translation>選擇資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="91"/>
+        <source>Edit %1 actions</source>
+        <translation>編輯 %1 個動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="95"/>
+        <source>Advanced</source>
+        <translation>進階</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="100"/>
+        <source>Arguments</source>
+        <translation>引數</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="105"/>
+        <source>Optional arguments</source>
+        <translation>選填引數</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="108"/>
+        <source>Color</source>
+        <translation>顏色</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="110"/>
+        <source>Change color</source>
+        <translation>變更顏色</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="110"/>
+        <source>Custom color</source>
+        <translation>自訂顏色</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="112"/>
+        <source>Reset</source>
+        <translation>重設</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="114"/>
+        <source>Location</source>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="128"/>
+        <source>Duplicate</source>
+        <translation>複製</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemInspector.qml" line="130"/>
+        <source>Delete action</source>
+        <translation>刪除動作</translation>
+    </message>
+</context>
+<context>
+    <name>ItemList</name>
+    <message>
+        <location filename="../../src/ui/qml/ItemList.qml" line="76"/>
+        <source>Arrange actions</source>
+        <translation>排列動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemList.qml" line="77"/>
+        <source>Move selected action up</source>
+        <translation>將選取的動作上移</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemList.qml" line="78"/>
+        <source>Move selected action down</source>
+        <translation>將選取的動作下移</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemList.qml" line="79"/>
+        <source>Close list</source>
+        <translation>關閉清單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/ItemList.qml" line="129"/>
+        <source>Open submenu</source>
+        <translation>開啟子選單</translation>
+    </message>
+</context>
+<context>
+    <name>Main</name>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="74"/>
+        <location filename="../../src/ui/qml/Main.qml" line="93"/>
+        <source>New menu</source>
+        <translation>新增選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="84"/>
+        <source>Current menu</source>
+        <translation>目前選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="88"/>
+        <source>Manage menus</source>
+        <translation>管理選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="94"/>
+        <source>Menu settings</source>
+        <translation>選單設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="95"/>
+        <source>Duplicate menu</source>
+        <translation>複製選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="97"/>
+        <source>Delete menu</source>
+        <translation>刪除選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="105"/>
+        <source>Edit trigger and application scope</source>
+        <translation>編輯觸發方式與適用應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="110"/>
+        <source>Undo · Ctrl+Z</source>
+        <translation>復原 · Ctrl+Z</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="111"/>
+        <source>Redo · Ctrl+Y</source>
+        <translation>重做 · Ctrl+Y</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="112"/>
+        <source>Discard</source>
+        <translation>捨棄</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="113"/>
+        <source>Apply</source>
+        <translation>套用</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="114"/>
+        <source>Application settings</source>
+        <translation>應用程式設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="132"/>
+        <source>Dismiss message</source>
+        <translation>關閉訊息</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="148"/>
+        <source>Back to main menu</source>
+        <translation>返回主選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="155"/>
+        <location filename="../../src/ui/qml/Main.qml" line="201"/>
+        <source>Add action</source>
+        <translation>新增動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="159"/>
+        <source>Keyboard shortcut</source>
+        <translation>鍵盤快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="160"/>
+        <source>Open application</source>
+        <translation>開啟應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="161"/>
+        <source>Open file or folder</source>
+        <translation>開啟檔案或資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="162"/>
+        <source>Open website</source>
+        <translation>開啟網站</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="163"/>
+        <source>Run command</source>
+        <translation>執行命令</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="165"/>
+        <source>New submenu</source>
+        <translation>新增子選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="171"/>
+        <source>Arrange actions</source>
+        <translation>排列動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="176"/>
+        <location filename="../../src/ui/qml/Main.qml" line="177"/>
+        <source>Appearance</source>
+        <translation>外觀</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="199"/>
+        <source>Add an action to this submenu</source>
+        <translation>在此子選單新增動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="199"/>
+        <source>Build your menu</source>
+        <translation>建立你的選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="200"/>
+        <source>Start with a shortcut, an app, or a website.</source>
+        <translation>先新增快捷鍵、應用程式或網站。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="223"/>
+        <source>Changes stay in preview until you apply.</source>
+        <translation>套用前，變更只會顯示在預覽中。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="223"/>
+        <source>Click an action to edit</source>
+        <translation>點選動作以編輯</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="223"/>
+        <source>Click a slice to edit</source>
+        <translation>點選扇形以編輯</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="285"/>
+        <source>Settings</source>
+        <translation>設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="291"/>
+        <location filename="../../src/ui/qml/Main.qml" line="304"/>
+        <source>Language</source>
+        <translation>語言</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="297"/>
+        <source>Follow system</source>
+        <translation>依照系統</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="298"/>
+        <source>English</source>
+        <translation>English</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="299"/>
+        <source>繁體中文</source>
+        <translation>繁體中文</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="300"/>
+        <source>简体中文</source>
+        <translation>简体中文</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="306"/>
+        <source>Language changes take effect after restarting GoPieMenu.</source>
+        <translation>重新啟動 GoPieMenu 後，語言變更才會生效。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="307"/>
+        <source>Start with Windows</source>
+        <translation>隨 Windows 啟動</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="310"/>
+        <source>Import</source>
+        <translation>匯入</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="311"/>
+        <source>Export</source>
+        <translation>匯出</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="313"/>
+        <source>Open custom icon folder</source>
+        <translation>開啟自訂圖示資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="316"/>
+        <location filename="../../src/ui/qml/Main.qml" line="327"/>
+        <source>About</source>
+        <translation>關於</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="319"/>
+        <source>Open GoPieMenu on GitHub</source>
+        <translation>在 GitHub 上開啟 GoPieMenu</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="333"/>
+        <source>Version %1</source>
+        <translation>版本 %1</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="334"/>
+        <source>GoPieMenu · GPL-3.0</source>
+        <translation>GoPieMenu · GPL-3.0</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="334"/>
+        <source>Icons by Iconoir · MIT</source>
+        <translation>圖示由 Iconoir 提供 · MIT</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/Main.qml" line="335"/>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+</context>
+<context>
+    <name>MenuSettingsPane</name>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="8"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="9"/>
+        <source>Menu name</source>
+        <translation>選單名稱</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="16"/>
+        <source>Open with</source>
+        <translation>開啟方式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <source>Hold mouse button</source>
+        <translation>按住滑鼠按鈕</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <source>Hold keyboard shortcut</source>
+        <translation>按住鍵盤快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <source>Press to toggle</source>
+        <translation>按下以切換</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="23"/>
+        <source>Activation mode</source>
+        <translation>啟用模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="25"/>
+        <source>Modifiers</source>
+        <translation>修飾鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="27"/>
+        <source>Mouse button</source>
+        <translation>滑鼠按鈕</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="27"/>
+        <source>Keyboard shortcut</source>
+        <translation>鍵盤快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="34"/>
+        <source>Left button</source>
+        <translation>左鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="34"/>
+        <source>Right button</source>
+        <translation>右鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="35"/>
+        <source>Middle button</source>
+        <translation>中鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="35"/>
+        <source>Side button 1 (X1)</source>
+        <translation>側鍵 1 (X1)</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="36"/>
+        <source>Side button 2 (X2)</source>
+        <translation>側鍵 2 (X2)</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="40"/>
+        <source>Trigger mouse button</source>
+        <translation>觸發滑鼠按鈕</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="46"/>
+        <source>Press a keyboard shortcut…</source>
+        <translation>請按下鍵盤快捷鍵…</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="46"/>
+        <source>Record shortcut</source>
+        <translation>錄製快捷鍵</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="51"/>
+        <source>Press the shortcut, point to an action, then click to run it.</source>
+        <translation>按下快捷鍵，指向某個動作，再按一下即可執行。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="51"/>
+        <source>Hold the trigger, point to an action, then release to run it.</source>
+        <translation>按住觸發鍵，指向某個動作，再放開即可執行。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="54"/>
+        <source>Available in</source>
+        <translation>適用於</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="58"/>
+        <source>All applications</source>
+        <translation>所有應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="60"/>
+        <source>Application filter</source>
+        <translation>應用程式篩選條件</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="63"/>
+        <source>Running apps</source>
+        <translation>執行中的應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="64"/>
+        <source>Choose application</source>
+        <translation>選擇應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="66"/>
+        <source>Leave empty for every app. Separate application names with commas.</source>
+        <translation>留空代表適用於所有應用程式。多個應用程式名稱請以逗號分隔。</translation>
+    </message>
+</context>
+<context>
+    <name>ModifierButtons</name>
+    <message>
+        <location filename="../../src/ui/qml/ModifierButtons.qml" line="18"/>
+        <source>%1 modifier</source>
+        <translation>%1 修飾鍵</translation>
+    </message>
+</context>
+<context>
+    <name>RunningAppsDialog</name>
+    <message>
+        <location filename="../../src/ui/qml/RunningAppsDialog.qml" line="9"/>
+        <source>Running applications</source>
+        <translation>執行中的應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/RunningAppsDialog.qml" line="11"/>
+        <source>Search applications</source>
+        <translation>搜尋應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/RunningAppsDialog.qml" line="11"/>
+        <source>Search running applications</source>
+        <translation>搜尋執行中的應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/RunningAppsDialog.qml" line="23"/>
+        <source>No matching applications</source>
+        <translation>找不到相符的應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/RunningAppsDialog.qml" line="26"/>
+        <source>Refresh</source>
+        <translation>重新整理</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/RunningAppsDialog.qml" line="28"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>StatusToggle</name>
+    <message>
+        <location filename="../../src/ui/qml/StatusToggle.qml" line="13"/>
+        <source>Enabled</source>
+        <translation>已啟用</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/StatusToggle.qml" line="13"/>
+        <source>Disabled</source>
+        <translation>已停用</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/StatusToggle.qml" line="14"/>
+        <source>Menu enabled</source>
+        <translation>選單已啟用</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/StatusToggle.qml" line="32"/>
+        <source>Disable this menu</source>
+        <translation>停用此選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/StatusToggle.qml" line="32"/>
+        <source>Enable this menu</source>
+        <translation>啟用此選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/StatusToggle.qml" line="32"/>
+        <source>Add an action before enabling this menu</source>
+        <translation>新增動作後才能啟用此選單</translation>
+    </message>
+</context>
+<context>
+    <name>WindowTitleBar</name>
+    <message>
+        <location filename="../../src/ui/qml/WindowTitleBar.qml" line="21"/>
+        <source>Minimize</source>
+        <translation>最小化</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/WindowTitleBar.qml" line="22"/>
+        <source>Restore</source>
+        <translation>還原</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/WindowTitleBar.qml" line="22"/>
+        <source>Maximize</source>
+        <translation>最大化</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/WindowTitleBar.qml" line="23"/>
+        <source>Close window</source>
+        <translation>關閉視窗</translation>
+    </message>
+</context>
+<context>
+    <name>gpm::EditorSession</name>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="148"/>
+        <source>Main menu</source>
+        <translation>主選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="223"/>
+        <location filename="../../src/core/EditorSession.cpp" line="286"/>
+        <source>%1 copy</source>
+        <translation>%1 副本</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="229"/>
+        <source>Keep at least one menu.</source>
+        <translation>至少保留一個選單。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="262"/>
+        <location filename="../../src/core/EditorSession.cpp" line="297"/>
+        <source>Submenus can only contain actions.</source>
+        <translation>子選單只能包含動作。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="263"/>
+        <location filename="../../src/core/EditorSession.cpp" line="284"/>
+        <location filename="../../src/core/EditorSession.cpp" line="337"/>
+        <source>A pie can have at most 12 items.</source>
+        <translation>圓餅選單最多只能有 12 個項目。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="266"/>
+        <source>New submenu</source>
+        <translation>新增子選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="266"/>
+        <location filename="../../src/core/EditorSession.cpp" line="320"/>
+        <location filename="../../src/core/EditorSession.cpp" line="324"/>
+        <source>New action</source>
+        <translation>新增動作</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="294"/>
+        <source>Move or remove the submenu actions before changing its type.</source>
+        <translation>變更類型前，請先移動或移除子選單中的動作。</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="334"/>
+        <source>A submenu cannot be placed inside another submenu.</source>
+        <translation>子選單不能放在另一個子選單中。</translation>
+    </message>
+</context>
+<context>
+    <name>gpm::SettingsWindow</name>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="122"/>
+        <source>Choose folder</source>
+        <translation>選擇資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="123"/>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="134"/>
+        <source>Choose application</source>
+        <translation>選擇應用程式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="123"/>
+        <source>Choose file</source>
+        <translation>選擇檔案</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="124"/>
+        <source>Applications (*.exe *.bat *.cmd);;All files (*)</source>
+        <translation>應用程式 (*.exe *.bat *.cmd);;所有檔案 (*)</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="124"/>
+        <source>All files (*)</source>
+        <translation>所有檔案 (*)</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="134"/>
+        <source>Applications (*.exe)</source>
+        <translation>應用程式 (*.exe)</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="156"/>
+        <source>The selection changed. Choose the color again.</source>
+        <translation>選取項目已變更，請重新選擇顏色。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="167"/>
+        <source>Color updated, but recent colors could not be saved.</source>
+        <translation>顏色已更新，但無法儲存最近使用的顏色。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="172"/>
+        <source>Import configuration</source>
+        <translation>匯入設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="172"/>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="182"/>
+        <source>JSON files (*.json)</source>
+        <translation>JSON 檔案 (*.json)</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="182"/>
+        <source>Export configuration</source>
+        <translation>匯出設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="191"/>
+        <source>Cannot open the icon folder.</source>
+        <translation>無法開啟圖示資料夾。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/SettingsWindow.cpp" line="213"/>
+        <source>Settings were saved, but Windows startup could not be updated.</source>
+        <translation>設定已儲存，但無法更新 Windows 啟動設定。</translation>
+    </message>
+</context>
+<context>
+    <name>gpm::TrayManager</name>
+    <message>
+        <location filename="../../src/ui/TrayManager.cpp" line="32"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="62"/>
+        <source>GoPieMenu - Active</source>
+        <translation>GoPieMenu - 已啟用</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/TrayManager.cpp" line="50"/>
+        <source>Settings</source>
+        <translation>設定</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/TrayManager.cpp" line="55"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="60"/>
+        <source>Pause</source>
+        <translation>暫停</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/TrayManager.cpp" line="60"/>
+        <source>Resume</source>
+        <translation>繼續</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/TrayManager.cpp" line="61"/>
+        <source>GoPieMenu - Paused</source>
+        <translation>GoPieMenu - 已暫停</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/TrayManager.cpp" line="68"/>
+        <source>Quit</source>
+        <translation>結束</translation>
+    </message>
+</context>
+</TS>

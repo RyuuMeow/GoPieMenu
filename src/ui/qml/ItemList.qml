@@ -73,10 +73,10 @@ Rectangle {
         spacing: 0
         RowLayout {
             Layout.fillWidth: true; Layout.topMargin: 5
-            Label { text: "Arrange actions"; font.pixelSize: 13; color: T.muted; Layout.fillWidth: true }
-            AppButton { iconName: "nav-arrow-up.svg"; compact: true; hint: "Move selected action up"; enabled: root.selectedIndex > 0; onClicked: editor.moveSelected(-1) }
-            AppButton { iconName: "nav-arrow-down.svg"; compact: true; hint: "Move selected action down"; enabled: root.selectedIndex >= 0 && root.selectedIndex < list.count - 1; onClicked: editor.moveSelected(1) }
-            AppButton { iconName: "cancel.svg"; compact: true; hint: "Close list"; onClicked: root.closeList() }
+            Label { text: qsTr("Arrange actions"); font.pixelSize: 13; color: T.muted; Layout.fillWidth: true }
+            AppButton { iconName: "nav-arrow-up.svg"; compact: true; hint: qsTr("Move selected action up"); enabled: root.selectedIndex > 0; onClicked: editor.moveSelected(-1) }
+            AppButton { iconName: "nav-arrow-down.svg"; compact: true; hint: qsTr("Move selected action down"); enabled: root.selectedIndex >= 0 && root.selectedIndex < list.count - 1; onClicked: editor.moveSelected(1) }
+            AppButton { iconName: "cancel.svg"; compact: true; hint: qsTr("Close list"); onClicked: root.closeList() }
         }
         Item {
             id: viewport
@@ -126,7 +126,7 @@ Rectangle {
                         IconImage { name: row.modelData.icon; width: 19; height: 19 }
                         Label { text: row.modelData.name; Layout.fillWidth: true; Layout.minimumWidth: 0; color: T.ink; font.pixelSize: 14; elide: Text.ElideRight }
                         Label { visible: row.modelData.action === 6; text: row.modelData.childCount; color: T.muted; font.pixelSize: 12 }
-                        AppButton { visible: row.modelData.action === 6; iconName: "nav-arrow-right.svg"; compact: true; hint: "Open submenu"; onClicked: editor.enterFolder(row.modelData.id) }
+                        AppButton { visible: row.modelData.action === 6; iconName: "nav-arrow-right.svg"; compact: true; hint: qsTr("Open submenu"); onClicked: editor.enterFolder(row.modelData.id) }
                     }
                     Accessible.role: Accessible.ListItem
                     Accessible.name: modelData.name

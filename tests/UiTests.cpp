@@ -17,6 +17,7 @@
 #include "ui/rendering/MenuScene.h"
 #include "ui/TrayManager.h"
 #include "core/ActionExecutor.h"
+#include "core/TranslationManager.h"
 
 using namespace gpm;
 class UrlReceiver : public QObject {
@@ -82,6 +83,26 @@ private slots:
         for (auto* screen : QGuiApplication::screens()) qInfo() << "Screen" << screen->name() << screen->geometry() << screen->availableGeometry() << screen->devicePixelRatio();
     }
     void init() { QTest::failOnWarning(QRegularExpression(".*(qrc:/editor|QQml|Binding loop|ReferenceError|TypeError).*")); }
+    void chineseEditorsAndLanguageSelection() {
+        for (const auto& language : {QString("zh-TW"), QString("zh-CN")}) {
+            TranslationManager translations; QVERIFY(translations.load(language));
+            QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+            SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+            QVERIFY(showEditor(editor)); auto* w = editor.window();
+            auto* apply = find(w, "applyButton"); QVERIFY(apply);
+            QCOMPARE(apply->property("text").toString(), QCoreApplication::translate("Main", "Apply"));
+            QVERIFY(apply->property("text").toString() != "Apply");
+            QVERIFY(click(w, "applicationSettingsButton"));
+            auto* combo = find(w, "languageCombo"); QVERIFY(combo);
+            QTRY_COMPARE(combo->property("currentValue").toString(), "system");
+            combo->setProperty("currentIndex", language == "zh-TW" ? 2 : 3);
+            QVERIFY(QMetaObject::invokeMethod(combo, "activated", Q_ARG(int, combo->property("currentIndex").toInt())));
+            QCOMPARE(editor.session()->language(), language);
+            QVERIFY(editor.session()->dirty());
+            QCOMPARE(config.GetConfig().Language, "system");
+            QVERIFY(snapshot(w, "settings-" + language));
+        }
+    }
     void appearanceFollowsTheSelectedProfile() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         auto initial = config.GetConfig();

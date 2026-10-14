@@ -10,8 +10,8 @@ Switch {
     padding: 0
     spacing: 10
     hoverEnabled: true
-    text: checked ? "Enabled" : "Disabled"
-    Accessible.name: "Menu enabled"
+    text: checked ? qsTr("Enabled") : qsTr("Disabled")
+    Accessible.name: qsTr("Menu enabled")
     indicator: Rectangle {
         width: 42; height: 24
         y: (root.height - height)/2
@@ -29,5 +29,5 @@ Switch {
         font.pixelSize: 13
         verticalAlignment: Text.AlignVCenter
     }
-    AppToolTip { visible: root.hovered; text: root.checked ? "Disable this menu" : root.canEnable ? "Enable this menu" : "Add an action before enabling this menu" }
+    AppToolTip { visible: root.hovered; text: root.checked ? qsTr("Disable this menu") : root.canEnable ? qsTr("Enable this menu") : qsTr("Add an action before enabling this menu") }
 }
