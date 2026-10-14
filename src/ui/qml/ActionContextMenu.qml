@@ -14,12 +14,12 @@ AppMenu {
     }
     AppMenuItem {
         objectName: "contextDuplicateAction"
-        text: "Duplicate"
+        text: qsTr("Duplicate")
         onTriggered: if (root.profileId === editor.profileId) editor.duplicateItem(root.itemId)
     }
     AppMenuItem {
         objectName: "contextDeleteAction"
-        text: "Delete action"
+        text: qsTr("Delete action")
         destructive: true
         onTriggered: if (root.profileId === editor.profileId) editor.removeItem(root.itemId)
     }

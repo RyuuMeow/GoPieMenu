@@ -7,7 +7,7 @@ import "Theme.js" as T
 AppDialog {
     id: root
     objectName: "colorPicker"
-    title: "Choose color"
+    title: qsTr("Choose color")
     width: Math.min(600, parent.width - 32)
     property color original: T.accent
     property bool hexValid: true
@@ -37,7 +37,7 @@ AppDialog {
             ColorChannel { label: "S"; value: wheel.saturation * 100; onEdited: function(value) { wheel.saturation = value / 100 } }
             ColorChannel { label: "V"; value: wheel.value * 100; onEdited: function(value) { wheel.value = value / 100 } }
             ColorChannel { label: "A"; value: wheel.alpha * 100; onEdited: function(value) { wheel.alpha = value / 100 } }
-            FieldLabel { text: "Hex · RRGGBB / RRGGBBAA"; topPadding: root.compact ? 0 : 8 }
+            FieldLabel { text: qsTr("Hex · RRGGBB / RRGGBBAA"); topPadding: root.compact ? 0 : 8 }
             AppField {
                 id: hexField
                 objectName: "colorHexField"
@@ -51,20 +51,20 @@ AppDialog {
                     root.hexValid = valid
                 }
                 onEditingFinished: if (root.hexValid) text = wheel.hex
-                Accessible.name: "Hex color"
+                Accessible.name: qsTr("Hex color")
             }
         }
     }
-    Label { visible: !root.hexValid; text: "Enter 6 hex digits, or 8 including opacity."; color: T.danger; font.pixelSize: 12 }
+    Label { visible: !root.hexValid; text: qsTr("Enter 6 hex digits, or 8 including opacity."); color: T.danger; font.pixelSize: 12 }
     RowLayout {
         Layout.fillWidth: true
         ColorSwatch { value: root.original; Layout.preferredWidth: 64; Layout.preferredHeight: 32 }
         IconImage { name: "arrow-right.svg"; width: 16; height: 16; tint: T.muted }
         ColorSwatch { value: wheel.color; Layout.preferredWidth: 64; Layout.preferredHeight: 32 }
         Item { Layout.fillWidth: true }
-        AppButton { text: "Reset"; kind: "danger"; compact: root.compact; onClicked: { wheel.color = root.original; hexField.text = wheel.hex } }
+        AppButton { text: qsTr("Reset"); kind: "danger"; compact: root.compact; onClicked: { wheel.color = root.original; hexField.text = wheel.hex } }
     }
-    FieldLabel { text: "Recent colors"; topPadding: root.compact ? 0 : 8 }
+    FieldLabel { text: qsTr("Recent colors"); topPadding: root.compact ? 0 : 8 }
     Flow {
         Layout.fillWidth: true
         spacing: 8
@@ -75,16 +75,16 @@ AppDialog {
                 required property int index
                 objectName: "recentColor" + index
                 implicitWidth: 36; implicitHeight: 36
-                hint: "Use " + modelData
+                hint: qsTr("Use %1").arg(modelData)
                 ColorSwatch { anchors.fill: parent; anchors.margins: 3; value: parent.modelData }
                 onClicked: { wheel.color = modelData; hexField.text = wheel.hex }
             }
         }
-        Label { visible: appController.recentColors.length === 0; text: "Colors you use will appear here."; color: T.muted; font.pixelSize: 13 }
+        Label { visible: appController.recentColors.length === 0; text: qsTr("Colors you use will appear here."); color: T.muted; font.pixelSize: 13 }
     }
     footer: RowLayout {
         Item { Layout.fillWidth: true }
-        AppButton { objectName: "cancelColorButton"; text: "Cancel"; onClicked: root.close() }
-        AppButton { objectName: "useColorButton"; text: "Use color"; kind: "primary"; enabled: root.hexValid; onClicked: { appController.acceptColor(wheel.color); root.close() } }
+        AppButton { objectName: "cancelColorButton"; text: qsTr("Cancel"); onClicked: root.close() }
+        AppButton { objectName: "useColorButton"; text: qsTr("Use color"); kind: "primary"; enabled: root.hexValid; onClicked: { appController.acceptColor(wheel.color); root.close() } }
     }
 }

@@ -4,9 +4,13 @@
 
 A customizable Windows radial menu for shortcuts, applications, files, websites, and commands.
 
-[Download v2.0.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.0.0) · [What's new and upgrading](docs/releases/v2.0.0.md)
+[Download v2.1.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0) · [What's new and upgrading](CHANGELOG.md#210)
 
 ![Light editor](resources/demo/Editor2.png)
+
+The interface supports English, Traditional Chinese, and Simplified Chinese. New configurations follow the system UI language; unsupported languages use English. Settings → Language offers **Later** or a blue **Restart** button. Restart applies all pending changes; Later keeps the draft for further editing. Chinese interfaces use Microsoft JhengHei UI. Existing configurations with an explicit language keep that choice. Your saved menu and action names are not retranslated.
+
+Opening GoPieMenu manually shows the editor, including when it is already running in the tray. Windows startup keeps it in the tray.
 
 ## Edit your menu
 
@@ -34,9 +38,17 @@ Configuration remains version 1.0 JSON, stored under Qt's application-data direc
 
 The application and [tray menu](resources/demo/TrayMenu.png) use the new Pie Menu artwork and light styling. The GitHub button beside **About** opens this project's repository.
 
+## Updates
+
+GoPieMenu checks for newer stable GitHub releases at startup. A visible editor shows an update dialog; when hidden or minimized, a tray notification opens the same dialog. **Skip this version** remembers that release; **Settings → Check for updates** can revisit it.
+
+Release notes use the current interface language, with English fallback and shared validation information. **Update** downloads the Windows installer and verifies `SHA256SUMS.txt`. **Install and exit** asks you to resolve unapplied edits, then opens the Windows installer permission prompt. Cancelling that prompt keeps GoPieMenu running. Closing the update dialog with **Later** does not install anything.
+
+The [changelog](CHANGELOG.md) is the source for all release notes. Publishing a version extracts only its section into the GitHub Release body, which the application reads. Preview and smoke-test modes do not check for updates.
+
 ## Build and verify
 
-Requires Windows, Visual Studio 2022 with C++ tools, CMake 3.21+, and Qt 6.9 with Widgets, Quick, QML, Quick Controls, SVG, and Test.
+Requires Windows, Visual Studio 2022 with C++ tools, CMake 3.21+, and Qt 6.9 with Widgets, Quick, QML, Quick Controls, SVG, Network, Linguist Tools, and Test.
 
 ```powershell
 ./scripts/build.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(GoPieMenu VERSION 2.0.0 LANGUAGES CXX)
+project(GoPieMenu VERSION 2.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 include(CTest)
 option(GPM_BUILD_DESKTOP "Build the Windows desktop application" ON)
-find_package(Qt6 6.9 REQUIRED COMPONENTS Core Gui)
+find_package(Qt6 6.9 REQUIRED COMPONENTS Core Gui Network LinguistTools)
 
 add_library(gpm_core STATIC
     src/core/ConfigValidation.cpp
@@ -15,15 +15,34 @@ add_library(gpm_core STATIC
     src/core/EditorSession.cpp
     src/core/InputState.cpp
     src/core/Shortcut.cpp
+    src/core/TranslationManager.cpp
 )
 target_include_directories(gpm_core PUBLIC src)
 target_link_libraries(gpm_core PUBLIC Qt6::Core Qt6::Gui)
+
+set(GPM_TRANSLATIONS
+    resources/i18n/gopiemenu_zh_TW.ts
+    resources/i18n/gopiemenu_zh_CN.ts
+)
+qt_add_lrelease(TS_FILES ${GPM_TRANSLATIONS} QM_FILES_OUTPUT_VARIABLE GPM_QM_FILES)
+qt_add_resources(gpm_core "translations" PREFIX "/i18n"
+    BASE "${CMAKE_CURRENT_BINARY_DIR}" FILES ${GPM_QM_FILES})
+add_custom_target(update-translations
+    COMMAND Qt6::lupdate src -no-obsolete -ts ${GPM_TRANSLATIONS}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Update translation catalogs from C++ and QML sources")
 target_compile_definitions(gpm_core PUBLIC UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN APP_VERSION="${PROJECT_VERSION}")
 if(MSVC)
     target_compile_options(gpm_core PUBLIC /utf-8 /W4)
 endif()
 if(WIN32)
     target_link_libraries(gpm_core PUBLIC user32)
+endif()
+
+add_library(gpm_updates STATIC src/update/ReleaseInfo.cpp src/update/UpdateManager.cpp)
+target_link_libraries(gpm_updates PUBLIC gpm_core Qt6::Network)
+if(WIN32)
+    target_link_libraries(gpm_updates PRIVATE shell32)
 endif()
 
 if(GPM_BUILD_DESKTOP)
@@ -41,7 +60,7 @@ if(GPM_BUILD_DESKTOP)
         src/ui/RunningApplications.cpp
     )
     target_include_directories(gpm_ui PUBLIC src)
-    target_link_libraries(gpm_ui PUBLIC gpm_core Qt6::Widgets Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Svg)
+    target_link_libraries(gpm_ui PUBLIC gpm_core gpm_updates Qt6::Widgets Qt6::Quick Qt6::Qml Qt6::QuickControls2 Qt6::Svg)
     if(WIN32)
         target_link_libraries(gpm_ui PRIVATE dwmapi)
     endif()
@@ -78,6 +97,14 @@ if(BUILD_TESTING)
     add_executable(gpm_core_tests tests/CoreTests.cpp)
     target_link_libraries(gpm_core_tests PRIVATE gpm_core Qt6::Test)
     add_test(NAME core COMMAND gpm_core_tests -o artifacts/core.txt,txt)
+    add_executable(gpm_update_tests tests/UpdateTests.cpp)
+    target_link_libraries(gpm_update_tests PRIVATE gpm_updates Qt6::Test)
+    target_compile_definitions(gpm_update_tests PRIVATE GPM_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    add_test(NAME updates COMMAND gpm_update_tests -o artifacts/updates.txt,txt)
+    if(WIN32)
+        find_program(GPM_POWERSHELL NAMES pwsh powershell REQUIRED)
+        add_test(NAME release-notes COMMAND "${GPM_POWERSHELL}" -NoProfile -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/ReleaseNotesTests.ps1")
+    endif()
     if(GPM_BUILD_DESKTOP)
         add_executable(gpm_ui_tests tests/UiTests.cpp)
         target_link_libraries(gpm_ui_tests PRIVATE gpm_ui gpm_actions Qt6::Test)

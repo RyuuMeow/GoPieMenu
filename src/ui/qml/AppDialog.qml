@@ -32,7 +32,7 @@ Popup {
             id: titleRow
             Layout.fillWidth: true
             Label { text: root.title; color: T.ink; font.pixelSize: 19; font.weight: Font.DemiBold; Layout.fillWidth: true }
-            AppButton { visible: root.dismissible; iconName: "cancel.svg"; hint: "Close"; compact: true; onClicked: root.close() }
+            AppButton { visible: root.dismissible; iconName: "cancel.svg"; hint: qsTr("Close"); compact: true; onClicked: root.close() }
         }
         ScrollView {
             id: scroll

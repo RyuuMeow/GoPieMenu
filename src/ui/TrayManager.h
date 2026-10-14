@@ -21,11 +21,14 @@ public:
 
     /** Makes the tray icon visible */
     void Show();
+    void SetUpdateAvailable(const QString& version);
+    void ShowUpdateNotification(const QString& version);
     
 signals:
     void SettingsRequested();
     void PauseToggled(bool bPaused);
     void QuitRequested();
+    void UpdateRequested();
 
 private:
     // === Initialization ===
@@ -36,6 +39,7 @@ private:
     QSystemTrayIcon* TrayIcon          = nullptr;
     QMenu*           TrayMenu          = nullptr;
     QAction*         PauseAction       = nullptr;
+    QAction*         UpdateAction      = nullptr;
     
     // === State ===
     bool             bIsPaused         = false;

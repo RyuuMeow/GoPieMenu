@@ -2,6 +2,7 @@
 #include "quick/PiePreviewItem.h"
 #include "quick/ColorWheelItem.h"
 #include "RunningApplications.h"
+#include "core/TranslationManager.h"
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QFileDialog>
@@ -23,9 +24,10 @@
 static void InitializeEditorResources() { Q_INIT_RESOURCE(editor); }
 
 namespace gpm {
-SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent)
-    : QObject(parent), Manager(manager), Icons(icons), Session(manager), Recorder(&Session), Catalog(icons) {
+SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent, UpdateManager* updates)
+    : QObject(parent), Manager(manager), Icons(icons), Updates(updates), Session(manager), Recorder(&Session), Catalog(icons) {
     InitializeEditorResources();
+    FontFamily = InterfaceFontFamily(manager->GetConfig().Language);
     QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Light);
     for (const auto& value : QSettings().value("editor/recentColors").toStringList()) {
         if (QColor(value).isValid() && !RecentColors.contains(value)) RecentColors.append(value);
@@ -36,6 +38,7 @@ SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObje
         qmlRegisterType<ColorWheelItem>("GoPieMenu", 1, 0, "ColorWheel");
         qmlRegisterUncreatableType<EditorSession>("GoPieMenu", 1, 0, "EditorSession", "Provided by the application");
         qmlRegisterUncreatableType<IconService>("GoPieMenu", 1, 0, "IconService", "Provided by the application");
+        qmlRegisterUncreatableType<UpdateManager>("GoPieMenu", 1, 0, "UpdateManager", "Provided by the application");
         return true;
     }();
     Q_UNUSED(registered);
@@ -50,6 +53,12 @@ SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObje
     Engine.load(QUrl("qrc:/editor/Main.qml"));
     if (!Engine.rootObjects().isEmpty()) Window = qobject_cast<QQuickWindow*>(Engine.rootObjects().first());
     if (Window) connect(Window, &QWindow::windowStateChanged, this, &SettingsWindow::windowStateChanged);
+    if (Window) connect(Window, &QWindow::visibilityChanged, this, &SettingsWindow::presentPendingUpdate);
+    if (Updates) connect(Updates, &UpdateManager::updateAvailable, this, [this] {
+        PendingUpdate = true;
+        presentPendingUpdate();
+        if (PendingUpdate) emit updateToastRequested(Updates->version());
+    });
 #ifdef Q_OS_WIN
     if (Window) {
         const auto handle = reinterpret_cast<HWND>(Window->winId());
@@ -80,7 +89,9 @@ void SettingsWindow::show() {
         }
     }
     FirstShow = false;
-    Window->show(); Window->raise(); Window->requestActivate();
+    if (Window->windowState() == Qt::WindowMinimized) Window->showNormal();
+    else Window->show();
+    Window->raise(); Window->requestActivate();
 }
 void SettingsWindow::raise() { if (Window) Window->raise(); }
 void SettingsWindow::activateWindow() { if (Window) Window->requestActivate(); }
@@ -106,7 +117,8 @@ void SettingsWindow::toggleMaximized() {
     emit windowStateChanged();
 }
 void SettingsWindow::requestExit() {
-    if (!Session.dirty()) { emit exitConfirmed(); return; }
+    InstallOnExit = false;
+    if (!Session.dirty()) { finishExit(); return; }
     show();
     emit confirmExitRequested();
 }
@@ -114,7 +126,56 @@ bool SettingsWindow::resolveExit(const QString& choice) {
     if (choice == "apply") { if (!Session.apply()) return false; }
     else if (choice == "discard") Session.discard();
     else return false;
-    emit exitConfirmed(); return true;
+    return finishExit();
+}
+void SettingsWindow::cancelExit() { InstallOnExit = false; }
+bool SettingsWindow::chooseLanguage(const QString& language) {
+    const auto previous = Session.language();
+    Session.setLanguage(language);
+    return Session.language() != previous;
+}
+bool SettingsWindow::restartForLanguage() {
+    if (!Session.apply()) return false;
+    if (!RestartHandler || !RestartHandler()) {
+        Session.reportError(tr("Could not restart GoPieMenu. Your changes are saved; please reopen the app manually."));
+        return false;
+    }
+    emit exitConfirmed();
+    return true;
+}
+bool SettingsWindow::finishExit() {
+    if (InstallOnExit && (!Updates || !Updates->launchInstaller())) {
+        if (Updates) Session.reportError(Updates->error());
+        return false;
+    }
+    InstallOnExit = false;
+    emit exitConfirmed();
+    return true;
+}
+void SettingsWindow::requestUpdateInstall() {
+    if (!Updates || !Updates->ready()) return;
+    InstallOnExit = true;
+    if (Session.dirty()) { emit confirmExitRequested(); return; }
+    if (!finishExit()) { InstallOnExit = false; emit updateDialogRequested(); }
+}
+void SettingsWindow::presentPendingUpdate() {
+    if (!PendingUpdate || !Updates || !Updates->available() || !Window || !Window->isVisible() ||
+        Window->visibility() == QWindow::Minimized) return;
+    PendingUpdate = false;
+    emit updateDialogRequested();
+}
+void SettingsWindow::showUpdate() {
+    if (!Updates || !Updates->available()) return;
+    PendingUpdate = true;
+    show();
+    presentPendingUpdate();
+}
+void SettingsWindow::openReleasePage() {
+    if (Updates && Updates->available()) openReleaseLink(Updates->releasePage());
+}
+void SettingsWindow::openReleaseLink(const QUrl& url) {
+    if (url.scheme() != "https" || url.host().isEmpty()) return;
+    if (!QDesktopServices::openUrl(url)) Session.reportError(tr("Could not open the release page."));
 }
 void SettingsWindow::chooseTarget(bool directory) {
     const auto type = static_cast<ActionType>(Session.selectedItem()["action"].toInt());
@@ -207,7 +268,7 @@ void SettingsWindow::installAutoStart() {
 #ifdef Q_OS_WIN
     QSettings registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if (Manager->GetConfig().bStartWithWindows)
-        registry.setValue("GoPieMenu", "\"" + QDir::toNativeSeparators(QCoreApplication::applicationFilePath()) + "\"");
+        registry.setValue("GoPieMenu", "\"" + QDir::toNativeSeparators(QCoreApplication::applicationFilePath()) + "\" --autostart");
     else registry.remove("GoPieMenu");
     registry.sync();
     if (registry.status() != QSettings::NoError) Session.reportError(tr("Settings were saved, but Windows startup could not be updated."));

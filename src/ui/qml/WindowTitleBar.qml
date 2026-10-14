@@ -18,8 +18,8 @@ Rectangle {
     }
     Row {
         anchors.right: parent.right; anchors.rightMargin: 6; anchors.verticalCenter: parent.verticalCenter
-        WindowControlButton { objectName: "windowMinimizeButton"; iconName: "window-minimize.svg"; hint: "Minimize"; onClicked: root.targetWindow.showMinimized() }
-        WindowControlButton { objectName: "windowMaximizeButton"; iconName: appController.maximized ? "window-restore.svg" : "window-maximize.svg"; hint: appController.maximized ? "Restore" : "Maximize"; onClicked: root.toggleMaximized() }
-        WindowControlButton { objectName: "windowCloseButton"; iconName: "window-close.svg"; hint: "Close window"; onClicked: root.targetWindow.close() }
+        WindowControlButton { objectName: "windowMinimizeButton"; iconName: "window-minimize.svg"; hint: qsTr("Minimize"); onClicked: root.targetWindow.showMinimized() }
+        WindowControlButton { objectName: "windowMaximizeButton"; iconName: appController.maximized ? "window-restore.svg" : "window-maximize.svg"; hint: appController.maximized ? qsTr("Restore") : qsTr("Maximize"); onClicked: root.toggleMaximized() }
+        WindowControlButton { objectName: "windowCloseButton"; iconName: "window-close.svg"; hint: qsTr("Close window"); onClicked: root.targetWindow.close() }
     }
 }

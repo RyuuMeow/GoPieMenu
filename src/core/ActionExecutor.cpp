@@ -1,3 +1,4 @@
+#include <QCoreApplication>
 // =============================================================================
 // GoPieMenu - ActionExecutor Implementation
 // =============================================================================
@@ -33,7 +34,7 @@ bool ActionExecutor::Execute(const PieItem& Item)
     auto It = Handlers.find(Item.Action);
     if (It == Handlers.end()) 
     {
-        auto Error = QStringLiteral("No handler for action type: %1")
+        auto Error = QCoreApplication::translate("ActionExecutor", "No handler for action type: %1")
                        .arg(ActionTypeToString(Item.Action));
         qWarning() << "[ActionExecutor]" << Error;
         emit ActionFailed(Item.Name, Error);
@@ -43,7 +44,7 @@ bool ActionExecutor::Execute(const PieItem& Item)
     auto& Handler = It->second;
     if (!Handler->Validate(Item)) 
     {
-        auto Error = QStringLiteral("Invalid action data for: %1").arg(Item.Name);
+        auto Error = QCoreApplication::translate("ActionExecutor", "Invalid action data for: %1").arg(Item.Name);
         qWarning() << "[ActionExecutor]" << Error;
         emit ActionFailed(Item.Name, Error);
         return false;
@@ -56,7 +57,7 @@ bool ActionExecutor::Execute(const PieItem& Item)
     } 
     else 
     {
-        emit ActionFailed(Item.Name, QStringLiteral("Execution failed"));
+        emit ActionFailed(Item.Name, QCoreApplication::translate("ActionExecutor", "Execution failed"));
     }
     return bOk;
 }

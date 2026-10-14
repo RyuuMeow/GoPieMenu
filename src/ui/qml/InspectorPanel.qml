@@ -17,11 +17,11 @@ Rectangle {
             Layout.leftMargin: 22; Layout.rightMargin: 14
             Layout.topMargin: 14; Layout.bottomMargin: 8
             Label {
-                text: root.mode === "appearance" ? "Appearance" : root.mode === "menu" ? "Menu settings" : ""
+                text: root.mode === "appearance" ? qsTr("Appearance") : root.mode === "menu" ? qsTr("Menu settings") : ""
                 font.pixelSize: 17; font.weight: Font.DemiBold; color: T.ink
                 Layout.fillWidth: true
             }
-            AppButton { iconName: "cancel.svg"; hint: "Close panel"; compact: true; onClicked: root.closePanel() }
+            AppButton { iconName: "cancel.svg"; hint: qsTr("Close panel"); compact: true; onClicked: root.closePanel() }
         }
         ScrollView {
             id: scroll

@@ -24,7 +24,7 @@ jobs:
         run: |
           $version = [regex]::Match((Get-Content CMakeLists.txt -Raw), 'project\(GoPieMenu VERSION ([0-9.]+)').Groups[1].Value
           if ($env:GITHUB_REF_NAME -ne "v$version") { throw "Release tag does not match the application version." }
-          if (!(Test-Path -LiteralPath "docs/releases/$env:GITHUB_REF_NAME.md")) { throw "Release notes are missing." }
+          ./scripts/release-notes.ps1 -Version $env:GITHUB_REF_NAME -OutputPath build/release-notes.md
       - uses: ilammy/msvc-dev-cmd@v1
       - uses: jurplel/install-qt-action@v3
         with:
@@ -67,10 +67,13 @@ jobs:
         with:
           name: windows-package
           path: package
+      - name: Extract multilingual release notes
+        shell: pwsh
+        run: ./scripts/release-notes.ps1 -Version $env:GITHUB_REF_NAME -OutputPath release-notes.md
       - uses: softprops/action-gh-release@v2
         with:
           name: GoPieMenu ${{ github.ref_name }}
-          body_path: docs/releases/${{ github.ref_name }}.md
+          body_path: release-notes.md
           fail_on_unmatched_files: true
           files: |
             package/GoPieMenu_Setup.exe

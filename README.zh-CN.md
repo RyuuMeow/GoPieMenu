@@ -4,9 +4,13 @@
 
 Windows 圆形快捷菜单，支持快捷键、应用程序、文件、网址和命令。
 
-[下载 v2.0.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.0.0) · [更新与升级说明](docs/releases/v2.0.0.md)
+[下载 v2.1.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0) · [更新与升级说明](CHANGELOG.md#210)
 
 ![浅色编辑器](resources/demo/Editor2.png)
+
+界面支持英文、繁体中文及简体中文。新配置默认跟随系统界面语言，不支持的语言使用英文。切换“设置 → 语言”会显示“稍后”及蓝色“重新启动”按钮；重新启动会先应用所有待保存更改，稍后则保留草稿继续编辑。中文界面使用 Microsoft JhengHei UI。已有配置若已指定语言，会保留该选择；已保存的菜单及操作名称不会重新翻译。
+
+手动打开 GoPieMenu 会显示编辑器，已在系统托盘运行时也会唤回窗口；随 Windows 自动启动时则留在系统托盘。
 
 ## 使用方式
 
@@ -34,9 +38,17 @@ JSON 配置格式保持 1.0，位于 Qt 应用数据目录；Settings 提供导�
 
 程序与[托盘菜单](resources/demo/TrayMenu.png)已采用新版 Pie Menu 标志与浅色风格，**About** 旁的 GitHub 按钮可打开项目页面。
 
+## 更新
+
+GoPieMenu 会在启动时检查 GitHub 是否有更新的稳定版本。编辑器打开时显示更新对话框；隐藏或最小化时显示托盘通知，点击后可查看更新内容。“跳过此版本”会记住该版本，也可从“设置 → 检查更新”重新查看。
+
+更新说明按当前界面语言显示，缺少翻译时使用英文，验证信息则共用。“更新”会下载 Windows 安装程序并验证 `SHA256SUMS.txt`；点击“安装并退出”后，会先处理尚未应用的编辑，再打开 Windows 安装权限提示。取消权限提示时 GoPieMenu 会继续运行；点击“稍后”关闭更新窗口不会自动安装。
+
+所有更新说明集中在 [CHANGELOG.md](CHANGELOG.md)。发布时只提取该版本区块至 GitHub Release，程序再从 Release 读取内容。预览和启动验证模式不会检查更新。
+
 ## 构建与测试
 
-需要 Windows、Visual Studio 2022 C++、CMake 3.21+、Qt 6.9（Widgets、Quick、QML、Quick Controls、SVG、Test）。
+需要 Windows、Visual Studio 2022 C++、CMake 3.21+、Qt 6.9（Widgets、Quick、QML、Quick Controls、SVG、Network、Linguist Tools、Test）。
 
 ```powershell
 ./scripts/build.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"

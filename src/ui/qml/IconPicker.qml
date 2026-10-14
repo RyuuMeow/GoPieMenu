@@ -6,7 +6,7 @@ import "Theme.js" as T
 AppDialog {
     id: root
     objectName: "iconPicker"
-    title: "Choose icon"
+    title: qsTr("Choose icon")
     width: Math.min(520, parent.width - 32)
     onOpened: { search.text = ""; iconCatalog.query = ""; search.forceActiveFocus() }
     onClosed: { searchDelay.stop(); iconCatalog.query = "" }
@@ -19,9 +19,9 @@ AppDialog {
                 id: search
                 objectName: "iconSearch"
                 Layout.fillWidth: true
-                placeholderText: "Search icons"
+                placeholderText: qsTr("Search icons")
                 onTextEdited: searchDelay.restart()
-                Accessible.name: "Search icons"
+                Accessible.name: qsTr("Search icons")
             }
         }
         Timer { id: searchDelay; interval: 16; onTriggered: iconCatalog.query = search.text }
@@ -58,16 +58,16 @@ AppDialog {
             Label {
                 anchors.centerIn: parent
                 visible: grid.count === 0
-                text: iconCatalog.loading ? "Loading icons…" : "No matching icons"
+                text: iconCatalog.loading ? qsTr("Loading icons…") : qsTr("No matching icons")
                 color: T.muted; font.pixelSize: 14
             }
         }
         RowLayout {
             Layout.fillWidth: true
-            AppButton { text: "Clear icon"; onClicked: { editor.setItemField("icon", ""); root.close() } }
+            AppButton { text: qsTr("Clear icon"); onClicked: { editor.setItemField("icon", ""); root.close() } }
             Item { Layout.fillWidth: true }
             BusyIndicator { running: iconCatalog.loading; visible: running; implicitWidth: 22; implicitHeight: 22 }
-            Label { text: iconCatalog.count + " icons"; color: T.muted; font.pixelSize: 12 }
+            Label { text: qsTr("%1 icons").arg(iconCatalog.count); color: T.muted; font.pixelSize: 12 }
         }
     }
 }

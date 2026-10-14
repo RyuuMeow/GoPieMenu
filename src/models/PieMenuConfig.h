@@ -1,4 +1,5 @@
 #pragma once
+#include <QCoreApplication>
 
 // =============================================================================
 // GoPieMenu - Pie Menu Configuration (Profile)
@@ -41,19 +42,19 @@ struct PieMenuConfig
     {
         PieMenuConfig Config;
         Config.Id   = QUuid::createUuid().toString(QUuid::WithoutBraces);
-        Config.Name = QStringLiteral("New Pie Menu");
+        Config.Name = QCoreApplication::translate("DefaultMenu", "New Pie Menu");
         Config.Trigger.Modifiers = ModifierKey::Ctrl;
         Config.Trigger.Button    = MouseButton::Right;
 
         // Add some demo items
         Config.Items.push_back(PieItem::Create(
-            QStringLiteral("Notepad"), ActionType::LaunchApp,
+            QCoreApplication::translate("DefaultMenu", "Notepad"), ActionType::LaunchApp,
             QStringLiteral("notepad.exe"), QStringLiteral("page.svg")));
         Config.Items.push_back(PieItem::Create(
-            QStringLiteral("Calculator"), ActionType::LaunchApp,
+            QCoreApplication::translate("DefaultMenu", "Calculator"), ActionType::LaunchApp,
             QStringLiteral("calc.exe"), QStringLiteral("calculator")));
         Config.Items.push_back(PieItem::Create(
-            QStringLiteral("Explorer"), ActionType::LaunchApp,
+            QCoreApplication::translate("DefaultMenu", "Explorer"), ActionType::LaunchApp,
             QStringLiteral("explorer.exe"), QStringLiteral("folder")));
         Config.Items.push_back(PieItem::Create(
             QStringLiteral("CMD"), ActionType::RunCommand,
@@ -107,7 +108,7 @@ struct PieMenuConfig
     {
         PieMenuConfig Config;
         Config.Id       = Obj["id"].toString(QUuid::createUuid().toString(QUuid::WithoutBraces));
-        Config.Name     = Obj["name"].toString(QStringLiteral("Unnamed"));
+        Config.Name     = Obj["name"].toString(QCoreApplication::translate("DefaultMenu", "Unnamed"));
         Config.bEnabled = Obj["enabled"].toBool(true);
 
         // Trigger
