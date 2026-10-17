@@ -4,7 +4,7 @@
 
 Windows 圆形快捷菜单，支持快捷键、应用程序、文件、网址和命令。
 
-[下载 v2.1.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0) · [更新与升级说明](CHANGELOG.md#210)
+[下载 v2.2.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.2.0) · [更新与升级说明](CHANGELOG.md#220)
 
 ![浅色编辑器](resources/demo/Editor2.png)
 

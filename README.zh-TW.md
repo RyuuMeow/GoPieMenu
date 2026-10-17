@@ -4,7 +4,7 @@
 
 Windows 圓形快捷選單，可錄製快捷鍵、啟動應用程式、開啟檔案／網址與執行指令。
 
-[下載 v2.1.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0) · [更新與升級說明](CHANGELOG.md#210)
+[下載 v2.2.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.2.0) · [更新與升級說明](CHANGELOG.md#220)
 
 ![淺色編輯器](resources/demo/Editor2.png)
 

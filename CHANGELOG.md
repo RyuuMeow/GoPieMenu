@@ -2,25 +2,71 @@
 
 ## [Unreleased]
 
+## [2.2.0]
+
+### English
 <!-- gpm:lang en -->
-#### Added
-- Per-menu persistent floating mode: automatic foreground-app selection, nonactivating click actions, center dragging, and persistent toggle submenus.
-- Shared application-over-global arbitration across shortcut and persistent menus, including hidden persistent reservations; only one main menu is displayed.
-- A center context menu and tray toggle to hide all persistent menus, with separately remembered positions and submenu expansion.
+
+#### What's new
+
+- Choose **Persistent floating menu** for any profile. It appears automatically for the foreground application, supports repeated click actions, and can be moved by dragging its center.
+- Click a submenu sector to open or close its list. **Collapse submenu after click** optionally closes the list after selecting a child action while keeping the pie visible; it is off by default.
+- Application-specific menus take priority over global menus across both display modes. Only one main menu is shown. Hide all persistent menus from the center context menu or tray; positions, expansion, and the hidden state are remembered.
+- Set text size, icon size, text outline, and border width independently for the pie and submenus. Colors, font family, opacity, and animation remain shared within each profile, with matching live previews.
+- The installer completion page now offers a checked **開啟 GoPieMenu** option to launch the app. Uncheck it to finish without opening the app; silent installations never auto-launch it.
+
+#### Fixes and compatibility
+
+- Persistent pie and submenu clicks retain foreground focus so keyboard actions reach the active application. Switching applications refreshes the appropriate menu reliably.
+- Existing configurations keep shortcut mode and their previous submenu appearance. The new submenu dimensions become independent when edited.
+
 <!-- gpm:endlang -->
 
+### 繁體中文
 <!-- gpm:lang zh-TW -->
-#### 新增
-- 每份選單可設定常駐懸浮模式：依前景程式自動顯示、不搶焦點的點擊動作、中心拖移及持續展開的子選單切換。
-- 快捷與常駐模式共用專用優先於全域的規則；隱藏仍保留優先權，同時只顯示一個主選單。
-- 中心右鍵選單與系統匣開關可隱藏所有常駐選單，另外記住各選單位置與展開狀態。
+
+#### 新功能
+
+- 每份選單都可選擇「常駐懸浮選單」，依前景程式自動顯示，可重複點擊執行動作，並拖曳中心移動位置。
+- 點擊子選單扇形可展開或收起清單。新增「點擊後收起子選單」選項，勾選後執行子項目會收起清單，圓盤保持顯示；預設不勾選。
+- 快捷與常駐模式共用應用程式專用選單優先於全域選單的規則，同時只顯示一個主選單。可從中心右鍵選單或系統匣隱藏所有常駐選單，並記住位置、展開與隱藏狀態。
+- 圓盤本體與子選單可分別設定文字大小、圖示大小、文字外框與邊框寬度，並即時預覽。配色、字型、不透明度與動畫仍由同一份選單共用。
+- 安裝完成頁新增預設勾選的「開啟 GoPieMenu」，可取消勾選以直接結束安裝；靜默安裝不會自動開啟程式。
+
+#### 修正與相容性
+
+- 常駐圓盤與子選單不再因點擊而丟失前景焦點，快捷鍵動作可送至目前應用程式；切換程式時也會正確更新對應選單。
+- 既有設定保留快捷模式與原本的子選單外觀，之後可獨立調整子選單尺寸。
+
 <!-- gpm:endlang -->
 
+### 简体中文
 <!-- gpm:lang zh-CN -->
-#### 新增
-- 每份菜单可设置常驻悬浮模式：根据前台应用自动显示、不抢焦点的点击动作、中心拖动及持续展开的子菜单切换。
-- 快捷与常驻模式共用专用优先于全局的规则；隐藏仍保留优先权，同时只显示一个主菜单。
-- 中心右键菜单与系统托盘开关可隐藏所有常驻菜单，单独记住各菜单位置与展开状态。
+
+#### 新功能
+
+- 每份菜单都可选择“常驻悬浮菜单”，根据前台应用自动显示，可反复点击执行操作，并拖动中心移动位置。
+- 点击子菜单扇形可展开或收起列表。新增“点击后收起子菜单”选项，勾选后执行子项目会收起列表，圆盘保持显示；默认不勾选。
+- 快捷与常驻模式共用应用专用菜单优先于全局菜单的规则，同时只显示一个主菜单。可从中心右键菜单或系统托盘隐藏所有常驻菜单，并记住位置、展开与隐藏状态。
+- 圆盘本体与子菜单可分别设置文字大小、图标大小、文字外框与边框宽度，并实时预览。配色、字体、不透明度与动画仍由同一份菜单共用。
+- 安装完成页新增默认勾选的“開啟 GoPieMenu”，可取消勾选以直接结束安装；静默安装不会自动启动程序。
+
+#### 修复与兼容性
+
+- 常驻圆盘与子菜单不会因点击而丢失前台焦点，快捷键操作可发送到当前应用；切换应用时也会正确更新对应菜单。
+- 已有配置保留快捷模式与原来的子菜单外观，之后可单独调整子菜单尺寸。
+
+<!-- gpm:endlang -->
+
+<!-- gpm:lang shared -->
+### Validation
+
+The release workflow builds and tests on Windows, including core and update regression tests, multilingual release-note extraction, and UI/native-input tests at 100%, 125%, 150%, and 200% scaling. It verifies deployed startup before packaging and publishing the installer with `SHA256SUMS.txt`.
+
+Real input in third-party or elevated applications, pen/touch hardware, mixed-DPI monitor moves, and the final installation flow remain manual acceptance checks.
+
+Full changes: https://github.com/RyuuMeow/GoPieMenu/compare/v2.1.0...v2.2.0
+
 <!-- gpm:endlang -->
 
 ## [2.1.0]
