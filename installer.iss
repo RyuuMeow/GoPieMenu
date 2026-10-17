@@ -20,3 +20,6 @@ Name: "{autodesktop}\GoPieMenu"; Filename: "{app}\GoPieMenu.exe"; Tasks: desktop
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[Run]
+Filename: "{app}\GoPieMenu.exe"; Description: "開啟 GoPieMenu"; Flags: nowait postinstall skipifsilent
