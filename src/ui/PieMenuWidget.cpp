@@ -154,7 +154,7 @@ int PieMenuWidget::ConfirmSelection() {
 }
 void PieMenuWidget::SetAnimProgress(qreal value) { Progress = value; update(); }
 bool PieMenuWidget::event(QEvent* event) {
-    const bool handled = QWidget::event(event);
+    const bool handled = NonActivatingWidget::event(event);
     if (event->type() == QEvent::DevicePixelRatioChange && Open) { requestIcons(); update(); }
     return handled;
 }

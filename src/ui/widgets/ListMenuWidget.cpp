@@ -101,7 +101,7 @@ int ListMenuWidget::ConfirmSelection() {
 }
 void ListMenuWidget::SetAnimProgress(qreal value) { Progress = value; update(); }
 bool ListMenuWidget::event(QEvent* event) {
-    const bool handled = QWidget::event(event);
+    const bool handled = NonActivatingWidget::event(event);
     if (event->type() == QEvent::DevicePixelRatioChange && Open) { requestIcons(); update(); }
     return handled;
 }

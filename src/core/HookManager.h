@@ -2,6 +2,7 @@
 #include "IHookProvider.h"
 #include "ConfigManager.h"
 #include "InputState.h"
+#include <QTimer>
 #include <windows.h>
 
 namespace gpm {
@@ -32,6 +33,8 @@ private:
     InputState State;
     HHOOK Keyboard = nullptr, Mouse = nullptr;
     HWINEVENTHOOK Foreground = nullptr;
+    HWND PendingForeground = nullptr;
+    QTimer ForegroundUpdate;
     bool Suspended = false;
     static HookManager* Instance;
 };

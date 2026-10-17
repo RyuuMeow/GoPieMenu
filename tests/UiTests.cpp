@@ -101,13 +101,7 @@ private slots:
         }
     }
     void persistentClicksDragAndSubmenuToggle() {
-#ifdef Q_OS_WIN
-        QWidget target;
-        target.resize(320, 240); target.show(); target.raise(); target.activateWindow();
-        QVERIFY(QTest::qWaitForWindowActive(&target));
-        const auto foreground = GetForegroundWindow();
-        QCOMPARE(foreground, reinterpret_cast<HWND>(target.winId()));
-#endif
+        // OS focus and key delivery are covered by NativeInputTests with SendInput.
         IconService icons; PieMenuWidget pie(&icons);
         auto profile = PieMenuConfig::CreateDefault(); profile.Persistent = true;
         profile.Items[0].Action = ActionType::ListMenu;
@@ -115,9 +109,6 @@ private slots:
         auto style = StyleConfig::Frost(); style.AnimationDuration = 0;
         pie.ShowAt(QGuiApplication::primaryScreen()->availableGeometry().center(), profile, style, true);
         QVERIFY(QTest::qWaitForWindowExposed(&pie));
-#ifdef Q_OS_WIN
-        QCOMPARE(GetForegroundWindow(), foreground);
-#endif
         QSignalSpy chosen(&pie, &PieMenuWidget::ItemSelected);
         QSignalSpy moved(&pie, &PieMenuWidget::PositionChanged);
         QSignalSpy hidden(&pie, &PieMenuWidget::HidePersistentRequested);
@@ -154,13 +145,6 @@ private slots:
         QVERIFY(!context->isVisible()); QVERIFY(pie.IsOpen());
         QTest::mouseClick(&pie, Qt::RightButton, Qt::NoModifier, center);
         auto* hide = pie.findChild<QPushButton*>("hidePersistentButton"); QVERIFY(hide);
-#ifdef Q_OS_WIN
-        QCOMPARE(GetForegroundWindow(), foreground);
-        for (QWidget* window : {static_cast<QWidget*>(&pie), static_cast<QWidget*>(list), context}) {
-            QCOMPARE(SendMessageW(reinterpret_cast<HWND>(window->winId()), WM_MOUSEACTIVATE, 0, MAKELPARAM(HTCLIENT, WM_LBUTTONDOWN)), LRESULT(MA_NOACTIVATE));
-            QCOMPARE(GetForegroundWindow(), foreground);
-        }
-#endif
         QTest::mouseClick(hide, Qt::LeftButton); QCOMPARE(hidden.count(), 1);
     }
     void persistentControllerSwitchesHidesAndRestores() {
