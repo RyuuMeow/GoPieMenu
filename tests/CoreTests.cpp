@@ -47,6 +47,25 @@ private slots:
             QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
         }
     }
+    void submenuCollapseIsAnUndoableProfileOption() {
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json")); EditorSession session(&manager);
+        QVERIFY(!session.currentProfile()->CollapseSubmenuOnClick);
+        session.setProfileField("persistent", true);
+        session.setProfileField("collapseSubmenuOnClick", true);
+        QVERIFY(session.currentProfile()->CollapseSubmenuOnClick);
+        session.undo(); QVERIFY(!session.currentProfile()->CollapseSubmenuOnClick);
+        session.redo(); QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QVERIFY(reopened.GetConfig().Profiles[0].CollapseSubmenuOnClick);
+        session.setProfileField("persistent", false);
+        QVERIFY(session.currentProfile()->CollapseSubmenuOnClick);
+        auto json = reopened.GetConfig().ToJson(); auto profiles = json["profiles"].toArray();
+        auto profile = profiles[0].toObject(); profile.remove("collapseSubmenuOnClick"); profiles[0] = profile; json["profiles"] = profiles;
+        auto parsed = ParseConfig(QJsonDocument(json).toJson()); QVERIFY(parsed);
+        QVERIFY(!parsed.Value->Profiles[0].CollapseSubmenuOnClick);
+        profile["collapseSubmenuOnClick"] = "true"; profiles[0] = profile; json["profiles"] = profiles;
+        QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
+    }
     void persistentArbitrationReservesItsScope() {
         auto global = PieMenuConfig::CreateDefault(); global.Id = "global";
         auto specific = global; specific.Id = "paint"; specific.Persistent = true; specific.AppFilter = {"paint.exe"};

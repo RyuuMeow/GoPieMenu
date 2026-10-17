@@ -34,6 +34,10 @@ PieMenuWidget::PieMenuWidget(IconService* icons, QWidget* parent)
         if (!Open) return;
         const auto copy = item;
         if (!Persistent) HideMenu(); // Transient selections are consumed before dispatch.
+        else if (Scene.config().CollapseSubmenuOnClick) {
+            List->Reset(); Expanded = -1;
+            emit SubmenuChanged(QString()); update();
+        }
         emit ItemSelected(-1, copy);
     });
     connect(Icons, &IconService::imageReady, this, [this](const QString& key, const QImage& image) {

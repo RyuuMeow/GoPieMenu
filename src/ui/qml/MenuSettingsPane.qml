@@ -71,6 +71,20 @@ ColumnLayout {
         text: qsTr("Appears automatically in the foreground application. Click actions, drag the center to move, or right-click the center to hide. Restore it from the tray.")
         wrapMode: Text.WordWrap; color: T.muted; font.pixelSize: 13
     }
+    AppCheckBox {
+        objectName: "collapseSubmenuOnClickCheckBox"
+        visible: editor.profile.persistent || false
+        Layout.fillWidth: true
+        text: qsTr("Collapse submenu after click")
+        checked: editor.profile.collapseSubmenuOnClick || false
+        onClicked: editor.setProfileField("collapseSubmenuOnClick", checked)
+    }
+    Label {
+        visible: editor.profile.persistent || false
+        Layout.fillWidth: true
+        text: qsTr("Selecting a submenu action closes its list. The pie menu stays visible.")
+        wrapMode: Text.WordWrap; color: T.muted; font.pixelSize: 12
+    }
     FieldLabel { text: qsTr("Available in") }
     AppField {
         Layout.fillWidth: true

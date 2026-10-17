@@ -1199,32 +1199,42 @@
         <translation>指定应用位于前台时自动显示。点击动作、拖动中心移动，或右键点击中心隐藏；从系统托盘恢复显示。</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="74"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="78"/>
+        <source>Collapse submenu after click</source>
+        <translation>点击后收起子菜单</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="85"/>
+        <source>Selecting a submenu action closes its list. The pie menu stays visible.</source>
+        <translation>点击子菜单项目后收起列表，圆盘仍保持显示。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="88"/>
         <source>Available in</source>
         <translation>适用于</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="78"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="92"/>
         <source>All applications</source>
         <translation>所有应用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="80"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="94"/>
         <source>Application filter</source>
         <translation>应用筛选条件</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="83"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="97"/>
         <source>Running apps</source>
         <translation>正在运行的应用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="84"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="98"/>
         <source>Choose application</source>
         <translation>选择应用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="86"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="100"/>
         <source>Leave empty for every app. Separate application names with commas.</source>
         <translation>留空表示适用于所有应用。多个应用名称请用逗号分隔。</translation>
     </message>

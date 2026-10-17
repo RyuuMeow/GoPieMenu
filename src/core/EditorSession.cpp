@@ -118,6 +118,7 @@ QVariantMap EditorSession::profile() const {
             {"modifiers", int(ModifierKeyToUint(p->Trigger.Modifiers))},
             {"mouseButton", MouseButtonToString(p->Trigger.Button)}, {"vkCode", p->Trigger.VKCode},
             {"persistent", p->Persistent},
+            {"collapseSubmenuOnClick", p->CollapseSubmenuOnClick},
             {"triggerSummary", p->Persistent ? tr("Persistent floating menu") : TriggerDisplayName(p->Trigger)}};
     }
     return {};
@@ -240,6 +241,7 @@ void EditorSession::setProfileField(const QString& field, const QVariant& value)
         if (field == "name") p.Name = value.toString();
         else if (field == "enabled") p.bEnabled = value.toBool();
         else if (field == "persistent") p.Persistent = value.toBool();
+        else if (field == "collapseSubmenuOnClick") p.CollapseSubmenuOnClick = value.toBool();
         else if (field == "appFilter") {
             p.AppFilter.clear();
             for (const auto& part : value.toString().split(',', Qt::SkipEmptyParts)) {

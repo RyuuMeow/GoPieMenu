@@ -120,7 +120,7 @@ ConfigLoadResult ParseConfig(const QByteArray& data) {
         const auto displayMode = profile["displayMode"].toString("Shortcut");
         if (displayMode != "Shortcut" && displayMode != "Persistent")
             return {{}, QCoreApplication::translate("ConfigValidation", "Unknown display mode: %1").arg(displayMode)};
-        if (auto error = CheckFields(profile, {"enabled"}, QJsonValue::Bool); !error.isEmpty()) return {{}, error};
+        if (auto error = CheckFields(profile, {"enabled", "collapseSubmenuOnClick"}, QJsonValue::Bool); !error.isEmpty()) return {{}, error};
         if (auto error = CheckFields(profile, {"trigger", "styleOverride"}, QJsonValue::Object); !error.isEmpty()) return {{}, error};
         if (auto error = CheckFields(profile, {"appFilter"}, QJsonValue::Array); !error.isEmpty()) return {{}, error};
         for (const auto& app : profile["appFilter"].toArray()) if (!app.isString()) return {{}, QCoreApplication::translate("ConfigValidation", "Application filters must be text.")};

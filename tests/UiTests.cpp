@@ -115,6 +115,27 @@ private slots:
         after.build(data.Profiles[0].Items[0].SubItems, session->effectiveStyle());
         QVERIFY(render(after) != image);
     }
+    void persistentChildClickCanCollapseAndStayCollapsed() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json"));
+        auto data = config.GetConfig(); data.GlobalStyle.AnimationDuration = 0;
+        auto& profile = data.Profiles[0]; profile.Persistent = true; profile.CollapseSubmenuOnClick = true;
+        profile.Items[0].Action = ActionType::ListMenu;
+        profile.Items[0].SubItems = {PieItem::Create("Copy", ActionType::SendHotkey, "Ctrl+C")};
+        QVERIFY(config.Commit(data));
+        IconService icons; PieMenuWidget pie(&icons);
+        QSettings settings(dir.filePath("runtime.ini"), QSettings::IniFormat);
+        RuntimeMenuController controller(&config, &pie, &settings);
+        controller.SetForegroundProcess("paint.exe"); QVERIFY(QTest::qWaitForWindowExposed(&pie));
+        auto* list = pie.findChild<ListMenuWidget*>("runtimeSubmenu"); QVERIFY(list);
+        QSignalSpy chosen(&pie, &PieMenuWidget::ItemSelected);
+        const auto top = pie.mapFromGlobal(pie.MenuCenter()) - QPoint(0, 90);
+        QTest::mouseClick(&pie, Qt::LeftButton, Qt::NoModifier, top); QVERIFY(list->IsOpen());
+        QTest::mouseClick(list, Qt::LeftButton, Qt::NoModifier, QPoint(50, 35));
+        QCOMPARE(chosen.count(), 1); QVERIFY(!list->IsOpen()); QVERIFY(pie.IsOpen());
+        controller.SetHidden(true); controller.SetHidden(false);
+        QVERIFY(pie.IsOpen()); QVERIFY(!list->IsOpen());
+        QTest::mouseClick(&pie, Qt::LeftButton, Qt::NoModifier, top); QVERIFY(list->IsOpen());
+    }
     void persistentDisplayModeEditor() {
         for (const auto& language : {QString("en"), QString("zh-TW"), QString("zh-CN")}) {
             TranslationManager translations; QVERIFY(translations.load(language));
@@ -127,11 +148,18 @@ private slots:
             QVERIFY(QMetaObject::invokeMethod(combo, "activated", Q_ARG(int, 1)));
             QTRY_VERIFY(editor.session()->profile()["persistent"].toBool());
             QVERIFY(!find(window, "activationModeCombo"));
+            auto* collapse = find(window, "collapseSubmenuOnClickCheckBox"); QVERIFY(collapse);
+            QVERIFY(!collapse->property("checked").toBool());
+            QVERIFY(click(window, "collapseSubmenuOnClickCheckBox"));
+            QVERIFY(editor.session()->profile()["collapseSubmenuOnClick"].toBool());
+            editor.session()->undo();
+            QTRY_VERIFY(!collapse->property("checked").toBool());
             QCOMPARE(editor.session()->profile()["triggerSummary"].toString(), QCoreApplication::translate("gpm::EditorSession", "Persistent floating menu"));
             QVERIFY(snapshot(window, "persistent-settings-" + language));
             editor.session()->undo();
             QTRY_VERIFY(!editor.session()->profile()["persistent"].toBool());
             QTRY_VERIFY(find(window, "activationModeCombo"));
+            QVERIFY(!find(window, "collapseSubmenuOnClickCheckBox"));
         }
     }
     void persistentClicksDragAndSubmenuToggle() {

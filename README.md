@@ -26,7 +26,7 @@ The default trigger is **Ctrl + right mouse button**: hold, point, and release. 
 
 ## Persistent floating menus
 
-Choose **Persistent floating menu** under a menu's **Display mode**. It appears automatically when a matching application is in the foreground; an empty application scope makes it global. The menu stays on top without taking keyboard focus. Click actions repeatedly, drag the center to move, and click a submenu sector to toggle it. Moving away or executing a child action keeps the submenu open. Only one submenu is expanded at a time.
+Choose **Persistent floating menu** under a menu's **Display mode**. It appears automatically when a matching application is in the foreground; an empty application scope makes it global. The menu stays on top without taking keyboard focus. Click actions repeatedly, drag the center to move, and click a submenu sector to toggle it. Moving away keeps the submenu open. **Collapse submenu after click** is off by default; enable it to close the list after selecting a child action while keeping the pie visible. Only one submenu is expanded at a time.
 
 All display modes share one main menu. An application-specific persistent menu blocks global shortcuts. A global persistent menu yields to an application-specific shortcut menu and returns when that interaction ends. For equally specific persistent menus, the first enabled, nonempty profile in configuration order wins and reserves that scope.
 
