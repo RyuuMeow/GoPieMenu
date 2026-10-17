@@ -81,6 +81,40 @@ class UiTests : public QObject {
         return !image.isNull() && image.save("artifacts/" + name + "-" + QString::number(window->devicePixelRatio()) + ".png");
     }
 private slots:
+    void submenuAppearanceTabsKeepTheirOwnDimensions() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
+        auto data = config.GetConfig();
+        data.Profiles[0].Items[0].Action = ActionType::ListMenu;
+        data.Profiles[0].Items[0].SubItems = {PieItem::Create("Copy", ActionType::SendHotkey, "Ctrl+C")};
+        QVERIFY(config.Commit(data));
+        SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+        QVERIFY(showEditor(editor)); auto* window = editor.window(); auto* session = editor.session();
+        QVERIFY(click(window, "appearanceButton"));
+        QVERIFY(find(window, "fontSizeSlider"));
+        QVERIFY(click(window, "submenuAppearanceButton"));
+        QCOMPARE(session->folderId(), data.Profiles[0].Items[0].Id);
+        QVERIFY(find(window, "submenuFontSizeSlider")); QVERIFY(!find(window, "fontSizeSlider"));
+        session->setStyleField("submenuFontSize", 24);
+        session->setStyleField("submenuIconSize", 80);
+        session->setStyleField("submenuBorderWidth", 5);
+        session->setStyleField("submenuTextOutlineThickness", 6);
+        QVERIFY(click(window, "pieAppearanceButton"));
+        QVERIFY(session->folderId().isEmpty()); QVERIFY(find(window, "fontSizeSlider"));
+        QCOMPARE(session->effectiveStyle().FontSize, data.GlobalStyle.FontSize);
+        ListScene before; before.build(data.Profiles[0].Items[0].SubItems, session->effectiveStyle());
+        const auto render = [](const ListScene& scene) {
+            QImage image(scene.size(1).toSize(), QImage::Format_ARGB32_Premultiplied); image.fill(Qt::transparent);
+            QPainter painter(&image); scene.draw(painter, 0, 1); return image;
+        };
+        const auto image = render(before);
+        session->setStyleField("fontSize", 8); session->setStyleField("iconSize", 12);
+        session->setStyleField("borderWidth", 0); session->setStyleField("textOutlineThickness", 0);
+        ListScene after; after.build(data.Profiles[0].Items[0].SubItems, session->effectiveStyle());
+        QCOMPARE(render(after), image); QVERIFY(after.rowHeight() >= 90);
+        session->setStyleField("submenuTextOutlineThickness", 0);
+        after.build(data.Profiles[0].Items[0].SubItems, session->effectiveStyle());
+        QVERIFY(render(after) != image);
+    }
     void persistentDisplayModeEditor() {
         for (const auto& language : {QString("en"), QString("zh-TW"), QString("zh-CN")}) {
             TranslationManager translations; QVERIFY(translations.load(language));

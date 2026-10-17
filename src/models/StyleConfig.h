@@ -9,6 +9,7 @@
 #include <QJsonObject>
 
 #include <optional>
+#include <algorithm>
 
 namespace gpm 
 {
@@ -46,6 +47,12 @@ struct StyleConfig
     double  BorderWidth       = 1.0;
     bool    bAutoContrast     = false;
     double  TextOutlineThickness = 3.0;
+
+    // Submenu dimensions are independent; colors, font family and animation are shared.
+    double  SubmenuFontSize = 11.0;
+    double  SubmenuIconSize = 22.4;
+    double  SubmenuBorderWidth = 1.0;
+    double  SubmenuTextOutlineThickness = 0.0;
 
     [[nodiscard]] static StyleConfig Frost() {
         StyleConfig s;
@@ -85,6 +92,10 @@ struct StyleConfig
         Obj["borderWidth"]       = BorderWidth;
         Obj["autoContrast"]      = bAutoContrast;
         Obj["textOutlineThickness"] = TextOutlineThickness;
+        Obj["submenuFontSize"] = SubmenuFontSize;
+        Obj["submenuIconSize"] = SubmenuIconSize;
+        Obj["submenuBorderWidth"] = SubmenuBorderWidth;
+        Obj["submenuTextOutlineThickness"] = SubmenuTextOutlineThickness;
         return Obj;
     }
 
@@ -121,6 +132,12 @@ struct StyleConfig
         if (Obj.contains("autoContrastText"))  S.bAutoContrast     = Obj["autoContrastText"].toBool(S.bAutoContrast);
 
         if (Obj.contains("textOutlineThickness")) S.TextOutlineThickness = Obj["textOutlineThickness"].toDouble(S.TextOutlineThickness);
+        // Snapshot the old list's actual dimensions once, so later pie edits do
+        // not resize it. Legacy list icons were scaled and clipped to row height.
+        S.SubmenuFontSize = Obj["submenuFontSize"].toDouble(S.FontSize);
+        S.SubmenuIconSize = Obj["submenuIconSize"].toDouble(std::min(S.IconSize * .8, std::max(36.0, S.FontSize * 2 + 12) - 10));
+        S.SubmenuBorderWidth = Obj["submenuBorderWidth"].toDouble(S.BorderWidth);
+        S.SubmenuTextOutlineThickness = Obj["submenuTextOutlineThickness"].toDouble(0.0);
         return S;
     }
 

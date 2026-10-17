@@ -38,6 +38,8 @@ The editor uses a light Frost theme with a custom white title bar, rounded dialo
 
 **Appearance always applies to the selected profile.** Presets, sizes, colors, opacity, and animation can be changed independently. Existing menus retain their saved appearance, and duplicated menus copy it without linking subsequent edits.
 
+Switch between **Pie menu** and **Submenu** to set text size, icon size, text outline, and border width separately. Submenu rows grow automatically to fit their text and icons. Colors, font family, opacity, and animation remain shared within the profile. Selecting Submenu opens an existing submenu in the preview; legacy settings retain their previous appearance.
+
 The [color picker](resources/demo/ColorPicker.png) combines a hue ring, saturation/value square, H/S/V/opacity sliders and numeric fields, RGB/RGBA hex input, and 12 recent colors. **Use color** updates the draft; **Cancel** leaves it unchanged.
 
 The icon picker has search, a virtualized grid, and Clear. Built-in icons are embedded; custom SVG, PNG, JPEG, and ICO files can be placed in the icon folder opened from Settings. Preview and runtime share rendering and icon resolution.
@@ -74,9 +76,9 @@ To package with Inno Setup 6 installed:
 
 This deploys Qt/QML dependencies, checks startup without the SDK on PATH, and writes the installer and `SHA256SUMS.txt` to `Output`. CI uses the same build and packaging scripts on pull requests and main-branch pushes. Version tags additionally publish the installer, checksum, and matching release notes after validation succeeds.
 
-See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
-
 For packaging without launching the startup check, pass `-SkipSmokeTest`. CI retains the default check.
+
+See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
 
 ## Credits and license
 

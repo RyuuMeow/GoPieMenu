@@ -58,7 +58,7 @@ void ListMenuWidget::MoveToAnchor(const QPoint& pos, double angle) {
 void ListMenuWidget::requestIcons() {
     IconRequests.clear();
     Scene.retainIcons(First, Rows);
-    const int pixels = int(std::ceil(std::min(Scene.style().IconSize * .8, Scene.rowHeight() - 10) * devicePixelRatioF()));
+    const int pixels = int(std::ceil(Scene.style().IconSize * devicePixelRatioF()));
     for (int i = First; i < std::min(First + Rows, Scene.count()); ++i) for (bool hover : {false, true}) {
         const auto key = Icons->request(Scene.items()[i].Icon, pixels, Scene.iconColor(i, hover));
         IconRequests[key].append({i, hover}); Scene.setIcon(i, Icons->cached(key), hover);

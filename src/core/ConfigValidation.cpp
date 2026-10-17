@@ -20,7 +20,8 @@ QString CheckFields(const QJsonObject& object, const QStringList& keys, QJsonVal
 }
 QString CheckJsonStyle(const QJsonObject& style) {
     auto error = CheckFields(style, {"outerRadius", "innerRadius", "iconSize", "gapAngle", "gapAngleDegrees",
-        "fontSize", "animationDuration", "animationDurationMs", "hoverScale", "opacity", "borderWidth", "textOutlineThickness"}, QJsonValue::Double);
+        "fontSize", "animationDuration", "animationDurationMs", "hoverScale", "opacity", "borderWidth", "textOutlineThickness",
+        "submenuFontSize", "submenuIconSize", "submenuBorderWidth", "submenuTextOutlineThickness"}, QJsonValue::Double);
     if (!error.isEmpty()) return error;
     error = CheckFields(style, {"backgroundColor", "sectorColor", "hoverColor", "borderColor", "textColor",
         "centerColor", "centerDotColor", "fontFamily"}, QJsonValue::String);
@@ -50,7 +51,9 @@ QString ValidateStyle(const StyleConfig& s, int itemCount) {
         return QCoreApplication::translate("ConfigValidation", "The gap must be smaller than each sector.");
     if (!InRange(s.Opacity, 0.1, 1) || !InRange(s.BorderWidth, 0, 8) ||
         !InRange(s.TextOutlineThickness, 0, 10) || !InRange(s.HoverScale, 1, 1.25) ||
-        s.AnimationDuration < 0 || s.AnimationDuration > 1000)
+        s.AnimationDuration < 0 || s.AnimationDuration > 1000 ||
+        !InRange(s.SubmenuFontSize, 8, 32) || !InRange(s.SubmenuIconSize, 8, 96) ||
+        !InRange(s.SubmenuBorderWidth, 0, 8) || !InRange(s.SubmenuTextOutlineThickness, 0, 10))
         return QCoreApplication::translate("ConfigValidation", "The appearance contains an out-of-range value.");
     for (const auto& color : {s.BackgroundColor, s.SectorColor, s.HoverColor, s.BorderColor,
                              s.TextColor, s.CenterColor, s.CenterDotColor})

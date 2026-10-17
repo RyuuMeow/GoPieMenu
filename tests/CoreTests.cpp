@@ -16,6 +16,37 @@ using namespace gpm;
 class CoreTests : public QObject {
     Q_OBJECT
 private slots:
+    void submenuAppearanceMigratesAndEditsIndependently() {
+        auto config = AppConfig::CreateDefault();
+        auto legacy = config.GlobalStyle.ToJson();
+        for (const auto* key : {"submenuFontSize", "submenuIconSize", "submenuBorderWidth", "submenuTextOutlineThickness"}) legacy.remove(key);
+        legacy["fontSize"] = 20; legacy["iconSize"] = 96; legacy["borderWidth"] = 4;
+        auto json = config.ToJson(); json["globalStyle"] = legacy;
+        auto parsed = ParseConfig(QJsonDocument(json).toJson()); QVERIFY(parsed);
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuFontSize, 20.0);
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuIconSize, 42.0); // Old list clipped icons to row height minus 10.
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuBorderWidth, 4.0);
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuTextOutlineThickness, 0.0);
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json"));
+        QVERIFY(manager.Commit(*parsed.Value)); EditorSession session(&manager);
+        session.setStyleField("fontSize", 28);
+        QCOMPARE(session.effectiveStyle().SubmenuFontSize, 20.0);
+        session.setStyleField("submenuFontSize", 12);
+        QCOMPARE(session.effectiveStyle().FontSize, 28.0);
+        session.undo(); QCOMPARE(session.effectiveStyle().SubmenuFontSize, 20.0);
+        session.redo(); QCOMPARE(session.effectiveStyle().SubmenuFontSize, 12.0);
+        QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QCOMPARE(reopened.GetConfig().Profiles[0].StyleOverride->SubmenuFontSize, 12.0);
+        session.duplicateProfile(); session.setStyleField("submenuBorderWidth", 2);
+        QCOMPARE(session.draft().Profiles[0].StyleOverride->SubmenuBorderWidth, 4.0);
+        for (const auto* key : {"submenuFontSize", "submenuIconSize", "submenuBorderWidth", "submenuTextOutlineThickness"}) {
+            auto invalid = legacy; invalid[key] = "bad"; json["globalStyle"] = invalid;
+            QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
+            invalid[key] = -1; json["globalStyle"] = invalid;
+            QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
+        }
+    }
     void persistentArbitrationReservesItsScope() {
         auto global = PieMenuConfig::CreateDefault(); global.Id = "global";
         auto specific = global; specific.Id = "paint"; specific.Persistent = true; specific.AppFilter = {"paint.exe"};

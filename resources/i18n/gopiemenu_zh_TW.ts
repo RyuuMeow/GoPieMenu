@@ -43,127 +43,143 @@
 <context>
     <name>AppearancePane</name>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="13"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="32"/>
         <source>Appearance applies only to this menu.</source>
         <translation>外觀設定僅套用至此選單。</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="16"/>
-        <source>Style</source>
-        <translation>樣式</translation>
-    </message>
-    <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="22"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="41"/>
         <source>Frost</source>
         <translation>霧面</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="22"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="41"/>
         <source>Slate</source>
         <translation>石板</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="23"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="42"/>
         <source>Ocean</source>
         <translation>海洋</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="23"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="42"/>
         <source>Obsidian</source>
         <translation>黑曜石</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="28"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="69"/>
         <source>Size</source>
         <translation>大小</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="29"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="74"/>
         <source>Advanced</source>
         <translation>進階</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="34"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="79"/>
         <source>Center radius</source>
         <translation>中心半徑</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="35"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="71"/>
         <source>Icon size</source>
         <translation>圖示大小</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="36"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="70"/>
         <source>Text size</source>
         <translation>文字大小</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="37"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="80"/>
         <source>Slice gap</source>
         <translation>扇形間距</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="38"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="83"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="39"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="84"/>
         <source>Animation</source>
         <translation>動畫</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="40"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="72"/>
         <source>Text outline</source>
         <translation>文字外框</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="41"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="35"/>
+        <source>Shared style</source>
+        <translation>共用樣式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="53"/>
+        <source>Pie menu</source>
+        <translation>圓盤本體</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="66"/>
+        <source>Add a submenu to preview its appearance.</source>
+        <translation>新增子選單後即可預覽其外觀。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="73"/>
         <source>Border width</source>
         <translation>邊框寬度</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="42"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="81"/>
         <source>Hover size</source>
         <translation>懸停縮放</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="43"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="82"/>
+        <source>Colors, opacity and animation apply to both the pie and its submenus.</source>
+        <translation>配色、不透明度與動畫由圓盤及子選單共用。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="85"/>
         <source>Automatic text contrast</source>
         <translation>自動調整文字對比</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="46"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="88"/>
         <source>Slices</source>
         <translation>扇形</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="46"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="88"/>
         <source>Highlight</source>
         <translation>醒目顯示</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="47"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="89"/>
         <source>Text</source>
         <translation>文字</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="47"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="89"/>
         <source>Center</source>
         <translation>中心</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="48"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="90"/>
         <source>Border</source>
         <translation>邊框</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="48"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="59"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="90"/>
         <source>Submenu</source>
         <translation>子選單</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/AppearancePane.qml" line="56"/>
+        <location filename="../../src/ui/qml/AppearancePane.qml" line="98"/>
         <source>Change %1 color</source>
         <translation>變更%1顏色</translation>
     </message>
@@ -171,13 +187,13 @@
 <context>
     <name>Application</name>
     <message>
-        <location filename="../../src/main.cpp" line="69"/>
+        <location filename="../../src/main.cpp" line="70"/>
         <source>GoPieMenu is already running.</source>
         <translation>GoPieMenu 已在執行中。</translation>
     </message>
     <message>
-        <location filename="../../src/main.cpp" line="154"/>
-        <location filename="../../src/main.cpp" line="158"/>
+        <location filename="../../src/main.cpp" line="159"/>
+        <location filename="../../src/main.cpp" line="163"/>
         <source>Could not install global input hooks.</source>
         <translation>無法安裝全域輸入攔截器。</translation>
     </message>
@@ -251,177 +267,177 @@
         <translation>「%1」的值類型無效。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="30"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="31"/>
         <source>Submenus can contain actions, but cannot contain other submenus.</source>
         <translation>子選單可以包含動作，但不能包含其他子選單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="34"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="35"/>
         <source>Unknown action type: %1</source>
         <translation>未知的動作類型：%1</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="36"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="37"/>
         <source>Submenu items must be a list.</source>
         <translation>子選單項目必須是清單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="38"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="39"/>
         <source>Each submenu item must be an object.</source>
         <translation>每個子選單項目都必須是物件。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="46"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="47"/>
         <source>The inner radius must be smaller than the outer radius (80–400).</source>
         <translation>內半徑必須小於外半徑（80–400）。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="48"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="49"/>
         <source>Choose an icon size of 12–96 and a font size of 8–32.</source>
         <translation>圖示大小請設為 12–96，字型大小請設為 8–32。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="50"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="51"/>
         <source>The gap must be smaller than each sector.</source>
         <translation>間距必須小於每個扇形的角度。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="54"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="57"/>
         <source>The appearance contains an out-of-range value.</source>
         <translation>外觀設定含有超出範圍的數值。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="57"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="60"/>
         <source>The appearance contains an invalid color.</source>
         <translation>外觀設定含有無效的顏色。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="61"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="64"/>
         <source>Keep at least one menu.</source>
         <translation>至少保留一個選單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="66"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="69"/>
         <source>Menu IDs must be unique.</source>
         <translation>選單 ID 不可重複。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="68"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="71"/>
         <source>Give each menu a name.</source>
         <translation>請為每個選單命名。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="69"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="72"/>
         <source>A pie can have at most 12 items.</source>
         <translation>圓餅選單最多只能有 12 個項目。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="71"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="74"/>
         <source>Choose a valid trigger.</source>
         <translation>請選擇有效的觸發方式。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="72"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="75"/>
         <source>Add an action or disable this empty menu.</source>
         <translation>請新增動作，或停用這個空選單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="77"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="80"/>
         <source>Item IDs must be unique within a menu.</source>
         <translation>同一選單內的項目 ID 不可重複。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="79"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="82"/>
         <source>A submenu can only contain actions.</source>
         <translation>子選單只能包含動作。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="80"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="83"/>
         <source>Only submenus can have children.</source>
         <translation>只有子選單可以包含子項目。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="81"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="84"/>
         <source>An item contains an invalid color.</source>
         <translation>項目含有無效的顏色。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="83"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="86"/>
         <source>Give each action a name.</source>
         <translation>請為每個動作命名。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="85"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="88"/>
         <source>: record a valid keyboard shortcut.</source>
         <translation>: 請錄製有效的鍵盤快捷鍵。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="88"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="91"/>
         <source>: enter a valid URL.</source>
         <translation>: 請輸入有效的 URL。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="102"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="105"/>
         <source>Invalid JSON at byte %1: %2</source>
         <translation>位元組 %1 的 JSON 無效：%2</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="103"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="106"/>
         <source>The configuration must be a JSON object.</source>
         <translation>設定必須是 JSON 物件。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="108"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="111"/>
         <source>This configuration version is not supported.</source>
         <translation>不支援此設定版本。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="109"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="112"/>
         <source>The configuration must contain a profiles list.</source>
         <translation>設定必須包含 profiles 清單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="111"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="114"/>
         <source>The global appearance must be an object.</source>
         <translation>全域外觀設定必須是物件。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="114"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="117"/>
         <source>Each menu must be an object.</source>
         <translation>每個選單都必須是物件。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="119"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="122"/>
         <source>Unknown display mode: %1</source>
         <translation>未知的顯示模式：%1</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="123"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="126"/>
         <source>Application filters must be text.</source>
         <translation>應用程式篩選條件必須是文字。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="125"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="128"/>
         <source>Each menu must contain an items list.</source>
         <translation>每個選單都必須包含 items 清單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="130"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="133"/>
         <source>Unknown activation mode: %1</source>
         <translation>未知的啟用模式：%1</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="132"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="135"/>
         <source>Invalid trigger modifiers.</source>
         <translation>觸發修飾鍵無效。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="134"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="137"/>
         <source>Invalid trigger key.</source>
         <translation>觸發按鍵無效。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="136"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="139"/>
         <source>Each action must be an object.</source>
         <translation>每個動作都必須是物件。</translation>
     </message>
@@ -429,27 +445,27 @@
 <context>
     <name>DefaultMenu</name>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="46"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="47"/>
         <source>New Pie Menu</source>
         <translation>新圓餅選單</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="52"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="53"/>
         <source>Notepad</source>
         <translation>記事本</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="55"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="56"/>
         <source>Calculator</source>
         <translation>計算機</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="58"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="59"/>
         <source>Explorer</source>
         <translation>檔案總管</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="113"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="115"/>
         <source>Unnamed</source>
         <translation>未命名</translation>
     </message>
@@ -533,7 +549,7 @@
         <translation>無法載入設定，原始檔案未遭變更。 </translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="213"/>
+        <location filename="../../src/core/EditorSession.cpp" line="214"/>
         <source>New menu</source>
         <translation>新增選單</translation>
     </message>
@@ -1427,58 +1443,58 @@
 <context>
     <name>gpm::EditorSession</name>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="121"/>
+        <location filename="../../src/core/EditorSession.cpp" line="122"/>
         <source>Persistent floating menu</source>
         <translation>常駐懸浮選單</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="149"/>
+        <location filename="../../src/core/EditorSession.cpp" line="150"/>
         <source>Main menu</source>
         <translation>主選單</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="224"/>
-        <location filename="../../src/core/EditorSession.cpp" line="288"/>
+        <location filename="../../src/core/EditorSession.cpp" line="225"/>
+        <location filename="../../src/core/EditorSession.cpp" line="290"/>
         <source>%1 copy</source>
         <translation>%1 副本</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="230"/>
+        <location filename="../../src/core/EditorSession.cpp" line="231"/>
         <source>Keep at least one menu.</source>
         <translation>至少保留一個選單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="264"/>
-        <location filename="../../src/core/EditorSession.cpp" line="299"/>
+        <location filename="../../src/core/EditorSession.cpp" line="266"/>
+        <location filename="../../src/core/EditorSession.cpp" line="301"/>
         <source>Submenus can only contain actions.</source>
         <translation>子選單只能包含動作。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="265"/>
-        <location filename="../../src/core/EditorSession.cpp" line="286"/>
-        <location filename="../../src/core/EditorSession.cpp" line="339"/>
+        <location filename="../../src/core/EditorSession.cpp" line="267"/>
+        <location filename="../../src/core/EditorSession.cpp" line="288"/>
+        <location filename="../../src/core/EditorSession.cpp" line="341"/>
         <source>A pie can have at most 12 items.</source>
         <translation>圓餅選單最多只能有 12 個項目。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="268"/>
+        <location filename="../../src/core/EditorSession.cpp" line="270"/>
         <source>New submenu</source>
         <translation>新增子選單</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="268"/>
-        <location filename="../../src/core/EditorSession.cpp" line="322"/>
-        <location filename="../../src/core/EditorSession.cpp" line="326"/>
+        <location filename="../../src/core/EditorSession.cpp" line="270"/>
+        <location filename="../../src/core/EditorSession.cpp" line="324"/>
+        <location filename="../../src/core/EditorSession.cpp" line="328"/>
         <source>New action</source>
         <translation>新增動作</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="296"/>
+        <location filename="../../src/core/EditorSession.cpp" line="298"/>
         <source>Move or remove the submenu actions before changing its type.</source>
         <translation>變更類型前，請先移動或移除子選單中的動作。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="336"/>
+        <location filename="../../src/core/EditorSession.cpp" line="338"/>
         <source>A submenu cannot be placed inside another submenu.</source>
         <translation>子選單不能放在另一個子選單中。</translation>
     </message>
