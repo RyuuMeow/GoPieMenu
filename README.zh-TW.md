@@ -70,6 +70,8 @@ GoPieMenu 會在啟動時檢查 GitHub 是否有較新的穩定版本。編輯�
 
 架構、測試範圍、效能數據及尚需實機驗證項目，見 [架構與驗證](docs/architecture.md)。
 
+若只要打包、不執行啟動檢查，可加上 `-SkipSmokeTest`。CI 預設仍會執行檢查。
+
 ## 授權
 
 GoPieMenu 使用 [GPL-3.0](LICENSE)。內建圖示來自 [Iconoir](https://github.com/iconoir-icons/iconoir)，採 MIT 授權。

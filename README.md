@@ -76,6 +76,8 @@ This deploys Qt/QML dependencies, checks startup without the SDK on PATH, and wr
 
 See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
 
+For packaging without launching the startup check, pass `-SkipSmokeTest`. CI retains the default check.
+
 ## Credits and license
 
 [Iconoir](https://github.com/iconoir-icons/iconoir) supplies the built-in icons under its MIT license. GoPieMenu is [GPL-3.0](LICENSE).
