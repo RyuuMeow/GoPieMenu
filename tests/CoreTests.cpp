@@ -4,6 +4,7 @@
 #include "core/EditorSession.h"
 #include "core/ConfigValidation.h"
 #include "core/InputState.h"
+#include "core/MenuPolicy.h"
 #include "core/Shortcut.h"
 #include "core/TranslationManager.h"
 #ifdef Q_OS_WIN
@@ -15,6 +16,110 @@ using namespace gpm;
 class CoreTests : public QObject {
     Q_OBJECT
 private slots:
+    void submenuAppearanceMigratesAndEditsIndependently() {
+        auto config = AppConfig::CreateDefault();
+        auto legacy = config.GlobalStyle.ToJson();
+        for (const auto* key : {"submenuFontSize", "submenuIconSize", "submenuBorderWidth", "submenuTextOutlineThickness"}) legacy.remove(key);
+        legacy["fontSize"] = 20; legacy["iconSize"] = 96; legacy["borderWidth"] = 4;
+        auto json = config.ToJson(); json["globalStyle"] = legacy;
+        auto parsed = ParseConfig(QJsonDocument(json).toJson()); QVERIFY(parsed);
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuFontSize, 20.0);
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuIconSize, 42.0); // Old list clipped icons to row height minus 10.
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuBorderWidth, 4.0);
+        QCOMPARE(parsed.Value->GlobalStyle.SubmenuTextOutlineThickness, 0.0);
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json"));
+        QVERIFY(manager.Commit(*parsed.Value)); EditorSession session(&manager);
+        session.setStyleField("fontSize", 28);
+        QCOMPARE(session.effectiveStyle().SubmenuFontSize, 20.0);
+        session.setStyleField("submenuFontSize", 12);
+        QCOMPARE(session.effectiveStyle().FontSize, 28.0);
+        session.undo(); QCOMPARE(session.effectiveStyle().SubmenuFontSize, 20.0);
+        session.redo(); QCOMPARE(session.effectiveStyle().SubmenuFontSize, 12.0);
+        QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QCOMPARE(reopened.GetConfig().Profiles[0].StyleOverride->SubmenuFontSize, 12.0);
+        session.duplicateProfile(); session.setStyleField("submenuBorderWidth", 2);
+        QCOMPARE(session.draft().Profiles[0].StyleOverride->SubmenuBorderWidth, 4.0);
+        for (const auto* key : {"submenuFontSize", "submenuIconSize", "submenuBorderWidth", "submenuTextOutlineThickness"}) {
+            auto invalid = legacy; invalid[key] = "bad"; json["globalStyle"] = invalid;
+            QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
+            invalid[key] = -1; json["globalStyle"] = invalid;
+            QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
+        }
+    }
+    void submenuCollapseIsAnUndoableProfileOption() {
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json")); EditorSession session(&manager);
+        QVERIFY(!session.currentProfile()->CollapseSubmenuOnClick);
+        session.setProfileField("persistent", true);
+        session.setProfileField("collapseSubmenuOnClick", true);
+        QVERIFY(session.currentProfile()->CollapseSubmenuOnClick);
+        session.undo(); QVERIFY(!session.currentProfile()->CollapseSubmenuOnClick);
+        session.redo(); QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QVERIFY(reopened.GetConfig().Profiles[0].CollapseSubmenuOnClick);
+        session.setProfileField("persistent", false);
+        QVERIFY(session.currentProfile()->CollapseSubmenuOnClick);
+        auto json = reopened.GetConfig().ToJson(); auto profiles = json["profiles"].toArray();
+        auto profile = profiles[0].toObject(); profile.remove("collapseSubmenuOnClick"); profiles[0] = profile; json["profiles"] = profiles;
+        auto parsed = ParseConfig(QJsonDocument(json).toJson()); QVERIFY(parsed);
+        QVERIFY(!parsed.Value->Profiles[0].CollapseSubmenuOnClick);
+        profile["collapseSubmenuOnClick"] = "true"; profiles[0] = profile; json["profiles"] = profiles;
+        QVERIFY(!ParseConfig(QJsonDocument(json).toJson()));
+    }
+    void persistentArbitrationReservesItsScope() {
+        auto global = PieMenuConfig::CreateDefault(); global.Id = "global";
+        auto specific = global; specific.Id = "paint"; specific.Persistent = true; specific.AppFilter = {"paint.exe"};
+        std::vector<PieMenuConfig> profiles{global, specific};
+        QCOMPARE(PersistentMenu(profiles, "PAINT.EXE")->Id, specific.Id);
+        QVERIFY(!CanTriggerMenu(profiles, global, "paint.exe"));
+        QVERIFY(CanTriggerMenu(profiles, global, "browser.exe"));
+        InputState input; input.setProfiles(profiles); input.key(0xa2, true);
+        auto blocked = input.mouse(MouseButton::Right, true, "paint.exe");
+        QCOMPARE(blocked.Effect, InputEffect::None); QVERIFY(!blocked.Swallow);
+        input.mouse(MouseButton::Right, false, "paint.exe");
+        QCOMPARE(input.mouse(MouseButton::Right, true, "browser.exe").ProfileId, global.Id);
+        input.cancel();
+        profiles[0].Persistent = true; profiles[1].Persistent = false;
+        QCOMPARE(PersistentMenu(profiles, "paint.exe")->Id, global.Id);
+        QVERIFY(CanTriggerMenu(profiles, profiles[1], "paint.exe"));
+        input.setProfiles(profiles); input.key(0xa2, true);
+        QCOMPARE(input.mouse(MouseButton::Right, true, "paint.exe").ProfileId, specific.Id);
+        profiles[1].Persistent = true;
+        auto duplicate = profiles[1]; duplicate.Id = "second"; profiles.push_back(duplicate);
+        QCOMPARE(PersistentMenu(profiles, "paint.exe")->Id, specific.Id);
+        profiles[1].bEnabled = false;
+        QCOMPARE(PersistentMenu(profiles, "paint.exe")->Id, duplicate.Id);
+        profiles[2].Items.clear();
+        QCOMPARE(PersistentMenu(profiles, "paint.exe")->Id, global.Id);
+    }
+    void persistentModeIsValidatedAndUndoable() {
+        QTemporaryDir dir; ConfigManager manager(nullptr, dir.filePath("config.json"));
+        EditorSession session(&manager);
+        QVERIFY(!session.profile()["persistent"].toBool());
+        session.setProfileField("persistent", true);
+        QVERIFY(session.profile()["persistent"].toBool());
+        QVERIFY(!manager.GetConfig().Profiles[0].Persistent);
+        session.undo(); QVERIFY(!session.profile()["persistent"].toBool());
+        session.redo(); QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QVERIFY(reopened.GetConfig().Profiles[0].Persistent);
+        auto withoutKey = reopened.GetConfig();
+        withoutKey.Profiles[0].Trigger.Mode = ActivationMode::KeyHold;
+        withoutKey.Profiles[0].Trigger.VKCode = 0;
+        QVERIFY(ValidateConfig(withoutKey).isEmpty());
+        withoutKey.Profiles[0].Persistent = false;
+        QVERIFY(!ValidateConfig(withoutKey).isEmpty());
+        auto json = reopened.GetConfig().ToJson();
+        auto profiles = json["profiles"].toArray(); auto profile = profiles[0].toObject();
+        profile.remove("displayMode"); profiles[0] = profile; json["profiles"] = profiles;
+        auto legacy = ParseConfig(QJsonDocument(json).toJson());
+        QVERIFY(legacy.Error.isEmpty());
+        QVERIFY(!AppConfig::FromJson(json).Profiles[0].Persistent);
+        profile["displayMode"] = "unknown"; profiles[0] = profile; json["profiles"] = profiles;
+        QVERIFY(!ParseConfig(QJsonDocument(json).toJson()).Error.isEmpty());
+        profile["displayMode"] = true; profiles[0] = profile; json["profiles"] = profiles;
+        QVERIFY(!ParseConfig(QJsonDocument(json).toJson()).Error.isEmpty());
+    }
     void resolvesUiLanguage() {
         QCOMPARE(InterfaceFontFamily("zh-TW"), "Microsoft JhengHei UI");
         QCOMPARE(InterfaceFontFamily("zh-CN"), "Microsoft JhengHei UI");

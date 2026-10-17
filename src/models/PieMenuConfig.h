@@ -32,6 +32,8 @@ struct PieMenuConfig
     QStringList                 AppFilter;
     std::optional<StyleConfig>  StyleOverride;
     bool                        bEnabled = true;
+    bool                        Persistent = false;
+    bool                        CollapseSubmenuOnClick = false;
 
     // === Limits ===
     static constexpr int MinItems = 2;
@@ -70,6 +72,8 @@ struct PieMenuConfig
         Obj["id"]      = Id;
         Obj["name"]    = Name;
         Obj["enabled"] = bEnabled;
+        Obj["displayMode"] = Persistent ? "Persistent" : "Shortcut";
+        Obj["collapseSubmenuOnClick"] = CollapseSubmenuOnClick;
 
         // Trigger
         QJsonObject TriggerObj;
@@ -110,6 +114,8 @@ struct PieMenuConfig
         Config.Id       = Obj["id"].toString(QUuid::createUuid().toString(QUuid::WithoutBraces));
         Config.Name     = Obj["name"].toString(QCoreApplication::translate("DefaultMenu", "Unnamed"));
         Config.bEnabled = Obj["enabled"].toBool(true);
+        Config.Persistent = Obj["displayMode"].toString() == "Persistent";
+        Config.CollapseSubmenuOnClick = Obj["collapseSubmenuOnClick"].toBool(false);
 
         // Trigger
         if (auto TriggerObj = Obj["trigger"].toObject(); !TriggerObj.isEmpty()) 

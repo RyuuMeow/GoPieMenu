@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(GoPieMenu VERSION 2.1.0 LANGUAGES CXX)
+project(GoPieMenu VERSION 2.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -52,6 +52,7 @@ if(GPM_BUILD_DESKTOP)
         src/ui/icons/IconCatalog.cpp
         src/ui/rendering/MenuScene.cpp
         src/ui/PieMenuWidget.cpp
+        src/ui/RuntimeMenuController.cpp
         src/ui/widgets/ListMenuWidget.cpp
         src/ui/quick/PiePreviewItem.cpp
         src/ui/quick/ColorWheelItem.cpp
@@ -106,9 +107,16 @@ if(BUILD_TESTING)
         add_test(NAME release-notes COMMAND "${GPM_POWERSHELL}" -NoProfile -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/ReleaseNotesTests.ps1")
     endif()
     if(GPM_BUILD_DESKTOP)
+        add_executable(gpm_input_target WIN32 tests/InputTarget.cpp)
+        target_link_libraries(gpm_input_target PRIVATE user32)
+        add_executable(gpm_native_input_tests tests/NativeInputTests.cpp src/core/HookManager.cpp src/core/IHookProvider.h)
+        target_link_libraries(gpm_native_input_tests PRIVATE gpm_ui gpm_actions Qt6::Test)
+        add_dependencies(gpm_native_input_tests gpm_input_target)
         add_executable(gpm_ui_tests tests/UiTests.cpp)
         target_link_libraries(gpm_ui_tests PRIVATE gpm_ui gpm_actions Qt6::Test)
         foreach(scale 1 1.25 1.5 2)
+            add_test(NAME native-input-${scale} COMMAND gpm_native_input_tests -o artifacts/native-input-${scale}.txt,txt)
+            set_tests_properties(native-input-${scale} PROPERTIES ENVIRONMENT "QT_SCALE_FACTOR=${scale}" RUN_SERIAL TRUE)
             add_test(NAME ui-${scale} COMMAND gpm_ui_tests -o artifacts/ui-${scale}.txt,txt)
             set_tests_properties(ui-${scale} PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software;QT_SCALE_FACTOR=${scale}" RUN_SERIAL TRUE)
         endforeach()

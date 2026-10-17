@@ -4,10 +4,32 @@
 #include <QDebug>
 
 namespace gpm {
+namespace {
+QString processForWindow(HWND window) {
+    if (!window) return {};
+    DWORD pid = 0; GetWindowThreadProcessId(window, &pid);
+    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!process) return {};
+    wchar_t path[32768]{}; DWORD length = 32768;
+    const bool ok = QueryFullProcessImageNameW(process, 0, path, &length);
+    CloseHandle(process);
+    return ok ? QFileInfo(QString::fromWCharArray(path, int(length))).fileName() : QString();
+}
+}
 HookManager* HookManager::Instance = nullptr;
 HookManager::HookManager(ConfigManager* manager, QObject* parent) : IHookProvider(parent), Manager(manager) {
     Instance = this; State.setProfiles(Manager->GetConfig().Profiles);
     connect(Manager, &ConfigManager::ConfigChanged, this, &HookManager::Reset);
+    ForegroundUpdate.setSingleShot(true);
+    connect(&ForegroundUpdate, &QTimer::timeout, this, [this] {
+        if (!Foreground) return;
+        // The event's HWND identifies the new target even while Windows still
+        // reports the old (or null) foreground during the activation handshake.
+        const auto window = IsWindow(PendingForeground) ? PendingForeground : GetForegroundWindow();
+        if (!window) { ForegroundUpdate.start(50); return; }
+        PendingForeground = nullptr;
+        emit ForegroundChanged(processForWindow(window));
+    });
 }
 HookManager::~HookManager() { Uninstall(); if (Instance == this) Instance = nullptr; }
 void HookManager::synchronizeKeys() {
@@ -24,12 +46,20 @@ bool HookManager::Install() {
     if (!Keyboard) return false;
     Mouse = SetWindowsHookExW(WH_MOUSE_LL, MouseProc, GetModuleHandleW(nullptr), 0);
     if (!Mouse) { UnhookWindowsHookEx(Keyboard); Keyboard = nullptr; return false; }
+    Foreground = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr,
+        ForegroundProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+    if (!Foreground) { Uninstall(); return false; }
+    emit ForegroundChanged(foregroundProcess());
     return true;
 }
 void HookManager::Uninstall() {
     Cancel();
+    ForegroundUpdate.stop();
+    PendingForeground = nullptr;
     if (Keyboard) UnhookWindowsHookEx(Keyboard);
     if (Mouse) UnhookWindowsHookEx(Mouse);
+    if (Foreground) UnhookWinEvent(Foreground);
+    Foreground = nullptr;
     Keyboard = nullptr; Mouse = nullptr; State.reset();
 }
 bool HookManager::IsInstalled() const { return Keyboard && Mouse; }
@@ -43,15 +73,14 @@ void HookManager::SetSuspended(bool value) {
     Suspended = value; Reset();
 }
 QString HookManager::foregroundProcess() const {
-    const auto window = GetForegroundWindow();
-    if (!window) return {};
-    DWORD pid = 0; GetWindowThreadProcessId(window, &pid);
-    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (!process) return {};
-    wchar_t path[32768]{}; DWORD length = 32768;
-    const bool ok = QueryFullProcessImageNameW(process, 0, path, &length);
-    CloseHandle(process);
-    return ok ? QFileInfo(QString::fromWCharArray(path, int(length))).fileName() : QString();
+    return processForWindow(GetForegroundWindow());
+}
+void CALLBACK HookManager::ForegroundProc(HWINEVENTHOOK, DWORD, HWND window, LONG, LONG, DWORD, DWORD) {
+    if (!Instance) return;
+    // Coalesce queued notifications and avoid rebuilding UI inside the callback.
+    Instance->Cancel();
+    Instance->PendingForeground = window;
+    Instance->ForegroundUpdate.start(0);
 }
 void HookManager::dispatch(const InputDecision& d) {
     switch (d.Effect) {
@@ -94,6 +123,8 @@ LRESULT CALLBACK HookManager::MouseProc(int code, WPARAM wparam, LPARAM lparam) 
             case WM_XBUTTONDOWN: down = true; [[fallthrough]];
             case WM_XBUTTONUP: button = HIWORD(mouse.mouseData) == XBUTTON1 ? MouseButton::X1 : MouseButton::X2; break;
             }
+            // Runtime window geometry uses Qt logical coordinates, not native pixels.
+            if (down) emit Instance->PointerPressed(QCursor::pos());
             result = Instance->State.mouse(button, down, down && !Instance->State.active() ? Instance->foregroundProcess() : QString());
         }
         Instance->dispatch(result);

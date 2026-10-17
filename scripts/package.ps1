@@ -1,7 +1,8 @@
 param(
     [string]$QtRoot = $env:QT_ROOT_DIR,
     [string]$BuildDir = "build",
-    [string]$InnoCompiler = "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe"
+    [string]$InnoCompiler = "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe",
+    [switch]$SkipSmokeTest
 )
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -21,10 +22,12 @@ try {
     if ($LASTEXITCODE) { throw "Qt deployment failed." }
 
     $env:PATH = "$env:SystemRoot/System32;$env:SystemRoot"
-    $smokeProcess = Start-Process -FilePath ./deploy/GoPieMenu.exe -ArgumentList --smoke-test -WindowStyle Hidden -PassThru
-    if (!$smokeProcess.WaitForExit(15000)) { $smokeProcess.Kill(); throw "Startup smoke test timed out." }
-    if ($smokeProcess.ExitCode) { throw "Startup smoke test failed: $($smokeProcess.ExitCode)" }
-    Write-Output "SDK-independent startup smoke test passed."
+    if (!$SkipSmokeTest) {
+        $smokeProcess = Start-Process -FilePath ./deploy/GoPieMenu.exe -ArgumentList --smoke-test -WindowStyle Hidden -PassThru
+        if (!$smokeProcess.WaitForExit(15000)) { $smokeProcess.Kill(); throw "Startup smoke test timed out." }
+        if ($smokeProcess.ExitCode) { throw "Startup smoke test failed: $($smokeProcess.ExitCode)" }
+        Write-Output "SDK-independent startup smoke test passed."
+    } else { Write-Output "Startup smoke test skipped by request." }
 
     & $InnoCompiler /Qp installer.iss
     if ($LASTEXITCODE) { throw "Installer compilation failed." }

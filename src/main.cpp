@@ -2,6 +2,8 @@
 #include "core/TranslationManager.h"
 #include "core/HookManager.h"
 #include "core/ActionExecutor.h"
+#include "ui/RuntimeMenuController.h"
+#include "core/MenuPolicy.h"
 #include "ui/PieMenuWidget.h"
 #include "ui/SettingsWindow.h"
 #include "ui/TrayManager.h"
@@ -83,6 +85,8 @@ int main(int argc, char* argv[]) {
     executor.RegisterBuiltins();
     gpm::IconService icons;
     gpm::PieMenuWidget pie(&icons);
+    QSettings runtimeSettings;
+    gpm::RuntimeMenuController runtime(&config, &pie, preview ? nullptr : &runtimeSettings);
     gpm::UpdateOptions updateOptions;
     updateOptions.language = gpm::ResolveLanguage(config.GetConfig().Language);
     std::unique_ptr<gpm::UpdateManager> updates;
@@ -115,6 +119,11 @@ int main(int argc, char* argv[]) {
     if (!editor.window()) return 1;
     gpm::HookManager hooks(&config);
     gpm::TrayManager tray;
+    tray.SetPersistentHidden(runtime.IsHidden());
+    QObject::connect(&tray, &gpm::TrayManager::PersistentHiddenToggled, &runtime, &gpm::RuntimeMenuController::SetHidden);
+    QObject::connect(&runtime, &gpm::RuntimeMenuController::HiddenChanged, &tray, &gpm::TrayManager::SetPersistentHidden);
+    QObject::connect(&hooks, &gpm::HookManager::ForegroundChanged, &runtime, &gpm::RuntimeMenuController::SetForegroundProcess);
+    QObject::connect(&hooks, &gpm::HookManager::PointerPressed, &pie, &gpm::PieMenuWidget::DismissContextOutside);
     QObject::connect(&editor, &gpm::SettingsWindow::updateToastRequested, &tray, &gpm::TrayManager::ShowUpdateNotification);
     QObject::connect(&tray, &gpm::TrayManager::UpdateRequested, &editor, &gpm::SettingsWindow::showUpdate);
     if (updates) QObject::connect(updates.get(), &gpm::UpdateManager::changed, &tray, [&] {
@@ -122,24 +131,30 @@ int main(int argc, char* argv[]) {
     });
     QObject::connect(&hooks, &gpm::HookManager::Triggered, &pie, [&](const QString& id, const QPoint& pos) {
         if (hooks.IsSuspended()) return;
-        if (const auto* profile = config.FindProfile(id)) pie.ShowAt(pos, *profile, config.GetConfig().GlobalStyle);
+        runtime.SetForegroundProcess(hooks.foregroundProcess());
+        if (!runtime.Trigger(id, pos)) hooks.Cancel();
     }, Qt::QueuedConnection);
     QObject::connect(&hooks, &gpm::HookManager::MouseMoved, &pie, &gpm::PieMenuWidget::UpdateMousePos, Qt::QueuedConnection);
     QObject::connect(&hooks, &gpm::HookManager::TriggerReleased, &pie, [&](const QPoint& pos) {
-        pie.UpdateMousePos(pos); pie.ConfirmSelection();
+        runtime.ConfirmShortcut(pos);
     }, Qt::QueuedConnection);
-    QObject::connect(&hooks, &gpm::HookManager::CancelRequested, &pie, &gpm::PieMenuWidget::HideMenu, Qt::QueuedConnection);
+    QObject::connect(&hooks, &gpm::HookManager::CancelRequested, &runtime, &gpm::RuntimeMenuController::CancelShortcut, Qt::QueuedConnection);
     QObject::connect(&hooks, &gpm::HookManager::WheelScrolled, &pie, &gpm::PieMenuWidget::Scroll, Qt::QueuedConnection);
     QObject::connect(&pie, &gpm::PieMenuWidget::ItemSelected, &executor, [&](int, const gpm::PieItem& item) {
+        if (pie.IsPersistent()) {
+            const auto* eligible = gpm::PersistentMenu(config.GetConfig().Profiles, hooks.foregroundProcess());
+            if (!eligible || eligible->Id != runtime.CurrentProfile()) return;
+        }
         if (!preview) executor.Execute(item);
     });
     QObject::connect(&executor, &gpm::ActionExecutor::ActionFailed, editor.session(), [&](const QString& name, const QString& error) {
         editor.session()->reportError(name + ": " + error);
     });
     QObject::connect(&editor, &gpm::SettingsWindow::RecordingChanged, &hooks, &gpm::HookManager::SetSuspended);
-    QObject::connect(&config, &gpm::ConfigManager::ConfigChanged, &pie, &gpm::PieMenuWidget::HideMenu);
+    QObject::connect(&editor, &gpm::SettingsWindow::RecordingChanged, &runtime, &gpm::RuntimeMenuController::SetRecording);
     QObject::connect(&tray, &gpm::TrayManager::SettingsRequested, &editor, &gpm::SettingsWindow::show);
     QObject::connect(&tray, &gpm::TrayManager::PauseToggled, &hooks, [&](bool paused) {
+        runtime.SetPaused(paused);
         if (paused) hooks.Uninstall();
         else if (!preview && !hooks.Install()) editor.session()->reportError(QCoreApplication::translate("Application", "Could not install global input hooks."));
     });

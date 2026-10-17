@@ -61,7 +61,7 @@ ApplicationWindow {
         function onSelectionActivated() { root.panelMode = editor.selectedId.length ? "item" : "" }
         function onChanged() {
             if (editor.selectedId !== root.previousSelection) {
-                if (editor.selectedId.length) root.panelMode = "item"
+                if (editor.selectedId.length && root.panelMode !== "appearance") root.panelMode = "item"
                 else if (root.panelMode === "item") root.panelMode = ""
                 root.previousSelection = editor.selectedId
             }

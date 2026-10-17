@@ -20,7 +20,8 @@ QString CheckFields(const QJsonObject& object, const QStringList& keys, QJsonVal
 }
 QString CheckJsonStyle(const QJsonObject& style) {
     auto error = CheckFields(style, {"outerRadius", "innerRadius", "iconSize", "gapAngle", "gapAngleDegrees",
-        "fontSize", "animationDuration", "animationDurationMs", "hoverScale", "opacity", "borderWidth", "textOutlineThickness"}, QJsonValue::Double);
+        "fontSize", "animationDuration", "animationDurationMs", "hoverScale", "opacity", "borderWidth", "textOutlineThickness",
+        "submenuFontSize", "submenuIconSize", "submenuBorderWidth", "submenuTextOutlineThickness"}, QJsonValue::Double);
     if (!error.isEmpty()) return error;
     error = CheckFields(style, {"backgroundColor", "sectorColor", "hoverColor", "borderColor", "textColor",
         "centerColor", "centerDotColor", "fontFamily"}, QJsonValue::String);
@@ -50,7 +51,9 @@ QString ValidateStyle(const StyleConfig& s, int itemCount) {
         return QCoreApplication::translate("ConfigValidation", "The gap must be smaller than each sector.");
     if (!InRange(s.Opacity, 0.1, 1) || !InRange(s.BorderWidth, 0, 8) ||
         !InRange(s.TextOutlineThickness, 0, 10) || !InRange(s.HoverScale, 1, 1.25) ||
-        s.AnimationDuration < 0 || s.AnimationDuration > 1000)
+        s.AnimationDuration < 0 || s.AnimationDuration > 1000 ||
+        !InRange(s.SubmenuFontSize, 8, 32) || !InRange(s.SubmenuIconSize, 8, 96) ||
+        !InRange(s.SubmenuBorderWidth, 0, 8) || !InRange(s.SubmenuTextOutlineThickness, 0, 10))
         return QCoreApplication::translate("ConfigValidation", "The appearance contains an out-of-range value.");
     for (const auto& color : {s.BackgroundColor, s.SectorColor, s.HoverColor, s.BorderColor,
                              s.TextColor, s.CenterColor, s.CenterDotColor})
@@ -67,7 +70,7 @@ QString ValidateConfig(const AppConfig& config) {
         profileIds.insert(profile.Id);
         if (profile.Name.trimmed().isEmpty()) return QCoreApplication::translate("ConfigValidation", "Give each menu a name.");
         if (profile.Items.size() > PieMenuConfig::MaxItems) return prefix + QCoreApplication::translate("ConfigValidation", "A pie can have at most 12 items.");
-        if (!profile.Trigger.IsValid() || (ModifierKeyToUint(profile.Trigger.Modifiers) & ~15) || profile.Trigger.VKCode > 255)
+        if ((!profile.Persistent && !profile.Trigger.IsValid()) || (ModifierKeyToUint(profile.Trigger.Modifiers) & ~15) || profile.Trigger.VKCode > 255)
             return prefix + QCoreApplication::translate("ConfigValidation", "Choose a valid trigger.");
         if (profile.bEnabled && profile.Items.empty()) return prefix + QCoreApplication::translate("ConfigValidation", "Add an action or disable this empty menu.");
         if (auto error = ValidateStyle(profile.StyleOverride.value_or(config.GlobalStyle), int(profile.Items.size())); !error.isEmpty())
@@ -113,8 +116,11 @@ ConfigLoadResult ParseConfig(const QByteArray& data) {
     for (const auto& value : root["profiles"].toArray()) {
         if (!value.isObject()) return {{}, QCoreApplication::translate("ConfigValidation", "Each menu must be an object.")};
         const auto profile = value.toObject();
-        if (auto error = CheckFields(profile, {"id", "name"}, QJsonValue::String); !error.isEmpty()) return {{}, error};
-        if (auto error = CheckFields(profile, {"enabled"}, QJsonValue::Bool); !error.isEmpty()) return {{}, error};
+        if (auto error = CheckFields(profile, {"id", "name", "displayMode"}, QJsonValue::String); !error.isEmpty()) return {{}, error};
+        const auto displayMode = profile["displayMode"].toString("Shortcut");
+        if (displayMode != "Shortcut" && displayMode != "Persistent")
+            return {{}, QCoreApplication::translate("ConfigValidation", "Unknown display mode: %1").arg(displayMode)};
+        if (auto error = CheckFields(profile, {"enabled", "collapseSubmenuOnClick"}, QJsonValue::Bool); !error.isEmpty()) return {{}, error};
         if (auto error = CheckFields(profile, {"trigger", "styleOverride"}, QJsonValue::Object); !error.isEmpty()) return {{}, error};
         if (auto error = CheckFields(profile, {"appFilter"}, QJsonValue::Array); !error.isEmpty()) return {{}, error};
         for (const auto& app : profile["appFilter"].toArray()) if (!app.isString()) return {{}, QCoreApplication::translate("ConfigValidation", "Application filters must be text.")};

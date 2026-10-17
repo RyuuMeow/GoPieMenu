@@ -59,7 +59,7 @@ void PiePreviewItem::requestIcons() {
     const auto dpr = window() ? window()->devicePixelRatio() : 1.0;
     if (ListMode) {
         List.retainIcons(First, Rows);
-        const int size = int(std::ceil(std::min(List.style().IconSize * .8, List.rowHeight() - 10) * dpr));
+        const int size = int(std::ceil(List.style().IconSize * dpr));
         for (int i = First; i < std::min(First + Rows, List.count()); ++i) for (bool hover : {false, true}) {
             auto key = Icons->request(List.items()[i].Icon, size, List.iconColor(i, hover));
             Requests[key].append({i, hover}); List.setIcon(i, Icons->cached(key), hover);

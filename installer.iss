@@ -1,6 +1,6 @@
 [Setup]
 AppName=GoPieMenu
-AppVersion=2.1.0
+AppVersion=2.2.0
 AppPublisher=RyuuMeow
 DefaultDirName={autopf}\GoPieMenu
 DefaultGroupName=GoPieMenu
@@ -20,3 +20,6 @@ Name: "{autodesktop}\GoPieMenu"; Filename: "{app}\GoPieMenu.exe"; Tasks: desktop
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[Run]
+Filename: "{app}\GoPieMenu.exe"; Description: "開啟 GoPieMenu"; Flags: nowait postinstall skipifsilent

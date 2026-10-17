@@ -4,7 +4,7 @@
 
 A customizable Windows radial menu for shortcuts, applications, files, websites, and commands.
 
-[Download v2.1.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0) · [What's new and upgrading](CHANGELOG.md#210)
+[Download v2.2.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.2.0) · [What's new and upgrading](CHANGELOG.md#220)
 
 ![Light editor](resources/demo/Editor2.png)
 
@@ -24,11 +24,21 @@ Switching menus preserves all drafts. Closing the editor hides it to the tray an
 
 The default trigger is **Ctrl + right mouse button**: hold, point, and release. Keyboard hold and keyboard toggle are also supported. Toggle mode confirms on a left click; Escape cancels. Application-specific menus take precedence over global menus.
 
+## Persistent floating menus
+
+Choose **Persistent floating menu** under a menu's **Display mode**. It appears automatically when a matching application is in the foreground; an empty application scope makes it global. The menu stays on top without taking keyboard focus. Click actions repeatedly, drag the center to move, and click a submenu sector to toggle it. Moving away keeps the submenu open. **Collapse submenu after click** is off by default; enable it to close the list after selecting a child action while keeping the pie visible. Only one submenu is expanded at a time.
+
+All display modes share one main menu. An application-specific persistent menu blocks global shortcuts. A global persistent menu yields to an application-specific shortcut menu and returns when that interaction ends. For equally specific persistent menus, the first enabled, nonempty profile in configuration order wins and reserves that scope.
+
+Right-click the center and choose **Hide all persistent menus**, or use the matching tray toggle. Switching applications does not undo this choice; clear the tray toggle to restore menus. Hidden persistent menus still reserve their scope, so a hidden application-specific menu continues to block global shortcuts. Disable that profile or change its application scope to release the reservation. Positions, expanded submenus, and the hidden toggle are remembered separately from configuration drafts. Tray Pause and shortcut recording also suspend persistent menus.
+
 ## Appearance and icons
 
 The editor uses a light Frost theme with a custom white title bar, rounded dialogs, and a matching tray menu. The default Frost menu is nearly opaque; choose **Frost** again to apply the new preset to an existing configuration. Appearance keeps the preview visible and offers presets and size, with detailed geometry, colors, and animation under Advanced. The preview hint stays visible when a menu is disabled.
 
 **Appearance always applies to the selected profile.** Presets, sizes, colors, opacity, and animation can be changed independently. Existing menus retain their saved appearance, and duplicated menus copy it without linking subsequent edits.
+
+Switch between **Pie menu** and **Submenu** to set text size, icon size, text outline, and border width separately. Submenu rows grow automatically to fit their text and icons. Colors, font family, opacity, and animation remain shared within the profile. Selecting Submenu opens an existing submenu in the preview; legacy settings retain their previous appearance.
 
 The [color picker](resources/demo/ColorPicker.png) combines a hue ring, saturation/value square, H/S/V/opacity sliders and numeric fields, RGB/RGBA hex input, and 12 recent colors. **Use color** updates the draft; **Cancel** leaves it unchanged.
 
@@ -65,6 +75,8 @@ To package with Inno Setup 6 installed:
 ```
 
 This deploys Qt/QML dependencies, checks startup without the SDK on PATH, and writes the installer and `SHA256SUMS.txt` to `Output`. CI uses the same build and packaging scripts on pull requests and main-branch pushes. Version tags additionally publish the installer, checksum, and matching release notes after validation succeeds.
+
+For packaging without launching the startup check, pass `-SkipSmokeTest`. CI retains the default check.
 
 See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
 

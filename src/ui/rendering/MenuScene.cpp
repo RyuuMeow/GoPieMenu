@@ -33,6 +33,10 @@ StyleConfig SafeStyle(const StyleConfig& input) {
     s.Opacity = finiteClamp(s.Opacity, .1, 1, .95);
     s.BorderWidth = finiteClamp(s.BorderWidth, 0, 8, 1);
     s.TextOutlineThickness = finiteClamp(s.TextOutlineThickness, 0, 10, 2);
+    s.SubmenuFontSize = finiteClamp(s.SubmenuFontSize, 8, 32, 11);
+    s.SubmenuIconSize = finiteClamp(s.SubmenuIconSize, 8, 96, 22.4);
+    s.SubmenuBorderWidth = finiteClamp(s.SubmenuBorderWidth, 0, 8, 1);
+    s.SubmenuTextOutlineThickness = finiteClamp(s.SubmenuTextOutlineThickness, 0, 10, 0);
     s.HoverScale = finiteClamp(s.HoverScale, 1, 1.25, 1.05);
     s.AnimationDuration = std::clamp(s.AnimationDuration, 0, 1000);
     if (!s.BackgroundColor.isValid()) s.BackgroundColor = StyleConfig::Frost().BackgroundColor;
@@ -155,7 +159,11 @@ void PieScene::draw(QPainter& p, int hovered, int selected, qreal progress) cons
 
 void ListScene::build(const std::vector<PieItem>& items, const StyleConfig& style) {
     Items = items; Style = SafeStyle(style);
-    RowHeight = std::max(36.0, Style.FontSize * 2 + 12);
+    Style.FontSize = Style.SubmenuFontSize;
+    Style.IconSize = Style.SubmenuIconSize;
+    Style.BorderWidth = Style.SubmenuBorderWidth;
+    Style.TextOutlineThickness = Style.SubmenuTextOutlineThickness;
+    RowHeight = std::max({36.0, Style.FontSize * 2 + 12 + Style.TextOutlineThickness, Style.IconSize + 10});
     Width = 252; Icons = QVector<QImage>(int(items.size())); HoverIcons = Icons;
 }
 QSizeF ListScene::size(int visibleRows) const { return {Width, std::max(0, visibleRows) * RowHeight + 16}; }
@@ -192,13 +200,22 @@ void ListScene::draw(QPainter& p, int first, int visibleRows, int hovered, qreal
         if (hover) {
             p.setPen(Qt::NoPen); p.setBrush(Style.HoverColor); p.drawRoundedRect(rect, 6, 6);
         }
-        const auto iconSize = std::min(Style.IconSize * .8, RowHeight - 10);
+        const auto iconSize = Style.IconSize;
         const QRectF iconRect(rect.left() + 10, rect.center().y() - iconSize / 2, iconSize, iconSize);
         const auto& image = hover && !HoverIcons[index].isNull() ? HoverIcons[index] : Icons[index];
         if (!image.isNull()) p.drawImage(iconRect, image);
         p.setFont(font); p.setPen(iconColor(index, hover));
-        const QRectF textRect(iconRect.right() + 10, rect.top(), rect.right() - iconRect.right() - 20, rect.height());
-        p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QFontMetricsF(font).elidedText(Items[index].Name, Qt::ElideRight, textRect.width()));
+        const auto outlineMargin = Style.TextOutlineThickness / 2;
+        const QRectF textRect(iconRect.right() + 10 + outlineMargin, rect.top(),
+            rect.right() - iconRect.right() - 20 - Style.TextOutlineThickness, rect.height());
+        if (Style.TextOutlineThickness > 0) {
+            const auto text = iconColor(index, hover);
+            const auto path = labelPath(Items[index].Name, font, textRect, Qt::AlignLeft);
+            p.strokePath(path, QPen(outline(text), Style.TextOutlineThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            p.fillPath(path, text);
+        } else {
+            p.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QFontMetricsF(font).elidedText(Items[index].Name, Qt::ElideRight, textRect.width()));
+        }
     }
     // Scroll affordances remain inside the menu's existing padding.
     p.setPen(Qt::NoPen); p.setBrush(Style.CenterDotColor);
