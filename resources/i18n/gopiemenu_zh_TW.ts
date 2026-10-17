@@ -171,13 +171,13 @@
 <context>
     <name>Application</name>
     <message>
-        <location filename="../../src/main.cpp" line="37"/>
+        <location filename="../../src/main.cpp" line="69"/>
         <source>GoPieMenu is already running.</source>
         <translation>GoPieMenu 已在執行中。</translation>
     </message>
     <message>
-        <location filename="../../src/main.cpp" line="83"/>
-        <location filename="../../src/main.cpp" line="87"/>
+        <location filename="../../src/main.cpp" line="154"/>
+        <location filename="../../src/main.cpp" line="158"/>
         <source>Could not install global input hooks.</source>
         <translation>無法安裝全域輸入攔截器。</translation>
     </message>
@@ -391,32 +391,37 @@
         <translation>每個選單都必須是物件。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="120"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="119"/>
+        <source>Unknown display mode: %1</source>
+        <translation>未知的顯示模式：%1</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/ConfigValidation.cpp" line="123"/>
         <source>Application filters must be text.</source>
         <translation>應用程式篩選條件必須是文字。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="122"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="125"/>
         <source>Each menu must contain an items list.</source>
         <translation>每個選單都必須包含 items 清單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="127"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="130"/>
         <source>Unknown activation mode: %1</source>
         <translation>未知的啟用模式：%1</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="129"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="132"/>
         <source>Invalid trigger modifiers.</source>
         <translation>觸發修飾鍵無效。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="131"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="134"/>
         <source>Invalid trigger key.</source>
         <translation>觸發按鍵無效。</translation>
     </message>
     <message>
-        <location filename="../../src/core/ConfigValidation.cpp" line="133"/>
+        <location filename="../../src/core/ConfigValidation.cpp" line="136"/>
         <source>Each action must be an object.</source>
         <translation>每個動作都必須是物件。</translation>
     </message>
@@ -424,27 +429,27 @@
 <context>
     <name>DefaultMenu</name>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="45"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="46"/>
         <source>New Pie Menu</source>
         <translation>新圓餅選單</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="51"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="52"/>
         <source>Notepad</source>
         <translation>記事本</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="54"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="55"/>
         <source>Calculator</source>
         <translation>計算機</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="57"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="58"/>
         <source>Explorer</source>
         <translation>檔案總管</translation>
     </message>
     <message>
-        <location filename="../../src/models/PieMenuConfig.h" line="111"/>
+        <location filename="../../src/models/PieMenuConfig.h" line="113"/>
         <source>Unnamed</source>
         <translation>未命名</translation>
     </message>
@@ -528,7 +533,7 @@
         <translation>無法載入設定，原始檔案未遭變更。 </translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="212"/>
+        <location filename="../../src/core/EditorSession.cpp" line="213"/>
         <source>New menu</source>
         <translation>新增選單</translation>
     </message>
@@ -1068,121 +1073,142 @@
     </message>
     <message>
         <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="16"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="23"/>
+        <source>Display mode</source>
+        <translation>顯示模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <source>Shortcut menu</source>
+        <translation>快捷呼叫</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <source>Persistent floating menu</source>
+        <translation>常駐懸浮選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="29"/>
         <source>Open with</source>
         <translation>開啟方式</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="33"/>
         <source>Hold mouse button</source>
         <translation>按住滑鼠按鈕</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="33"/>
         <source>Hold keyboard shortcut</source>
         <translation>按住鍵盤快捷鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="20"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="33"/>
         <source>Press to toggle</source>
         <translation>按下以切換</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="23"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="36"/>
         <source>Activation mode</source>
         <translation>啟用模式</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="25"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="38"/>
         <source>Modifiers</source>
         <translation>修飾鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="27"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="40"/>
         <source>Mouse button</source>
         <translation>滑鼠按鈕</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="27"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="40"/>
         <source>Keyboard shortcut</source>
         <translation>鍵盤快捷鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="34"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="47"/>
         <source>Left button</source>
         <translation>左鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="34"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="47"/>
         <source>Right button</source>
         <translation>右鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="35"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="48"/>
         <source>Middle button</source>
         <translation>中鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="35"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="48"/>
         <source>Side button 1 (X1)</source>
         <translation>側鍵 1 (X1)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="36"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="49"/>
         <source>Side button 2 (X2)</source>
         <translation>側鍵 2 (X2)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="40"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="53"/>
         <source>Trigger mouse button</source>
         <translation>觸發滑鼠按鈕</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="46"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="59"/>
         <source>Press a keyboard shortcut…</source>
         <translation>請按下鍵盤快捷鍵…</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="46"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="59"/>
         <source>Record shortcut</source>
         <translation>錄製快捷鍵</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="51"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="64"/>
         <source>Press the shortcut, point to an action, then click to run it.</source>
         <translation>按下快捷鍵，指向某個動作，再按一下即可執行。</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="51"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="64"/>
         <source>Hold the trigger, point to an action, then release to run it.</source>
         <translation>按住觸發鍵，指向某個動作，再放開即可執行。</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="54"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="71"/>
+        <source>Appears automatically in the foreground application. Click actions, drag the center to move, or right-click the center to hide. Restore it from the tray.</source>
+        <translation>指定程式位於前景時自動顯示。點擊動作、拖曳中心移動，或右鍵點中心隱藏；從系統匣恢復顯示。</translation>
+    </message>
+    <message>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="74"/>
         <source>Available in</source>
         <translation>適用於</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="58"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="78"/>
         <source>All applications</source>
         <translation>所有應用程式</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="60"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="80"/>
         <source>Application filter</source>
         <translation>應用程式篩選條件</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="63"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="83"/>
         <source>Running apps</source>
         <translation>執行中的應用程式</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="64"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="84"/>
         <source>Choose application</source>
         <translation>選擇應用程式</translation>
     </message>
     <message>
-        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="66"/>
+        <location filename="../../src/ui/qml/MenuSettingsPane.qml" line="86"/>
         <source>Leave empty for every app. Separate application names with commas.</source>
         <translation>留空代表適用於所有應用程式。多個應用程式名稱請以逗號分隔。</translation>
     </message>
@@ -1401,55 +1427,68 @@
 <context>
     <name>gpm::EditorSession</name>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="148"/>
+        <location filename="../../src/core/EditorSession.cpp" line="121"/>
+        <source>Persistent floating menu</source>
+        <translation>常駐懸浮選單</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/EditorSession.cpp" line="149"/>
         <source>Main menu</source>
         <translation>主選單</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="223"/>
-        <location filename="../../src/core/EditorSession.cpp" line="286"/>
+        <location filename="../../src/core/EditorSession.cpp" line="224"/>
+        <location filename="../../src/core/EditorSession.cpp" line="288"/>
         <source>%1 copy</source>
         <translation>%1 副本</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="229"/>
+        <location filename="../../src/core/EditorSession.cpp" line="230"/>
         <source>Keep at least one menu.</source>
         <translation>至少保留一個選單。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="262"/>
-        <location filename="../../src/core/EditorSession.cpp" line="297"/>
+        <location filename="../../src/core/EditorSession.cpp" line="264"/>
+        <location filename="../../src/core/EditorSession.cpp" line="299"/>
         <source>Submenus can only contain actions.</source>
         <translation>子選單只能包含動作。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="263"/>
-        <location filename="../../src/core/EditorSession.cpp" line="284"/>
-        <location filename="../../src/core/EditorSession.cpp" line="337"/>
+        <location filename="../../src/core/EditorSession.cpp" line="265"/>
+        <location filename="../../src/core/EditorSession.cpp" line="286"/>
+        <location filename="../../src/core/EditorSession.cpp" line="339"/>
         <source>A pie can have at most 12 items.</source>
         <translation>圓餅選單最多只能有 12 個項目。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="266"/>
+        <location filename="../../src/core/EditorSession.cpp" line="268"/>
         <source>New submenu</source>
         <translation>新增子選單</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="266"/>
-        <location filename="../../src/core/EditorSession.cpp" line="320"/>
-        <location filename="../../src/core/EditorSession.cpp" line="324"/>
+        <location filename="../../src/core/EditorSession.cpp" line="268"/>
+        <location filename="../../src/core/EditorSession.cpp" line="322"/>
+        <location filename="../../src/core/EditorSession.cpp" line="326"/>
         <source>New action</source>
         <translation>新增動作</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="294"/>
+        <location filename="../../src/core/EditorSession.cpp" line="296"/>
         <source>Move or remove the submenu actions before changing its type.</source>
         <translation>變更類型前，請先移動或移除子選單中的動作。</translation>
     </message>
     <message>
-        <location filename="../../src/core/EditorSession.cpp" line="334"/>
+        <location filename="../../src/core/EditorSession.cpp" line="336"/>
         <source>A submenu cannot be placed inside another submenu.</source>
         <translation>子選單不能放在另一個子選單中。</translation>
+    </message>
+</context>
+<context>
+    <name>gpm::PieMenuWidget</name>
+    <message>
+        <location filename="../../src/ui/PieMenuWidget.cpp" line="20"/>
+        <source>Hide all persistent menus</source>
+        <translation>隱藏所有常駐選單</translation>
     </message>
 </context>
 <context>
@@ -1535,49 +1574,54 @@
 <context>
     <name>gpm::TrayManager</name>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="32"/>
-        <location filename="../../src/ui/TrayManager.cpp" line="71"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="33"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="77"/>
         <source>GoPieMenu - Active</source>
         <translation>GoPieMenu - 已啟用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="50"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="51"/>
         <source>Settings</source>
         <translation>設定</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="63"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="64"/>
+        <source>Hide all persistent menus</source>
+        <translation>隱藏所有常駐選單</translation>
+    </message>
+    <message>
         <location filename="../../src/ui/TrayManager.cpp" line="69"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="75"/>
         <source>Pause</source>
         <translation>暫停</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="69"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="75"/>
         <source>Resume</source>
         <translation>繼續</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="70"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="76"/>
         <source>GoPieMenu - Paused</source>
         <translation>GoPieMenu - 已暫停</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="77"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="83"/>
         <source>Quit</source>
         <translation>結束</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="90"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="100"/>
         <source>Update available: %1</source>
         <translation>有可用更新：%1</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="96"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="106"/>
         <source>Update available</source>
         <translation>有更新可用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/TrayManager.cpp" line="97"/>
+        <location filename="../../src/ui/TrayManager.cpp" line="107"/>
         <source>GoPieMenu %1 is available. Click to view what&apos;s new.</source>
         <translation>GoPieMenu %1 已推出更新。按一下查看更新內容。</translation>
     </message>

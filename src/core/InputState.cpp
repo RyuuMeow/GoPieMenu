@@ -1,4 +1,5 @@
 #include "InputState.h"
+#include "MenuPolicy.h"
 #include <algorithm>
 
 namespace gpm {
@@ -22,7 +23,7 @@ const PieMenuConfig* InputState::match(MouseButton button, int vk, const QString
     const PieMenuConfig* best = nullptr;
     int score = -1;
     for (const auto& p : Profiles) {
-        if (!p.bEnabled || p.Items.empty() || p.Trigger.Modifiers != modifiers()) continue;
+        if (!CanTriggerMenu(Profiles, p, process) || p.Trigger.Modifiers != modifiers()) continue;
         if (p.Trigger.Mode == ActivationMode::MouseHold) {
             if (button == MouseButton::None || p.Trigger.Button != button) continue;
         } else if (vk == 0 || p.Trigger.VKCode != uint32_t(vk)) continue;

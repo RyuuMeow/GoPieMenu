@@ -67,7 +67,7 @@ QString ValidateConfig(const AppConfig& config) {
         profileIds.insert(profile.Id);
         if (profile.Name.trimmed().isEmpty()) return QCoreApplication::translate("ConfigValidation", "Give each menu a name.");
         if (profile.Items.size() > PieMenuConfig::MaxItems) return prefix + QCoreApplication::translate("ConfigValidation", "A pie can have at most 12 items.");
-        if (!profile.Trigger.IsValid() || (ModifierKeyToUint(profile.Trigger.Modifiers) & ~15) || profile.Trigger.VKCode > 255)
+        if ((!profile.Persistent && !profile.Trigger.IsValid()) || (ModifierKeyToUint(profile.Trigger.Modifiers) & ~15) || profile.Trigger.VKCode > 255)
             return prefix + QCoreApplication::translate("ConfigValidation", "Choose a valid trigger.");
         if (profile.bEnabled && profile.Items.empty()) return prefix + QCoreApplication::translate("ConfigValidation", "Add an action or disable this empty menu.");
         if (auto error = ValidateStyle(profile.StyleOverride.value_or(config.GlobalStyle), int(profile.Items.size())); !error.isEmpty())
@@ -113,7 +113,10 @@ ConfigLoadResult ParseConfig(const QByteArray& data) {
     for (const auto& value : root["profiles"].toArray()) {
         if (!value.isObject()) return {{}, QCoreApplication::translate("ConfigValidation", "Each menu must be an object.")};
         const auto profile = value.toObject();
-        if (auto error = CheckFields(profile, {"id", "name"}, QJsonValue::String); !error.isEmpty()) return {{}, error};
+        if (auto error = CheckFields(profile, {"id", "name", "displayMode"}, QJsonValue::String); !error.isEmpty()) return {{}, error};
+        const auto displayMode = profile["displayMode"].toString("Shortcut");
+        if (displayMode != "Shortcut" && displayMode != "Persistent")
+            return {{}, QCoreApplication::translate("ConfigValidation", "Unknown display mode: %1").arg(displayMode)};
         if (auto error = CheckFields(profile, {"enabled"}, QJsonValue::Bool); !error.isEmpty()) return {{}, error};
         if (auto error = CheckFields(profile, {"trigger", "styleOverride"}, QJsonValue::Object); !error.isEmpty()) return {{}, error};
         if (auto error = CheckFields(profile, {"appFilter"}, QJsonValue::Array); !error.isEmpty()) return {{}, error};

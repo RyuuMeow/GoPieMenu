@@ -117,7 +117,8 @@ QVariantMap EditorSession::profile() const {
             {"appFilter", p->AppFilter.join(", ")}, {"triggerMode", int(p->Trigger.Mode)},
             {"modifiers", int(ModifierKeyToUint(p->Trigger.Modifiers))},
             {"mouseButton", MouseButtonToString(p->Trigger.Button)}, {"vkCode", p->Trigger.VKCode},
-            {"triggerSummary", TriggerDisplayName(p->Trigger)}};
+            {"persistent", p->Persistent},
+            {"triggerSummary", p->Persistent ? tr("Persistent floating menu") : TriggerDisplayName(p->Trigger)}};
     }
     return {};
 }
@@ -238,6 +239,7 @@ void EditorSession::setProfileField(const QString& field, const QVariant& value)
         auto& p = *mutableProfile();
         if (field == "name") p.Name = value.toString();
         else if (field == "enabled") p.bEnabled = value.toBool();
+        else if (field == "persistent") p.Persistent = value.toBool();
         else if (field == "appFilter") {
             p.AppFilter.clear();
             for (const auto& part : value.toString().split(',', Qt::SkipEmptyParts)) {

@@ -23,12 +23,14 @@ public:
     void Show();
     void SetUpdateAvailable(const QString& version);
     void ShowUpdateNotification(const QString& version);
+    void SetPersistentHidden(bool hidden);
     
 signals:
     void SettingsRequested();
     void PauseToggled(bool bPaused);
     void QuitRequested();
     void UpdateRequested();
+    void PersistentHiddenToggled(bool hidden);
 
 private:
     // === Initialization ===
@@ -40,6 +42,7 @@ private:
     QMenu*           TrayMenu          = nullptr;
     QAction*         PauseAction       = nullptr;
     QAction*         UpdateAction      = nullptr;
+    QAction*         PersistentAction  = nullptr;
     
     // === State ===
     bool             bIsPaused         = false;

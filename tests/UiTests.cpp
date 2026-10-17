@@ -14,6 +14,8 @@
 #include "ui/quick/PiePreviewItem.h"
 #include "ui/quick/ColorWheelItem.h"
 #include "ui/PieMenuWidget.h"
+#include "ui/RuntimeMenuController.h"
+#include <QPushButton>
 #include "ui/rendering/MenuScene.h"
 #include "ui/TrayManager.h"
 #include "core/ActionExecutor.h"
@@ -79,6 +81,144 @@ class UiTests : public QObject {
         return !image.isNull() && image.save("artifacts/" + name + "-" + QString::number(window->devicePixelRatio()) + ".png");
     }
 private slots:
+    void persistentDisplayModeEditor() {
+        for (const auto& language : {QString("en"), QString("zh-TW"), QString("zh-CN")}) {
+            TranslationManager translations; QVERIFY(translations.load(language));
+            QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json"));
+            IconService icons; SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+            QVERIFY(showEditor(editor)); auto* window = editor.window();
+            QVERIFY(click(window, "triggerSummaryButton"));
+            auto* combo = find(window, "displayModeCombo"); QVERIFY(combo);
+            combo->setProperty("currentIndex", 1);
+            QVERIFY(QMetaObject::invokeMethod(combo, "activated", Q_ARG(int, 1)));
+            QTRY_VERIFY(editor.session()->profile()["persistent"].toBool());
+            QVERIFY(!find(window, "activationModeCombo"));
+            QCOMPARE(editor.session()->profile()["triggerSummary"].toString(), QCoreApplication::translate("gpm::EditorSession", "Persistent floating menu"));
+            QVERIFY(snapshot(window, "persistent-settings-" + language));
+            editor.session()->undo();
+            QTRY_VERIFY(!editor.session()->profile()["persistent"].toBool());
+            QTRY_VERIFY(find(window, "activationModeCombo"));
+        }
+    }
+    void persistentClicksDragAndSubmenuToggle() {
+#ifdef Q_OS_WIN
+        QWidget target;
+        target.resize(320, 240); target.show(); target.raise(); target.activateWindow();
+        QVERIFY(QTest::qWaitForWindowActive(&target));
+        const auto foreground = GetForegroundWindow();
+        QCOMPARE(foreground, reinterpret_cast<HWND>(target.winId()));
+#endif
+        IconService icons; PieMenuWidget pie(&icons);
+        auto profile = PieMenuConfig::CreateDefault(); profile.Persistent = true;
+        profile.Items[0].Action = ActionType::ListMenu;
+        profile.Items[0].SubItems = {PieItem::Create("Copy", ActionType::SendHotkey, "Ctrl+C")};
+        auto style = StyleConfig::Frost(); style.AnimationDuration = 0;
+        pie.ShowAt(QGuiApplication::primaryScreen()->availableGeometry().center(), profile, style, true);
+        QVERIFY(QTest::qWaitForWindowExposed(&pie));
+#ifdef Q_OS_WIN
+        QCOMPARE(GetForegroundWindow(), foreground);
+#endif
+        QSignalSpy chosen(&pie, &PieMenuWidget::ItemSelected);
+        QSignalSpy moved(&pie, &PieMenuWidget::PositionChanged);
+        QSignalSpy hidden(&pie, &PieMenuWidget::HidePersistentRequested);
+        auto center = pie.mapFromGlobal(pie.MenuCenter());
+        const auto top = center - QPoint(0, 90);
+        pie.UpdateMousePos(pie.mapToGlobal(top));
+        auto* list = pie.findChild<ListMenuWidget*>("runtimeSubmenu"); QVERIFY(list);
+        QVERIFY(!list->IsOpen()); // Hover never opens a resident submenu.
+        QTest::mouseClick(&pie, Qt::LeftButton, Qt::NoModifier, top);
+        QVERIFY(list->IsOpen());
+        QTest::mouseClick(list, Qt::LeftButton, Qt::NoModifier, QPoint(50, 35));
+        QTest::mouseClick(list, Qt::LeftButton, Qt::NoModifier, QPoint(50, 35));
+        QCOMPARE(chosen.count(), 2); QVERIFY(list->IsOpen()); QVERIFY(pie.IsOpen());
+        QTest::mouseClick(&pie, Qt::LeftButton, Qt::NoModifier, center + QPoint(90, 0));
+        QCOMPARE(chosen.count(), 3); QVERIFY(list->IsOpen());
+        const auto oldCenter = pie.MenuCenter();
+        const auto oldListPosition = list->pos();
+        QTest::mousePress(&pie, Qt::LeftButton, Qt::NoModifier, center);
+        const QPoint shift(50, 35);
+        QMouseEvent move(QEvent::MouseMove, center + shift, oldCenter + shift, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&pie, &move);
+        QTest::mouseRelease(&pie, Qt::LeftButton, Qt::NoModifier, pie.mapFromGlobal(pie.MenuCenter()));
+        QCOMPARE(pie.MenuCenter(), oldCenter + shift); QCOMPARE(moved.count(), 1);
+        QVERIFY(list->pos() != oldListPosition); QCOMPARE(chosen.count(), 3);
+        center = pie.mapFromGlobal(pie.MenuCenter());
+        QTest::mouseClick(&pie, Qt::LeftButton, Qt::NoModifier, center - QPoint(0, 90));
+        QVERIFY(!list->IsOpen());
+        QTest::mousePress(&pie, Qt::LeftButton, Qt::NoModifier, center + QPoint(90, 0));
+        QTest::mouseRelease(&pie, Qt::LeftButton, Qt::NoModifier, center);
+        QCOMPARE(chosen.count(), 3); // A release on another target cancels the click.
+        QTest::mouseClick(&pie, Qt::RightButton, Qt::NoModifier, center);
+        auto* context = pie.findChild<QWidget*>("persistentContextMenu"); QVERIFY(context && context->isVisible());
+        pie.DismissContextOutside(context->geometry().bottomRight() + QPoint(10, 10));
+        QVERIFY(!context->isVisible()); QVERIFY(pie.IsOpen());
+        QTest::mouseClick(&pie, Qt::RightButton, Qt::NoModifier, center);
+        auto* hide = pie.findChild<QPushButton*>("hidePersistentButton"); QVERIFY(hide);
+#ifdef Q_OS_WIN
+        QCOMPARE(GetForegroundWindow(), foreground);
+        for (QWidget* window : {static_cast<QWidget*>(&pie), static_cast<QWidget*>(list), context}) {
+            QCOMPARE(SendMessageW(reinterpret_cast<HWND>(window->winId()), WM_MOUSEACTIVATE, 0, MAKELPARAM(HTCLIENT, WM_LBUTTONDOWN)), LRESULT(MA_NOACTIVATE));
+            QCOMPARE(GetForegroundWindow(), foreground);
+        }
+#endif
+        QTest::mouseClick(hide, Qt::LeftButton); QCOMPARE(hidden.count(), 1);
+    }
+    void persistentControllerSwitchesHidesAndRestores() {
+        QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json"));
+        auto data = config.GetConfig(); data.GlobalStyle.AnimationDuration = 0;
+        auto& global = data.Profiles[0]; global.Id = "global"; global.Persistent = true;
+        auto app = global; app.Id = "app"; app.AppFilter = {"paint.exe"};
+        app.Items[0].Action = ActionType::ListMenu;
+        app.Items[0].SubItems = {PieItem::Create("Copy", ActionType::SendHotkey, "Ctrl+C")};
+        auto shortcut = global; shortcut.Id = "shortcut"; shortcut.Persistent = false; shortcut.AppFilter = {"browser.exe"};
+        auto globalKey = shortcut; globalKey.Id = "globalKey"; globalKey.AppFilter.clear();
+        data.Profiles.push_back(app); data.Profiles.push_back(shortcut); data.Profiles.push_back(globalKey);
+        QVERIFY(config.Commit(data));
+        QSettings settings(dir.filePath("runtime.ini"), QSettings::IniFormat);
+        IconService icons; PieMenuWidget pie(&icons);
+        RuntimeMenuController controller(&config, &pie, &settings);
+        TrayManager tray;
+        connect(&tray, &TrayManager::PersistentHiddenToggled, &controller, &RuntimeMenuController::SetHidden);
+        connect(&controller, &RuntimeMenuController::HiddenChanged, &tray, &TrayManager::SetPersistentHidden);
+        auto* trayToggle = tray.findChild<QSystemTrayIcon*>()->contextMenu()->findChild<QAction*>("trayPersistentAction");
+        QVERIFY(trayToggle);
+        controller.SetForegroundProcess("paint.exe"); QCOMPARE(controller.CurrentProfile(), "app");
+        const auto original = config.GetConfig().Serialize();
+        const auto center = pie.MenuCenter();
+        pie.PositionChanged(center + QPoint(30, 20));
+        pie.SubmenuChanged(app.Items[0].Id);
+        controller.SetForegroundProcess("other.exe"); QCOMPARE(controller.CurrentProfile(), "global");
+        controller.SetForegroundProcess("paint.exe"); QCOMPARE(controller.CurrentProfile(), "app");
+        QCOMPARE(pie.MenuCenter(), center + QPoint(30, 20));
+        QVERIFY(pie.findChild<ListMenuWidget*>("runtimeSubmenu")->IsOpen());
+        pie.HidePersistentRequested();
+        QVERIFY(controller.IsHidden()); QVERIFY(trayToggle->isChecked()); QVERIFY(!pie.isVisible());
+        QVERIFY(!controller.Trigger("globalKey", center));
+        controller.SetForegroundProcess("other.exe"); QVERIFY(!pie.isVisible());
+        controller.SetForegroundProcess("paint.exe"); QVERIFY(!pie.isVisible());
+        trayToggle->trigger(); QVERIFY(!controller.IsHidden()); QCOMPARE(controller.CurrentProfile(), "app");
+        controller.SetForegroundProcess("browser.exe");
+        QVERIFY(controller.Trigger("shortcut", center)); QVERIFY(!pie.IsPersistent());
+        controller.ConfirmShortcut(center + QPoint(90, 0));
+        QTRY_COMPARE(controller.CurrentProfile(), "global"); QVERIFY(pie.IsPersistent());
+        controller.SetPaused(true); QVERIFY(!pie.isVisible());
+        controller.SetPaused(false); QVERIFY(pie.IsOpen());
+        controller.SetRecording(true); QVERIFY(!pie.isVisible());
+        controller.SetRecording(false); QVERIFY(pie.IsOpen());
+        QCOMPARE(config.GetConfig().Serialize(), original);
+        auto removed = config.GetConfig();
+        removed.Profiles[1].Items[0] = PieItem::Create("Replacement", ActionType::SendHotkey, "Ctrl+V");
+        controller.SetForegroundProcess("paint.exe");
+        QVERIFY(config.Commit(removed));
+        QCOMPARE(controller.CurrentProfile(), "app");
+        QVERIFY(!pie.findChild<ListMenuWidget*>("runtimeSubmenu")->IsOpen());
+        QVERIFY(config.Commit(data));
+        controller.SetHidden(true);
+        PieMenuWidget restoredPie(&icons); RuntimeMenuController restored(&config, &restoredPie, &settings);
+        QVERIFY(restored.IsHidden()); restored.SetForegroundProcess("paint.exe"); QVERIFY(!restoredPie.isVisible());
+        restored.SetHidden(false); QCOMPARE(restoredPie.MenuCenter(), center + QPoint(30, 20));
+        QVERIFY(restoredPie.findChild<ListMenuWidget*>("runtimeSubmenu")->IsOpen());
+    }
     void initTestCase() {
         QQuickStyle::setStyle("Basic");
         for (auto* screen : QGuiApplication::screens()) qInfo() << "Screen" << screen->name() << screen->geometry() << screen->availableGeometry() << screen->devicePixelRatio();

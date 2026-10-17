@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QIcon>
 #include <QStyle>
+#include <QSignalBlocker>
 
 static void InitializeBrandResources() { Q_INIT_RESOURCE(resources); }
 
@@ -60,6 +61,11 @@ void TrayManager::CreateTrayIcon()
 
     TrayMenu->addSeparator();
 
+    PersistentAction = TrayMenu->addAction(tr("Hide all persistent menus"));
+    PersistentAction->setObjectName("trayPersistentAction");
+    PersistentAction->setCheckable(true);
+    connect(PersistentAction, &QAction::toggled, this, &TrayManager::PersistentHiddenToggled);
+
     PauseAction = TrayMenu->addAction(tr("Pause"));
     PauseAction->setObjectName("trayPauseAction");
     PauseAction->setCheckable(true);
@@ -84,6 +90,10 @@ void TrayManager::CreateTrayIcon()
 void TrayManager::Show()
 {
     TrayIcon->show();
+}
+void TrayManager::SetPersistentHidden(bool hidden) {
+    const QSignalBlocker blocker(PersistentAction);
+    PersistentAction->setChecked(hidden);
 }
 
 void TrayManager::SetUpdateAvailable(const QString& version) {

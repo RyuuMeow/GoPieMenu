@@ -1,5 +1,28 @@
 # Changelog
 
+## [Unreleased]
+
+<!-- gpm:lang en -->
+#### Added
+- Per-menu persistent floating mode: automatic foreground-app selection, nonactivating click actions, center dragging, and persistent toggle submenus.
+- Shared application-over-global arbitration across shortcut and persistent menus, including hidden persistent reservations; only one main menu is displayed.
+- A center context menu and tray toggle to hide all persistent menus, with separately remembered positions and submenu expansion.
+<!-- gpm:endlang -->
+
+<!-- gpm:lang zh-TW -->
+#### 新增
+- 每份選單可設定常駐懸浮模式：依前景程式自動顯示、不搶焦點的點擊動作、中心拖移及持續展開的子選單切換。
+- 快捷與常駐模式共用專用優先於全域的規則；隱藏仍保留優先權，同時只顯示一個主選單。
+- 中心右鍵選單與系統匣開關可隱藏所有常駐選單，另外記住各選單位置與展開狀態。
+<!-- gpm:endlang -->
+
+<!-- gpm:lang zh-CN -->
+#### 新增
+- 每份菜单可设置常驻悬浮模式：根据前台应用自动显示、不抢焦点的点击动作、中心拖动及持续展开的子菜单切换。
+- 快捷与常驻模式共用专用优先于全局的规则；隐藏仍保留优先权，同时只显示一个主菜单。
+- 中心右键菜单与系统托盘开关可隐藏所有常驻菜单，单独记住各菜单位置与展开状态。
+<!-- gpm:endlang -->
+
 ## [2.1.0]
 
 ### English

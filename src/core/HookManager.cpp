@@ -24,12 +24,18 @@ bool HookManager::Install() {
     if (!Keyboard) return false;
     Mouse = SetWindowsHookExW(WH_MOUSE_LL, MouseProc, GetModuleHandleW(nullptr), 0);
     if (!Mouse) { UnhookWindowsHookEx(Keyboard); Keyboard = nullptr; return false; }
+    Foreground = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr,
+        ForegroundProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+    if (!Foreground) { Uninstall(); return false; }
+    emit ForegroundChanged(foregroundProcess());
     return true;
 }
 void HookManager::Uninstall() {
     Cancel();
     if (Keyboard) UnhookWindowsHookEx(Keyboard);
     if (Mouse) UnhookWindowsHookEx(Mouse);
+    if (Foreground) UnhookWinEvent(Foreground);
+    Foreground = nullptr;
     Keyboard = nullptr; Mouse = nullptr; State.reset();
 }
 bool HookManager::IsInstalled() const { return Keyboard && Mouse; }
@@ -52,6 +58,12 @@ QString HookManager::foregroundProcess() const {
     const bool ok = QueryFullProcessImageNameW(process, 0, path, &length);
     CloseHandle(process);
     return ok ? QFileInfo(QString::fromWCharArray(path, int(length))).fileName() : QString();
+}
+void CALLBACK HookManager::ForegroundProc(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD) {
+    if (!Instance) return;
+    // Resolve the current foreground when delivered, not a potentially stale event HWND.
+    Instance->Cancel();
+    emit Instance->ForegroundChanged(Instance->foregroundProcess());
 }
 void HookManager::dispatch(const InputDecision& d) {
     switch (d.Effect) {
@@ -94,6 +106,7 @@ LRESULT CALLBACK HookManager::MouseProc(int code, WPARAM wparam, LPARAM lparam) 
             case WM_XBUTTONDOWN: down = true; [[fallthrough]];
             case WM_XBUTTONUP: button = HIWORD(mouse.mouseData) == XBUTTON1 ? MouseButton::X1 : MouseButton::X2; break;
             }
+            if (down) emit Instance->PointerPressed(QPoint(mouse.pt.x, mouse.pt.y));
             result = Instance->State.mouse(button, down, down && !Instance->State.active() ? Instance->foregroundProcess() : QString());
         }
         Instance->dispatch(result);

@@ -24,6 +24,14 @@ Switching menus preserves all drafts. Closing the editor hides it to the tray an
 
 The default trigger is **Ctrl + right mouse button**: hold, point, and release. Keyboard hold and keyboard toggle are also supported. Toggle mode confirms on a left click; Escape cancels. Application-specific menus take precedence over global menus.
 
+## Persistent floating menus
+
+Choose **Persistent floating menu** under a menu's **Display mode**. It appears automatically when a matching application is in the foreground; an empty application scope makes it global. The menu stays on top without taking keyboard focus. Click actions repeatedly, drag the center to move, and click a submenu sector to toggle it. Moving away or executing a child action keeps the submenu open. Only one submenu is expanded at a time.
+
+All display modes share one main menu. An application-specific persistent menu blocks global shortcuts. A global persistent menu yields to an application-specific shortcut menu and returns when that interaction ends. For equally specific persistent menus, the first enabled, nonempty profile in configuration order wins and reserves that scope.
+
+Right-click the center and choose **Hide all persistent menus**, or use the matching tray toggle. Switching applications does not undo this choice; clear the tray toggle to restore menus. Hidden persistent menus still reserve their scope, so a hidden application-specific menu continues to block global shortcuts. Disable that profile or change its application scope to release the reservation. Positions, expanded submenus, and the hidden toggle are remembered separately from configuration drafts. Tray Pause and shortcut recording also suspend persistent menus.
+
 ## Appearance and icons
 
 The editor uses a light Frost theme with a custom white title bar, rounded dialogs, and a matching tray menu. The default Frost menu is nearly opaque; choose **Frost** again to apply the new preset to an existing configuration. Appearance keeps the preview visible and offers presets and size, with detailed geometry, colors, and animation under Advanced. The preview hint stays visible when a menu is disabled.
