@@ -2,6 +2,39 @@
 
 ## [Unreleased]
 
+## [2.3.0]
+
+### English
+<!-- gpm:lang en -->
+
+- Enable **Show a hint when an action runs** in Settings to display its icon and name on the pie menu’s monitor. Choose from six positions and adjust background opacity, edge margin, size, and hold time. **Preview hint** shows your draft on the editor’s monitor before you apply it. Hints are off by default.
+- In a submenu, **Add action** now ends just below **Run command**, removing the empty space at the bottom.
+
+<!-- gpm:endlang -->
+
+### 繁體中文
+<!-- gpm:lang zh-TW -->
+
+- 在設定開啟 **執行動作時顯示提示**，即可在圓盤所在螢幕看到動作的圖示與名稱。提供六個位置，可調整背景不透明度、邊距、大小與停留時間。按 **預覽提示** 即可在編輯器所在螢幕試看，再決定是否套用。此功能預設關閉。
+- 在子選單頁開啟 **新增動作** 時，選單會貼齊最後一列 **執行命令**，底部多餘的留白已移除。
+
+<!-- gpm:endlang -->
+
+### 简体中文
+<!-- gpm:lang zh-CN -->
+
+- 在设置中开启 **执行动作时显示提示**，即可在圆盘所在屏幕看到动作的图标和名称。提供六个位置，可调整背景不透明度、边距、大小和停留时间。点击 **预览提示** 即可在编辑器所在屏幕查看效果，再决定是否应用。此功能默认关闭。
+- 在子菜单页打开 **新增动作** 时，菜单会贴合最后一行 **执行命令**，底部多余的空白已移除。
+
+<!-- gpm:endlang -->
+
+<!-- gpm:lang shared -->
+### Validation
+
+The Windows release workflow tests the editor at 100%, 125%, 150%, and 200% scaling and checks standalone startup before publishing the installer and `SHA256SUMS.txt`.
+
+<!-- gpm:endlang -->
+
 ## [2.2.0]
 
 ### English
