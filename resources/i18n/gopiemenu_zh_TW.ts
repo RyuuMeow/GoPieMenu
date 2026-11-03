@@ -262,6 +262,10 @@
 <context>
     <name>ConfigValidation</name>
     <message>
+        <source>Invalid action overlay settings.</source>
+        <translation>動作提示設定無效。</translation>
+    </message>
+    <message>
         <location filename="../../src/core/ConfigValidation.cpp" line="18"/>
         <source>Invalid value type for %1.</source>
         <translation>「%1」的值類型無效。</translation>
@@ -1732,6 +1736,80 @@
         <location filename="../../src/update/UpdateManager.cpp" line="210"/>
         <source>Could not start the installer. Please try again.</source>
         <translation>無法啟動安裝程式，請再試一次。</translation>
+    </message>
+</context>
+<context>
+    <name>ActionOverlaySettings</name>
+    <message>
+        <source>Show a hint when an action runs</source>
+        <translation>執行動作時顯示提示</translation>
+    </message>
+    <message>
+        <source>Screen position</source>
+        <translation>螢幕位置</translation>
+    </message>
+    <message>
+        <source>Top left</source>
+        <translation>左上</translation>
+    </message>
+    <message>
+        <source>Top center</source>
+        <translation>上方中央</translation>
+    </message>
+    <message>
+        <source>Top right</source>
+        <translation>右上</translation>
+    </message>
+    <message>
+        <source>Bottom left</source>
+        <translation>左下</translation>
+    </message>
+    <message>
+        <source>Bottom center</source>
+        <translation>下方中央</translation>
+    </message>
+    <message>
+        <source>Bottom right</source>
+        <translation>右下</translation>
+    </message>
+    <message>
+        <source>Hint size</source>
+        <translation>提示大小</translation>
+    </message>
+    <message>
+        <source>Small</source>
+        <translation>小</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation>中</translation>
+    </message>
+    <message>
+        <source>Large</source>
+        <translation>大</translation>
+    </message>
+    <message>
+        <source>Background opacity</source>
+        <translation>背景不透明度</translation>
+    </message>
+    <message>
+        <source>Edge margin</source>
+        <translation>與邊緣距離</translation>
+    </message>
+    <message>
+        <source>Hold time</source>
+        <translation>停留時間</translation>
+    </message>
+    <message>
+        <source>Preview hint</source>
+        <translation>預覽提示</translation>
+    </message>
+</context>
+<context>
+    <name>ActionOverlay</name>
+    <message>
+        <source>Undo</source>
+        <translation>復原</translation>
     </message>
 </context>
 </TS>

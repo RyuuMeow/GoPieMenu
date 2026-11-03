@@ -6,6 +6,7 @@
 #include "core/MenuPolicy.h"
 #include "ui/PieMenuWidget.h"
 #include "ui/SettingsWindow.h"
+#include "ui/widgets/ActionOverlay.h"
 #include "ui/TrayManager.h"
 #include <QApplication>
 #include <QQuickStyle>
@@ -92,6 +93,11 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<gpm::UpdateManager> updates;
     if (!preview) updates = std::make_unique<gpm::UpdateManager>(updateOptions);
     gpm::SettingsWindow editor(&config, &icons, nullptr, updates.get());
+    gpm::ActionOverlay overlay(&icons);
+    QObject::connect(&editor, &gpm::SettingsWindow::previewActionOverlay, &overlay, [&] {
+        overlay.present(editor.window()->screen(), editor.session()->draft().ActionOverlay,
+                        QCoreApplication::translate("ActionOverlay", "Undo"), "undo.svg");
+    });
     editor.setPlatformIntegrationEnabled(!preview);
     editor.setPreviewMode(preview);
     editor.setRestartHandler([preview] {
@@ -145,7 +151,10 @@ int main(int argc, char* argv[]) {
             const auto* eligible = gpm::PersistentMenu(config.GetConfig().Profiles, hooks.foregroundProcess());
             if (!eligible || eligible->Id != runtime.CurrentProfile()) return;
         }
-        if (!preview) executor.Execute(item);
+        if (preview || item.IsNoOp()) return;
+        const auto center = pie.MenuCenter();
+        if (executor.Execute(item) && config.GetConfig().ActionOverlay.enabled)
+            overlay.present(QGuiApplication::screenAt(center), config.GetConfig().ActionOverlay, item.Name, item.Icon);
     });
     QObject::connect(&executor, &gpm::ActionExecutor::ActionFailed, editor.session(), [&](const QString& name, const QString& error) {
         editor.session()->reportError(name + ": " + error);

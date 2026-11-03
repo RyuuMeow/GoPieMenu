@@ -326,6 +326,7 @@ ApplicationWindow {
             }
             Label { Layout.fillWidth: true; text: qsTr("Language changes take effect after restarting GoPieMenu."); color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap }
             AppCheckBox { text: qsTr("Start with Windows"); checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
+            ActionOverlaySettings { Layout.fillWidth: true }
             AppButton {
                 objectName: "checkUpdatesButton"
                 visible: appController.updater !== null

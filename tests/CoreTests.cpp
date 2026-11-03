@@ -16,6 +16,34 @@ using namespace gpm;
 class CoreTests : public QObject {
     Q_OBJECT
 private slots:
+    void overlaySettingsFollowDraftLifecycle() {
+        QTemporaryDir dir;
+        ConfigManager manager(nullptr, dir.filePath("config.json"));
+        EditorSession session(&manager);
+        auto legacy = manager.GetConfig().ToJson();
+        legacy.remove("actionOverlay");
+        const auto parsed = ParseConfig(QJsonDocument(legacy).toJson());
+        QVERIFY(parsed);
+        QVERIFY(!parsed.Value->ActionOverlay.enabled);
+        session.setOverlayField("enabled", true);
+        session.setOverlayField("position", 2);
+        session.setOverlayField("opacity", 40);
+        session.setOverlayField("margin", 64);
+        session.setOverlayField("size", 2);
+        session.setOverlayField("durationMs", 2500);
+        QVERIFY(!manager.GetConfig().ActionOverlay.enabled);
+        session.undo();
+        QCOMPARE(session.draft().ActionOverlay.durationMs, 1000);
+        session.redo();
+        QVERIFY(session.apply());
+        ConfigManager reopened(nullptr, manager.GetConfigFilePath());
+        QCOMPARE(reopened.GetConfig().ActionOverlay.toJson(), session.draft().ActionOverlay.toJson());
+        session.setOverlayField("enabled", false);
+        session.discard();
+        QVERIFY(session.draft().ActionOverlay.enabled);
+        legacy["actionOverlay"] = QJsonObject{{"position", 6}};
+        QVERIFY(!session.importData(QJsonDocument(legacy).toJson()));
+    }
     void submenuAppearanceMigratesAndEditsIndependently() {
         auto config = AppConfig::CreateDefault();
         auto legacy = config.GlobalStyle.ToJson();

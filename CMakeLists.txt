@@ -54,6 +54,7 @@ if(GPM_BUILD_DESKTOP)
         src/ui/PieMenuWidget.cpp
         src/ui/RuntimeMenuController.cpp
         src/ui/widgets/ListMenuWidget.cpp
+        src/ui/widgets/ActionOverlay.cpp
         src/ui/quick/PiePreviewItem.cpp
         src/ui/quick/ColorWheelItem.cpp
         src/ui/SettingsWindow.cpp

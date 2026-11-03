@@ -105,6 +105,9 @@ ConfigLoadResult ParseConfig(const QByteArray& data) {
         return {{}, QCoreApplication::translate("ConfigValidation", "Invalid JSON at byte %1: %2").arg(parseError.offset).arg(parseError.errorString())};
     if (!document.isObject()) return {{}, QCoreApplication::translate("ConfigValidation", "The configuration must be a JSON object.")};
     const auto root = document.object();
+    if (auto error = CheckFields(root, {"actionOverlay"}, QJsonValue::Object); !error.isEmpty()) return {{}, error};
+    if (!ActionOverlayConfig::parse(root["actionOverlay"].toObject()))
+        return {{}, QCoreApplication::translate("ConfigValidation", "Invalid action overlay settings.")};
     if (auto error = CheckFields(root, {"startWithWindows"}, QJsonValue::Bool); !error.isEmpty()) return {{}, error};
     if (auto error = CheckFields(root, {"language"}, QJsonValue::String); !error.isEmpty()) return {{}, error};
     if (root.contains("version") && root["version"].toString() != "1.0")

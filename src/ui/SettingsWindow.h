@@ -62,6 +62,7 @@ public:
     Q_INVOKABLE void openIconDirectory();
     Q_INVOKABLE void addDroppedFiles(const QStringList& urls);
 signals:
+    void previewActionOverlay();
     void previewModeChanged();
     void ConfigUpdated();
     void RecordingChanged(bool recording);

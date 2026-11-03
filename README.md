@@ -32,6 +32,8 @@ All display modes share one main menu. An application-specific persistent menu b
 
 Right-click the center and choose **Hide all persistent menus**, or use the matching tray toggle. Switching applications does not undo this choice; clear the tray toggle to restore menus. Hidden persistent menus still reserve their scope, so a hidden application-specific menu continues to block global shortcuts. Disable that profile or change its application scope to release the reservation. Positions, expanded submenus, and the hidden toggle are remembered separately from configuration drafts. Tray Pause and shortcut recording also suspend persistent menus.
 
+Enable **Show a hint when an action runs** in Settings to display the action icon and name on the pie menu’s monitor. Choose one of six positions, background opacity, edge margin, size, and hold time. **Preview hint** shows the draft on the editor’s monitor. Apply saves it for all profiles.
+
 ## Appearance and icons
 
 The editor uses a light Frost theme with a custom white title bar, rounded dialogs, and a matching tray menu. The default Frost menu is nearly opaque; choose **Frost** again to apply the new preset to an existing configuration. Appearance keeps the preview visible and offers presets and size, with detailed geometry, colors, and animation under Advanced. The preview hint stays visible when a menu is disabled.

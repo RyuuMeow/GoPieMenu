@@ -14,6 +14,7 @@
 #include "ui/quick/PiePreviewItem.h"
 #include "ui/quick/ColorWheelItem.h"
 #include "ui/PieMenuWidget.h"
+#include "ui/widgets/ActionOverlay.h"
 #include "ui/RuntimeMenuController.h"
 #include <QPushButton>
 #include "ui/rendering/MenuScene.h"
@@ -81,6 +82,50 @@ class UiTests : public QObject {
         return !image.isNull() && image.save("artifacts/" + name + "-" + QString::number(window->devicePixelRatio()) + ".png");
     }
 private slots:
+    void actionOverlayPreviewUsesUnappliedSettings() {
+        QTemporaryDir dir;
+        ConfigManager config(nullptr, dir.filePath("config.json"));
+        IconService icons;
+        SettingsWindow editor(&config, &icons);
+        editor.setPlatformIntegrationEnabled(false);
+        QVERIFY(showEditor(editor));
+        auto* window = editor.window();
+        QVERIFY(click(window, "applicationSettingsButton"));
+        QVERIFY(click(window, "overlayEnabled"));
+        QVERIFY(editor.session()->draft().ActionOverlay.enabled);
+        QVERIFY(!config.GetConfig().ActionOverlay.enabled);
+        QSignalSpy requested(&editor, &SettingsWindow::previewActionOverlay);
+        auto* preview = find(window, "overlayPreviewButton");
+        QVERIFY(preview);
+        QVERIFY(QMetaObject::invokeMethod(preview, "clicked"));
+        QCOMPARE(requested.count(), 1);
+    }
+    void actionOverlayUsesScreenAndReplacesVisibleHint() {
+        QTemporaryDir dir;
+        IconService icons(dir.path());
+        ActionOverlay overlay(&icons);
+        ActionOverlayConfig settings;
+        QScreen* screen = QGuiApplication::screens().last();
+        const QRect bounds = screen->availableGeometry().adjusted(24, 24, -24, -24);
+        for (int pos = 0; pos < 6; ++pos) {
+            settings.position = pos;
+            overlay.present(screen, settings, "Undo", "undo.svg");
+            QCOMPARE(overlay.screen(), screen);
+            const auto rect = overlay.geometry();
+            QVERIFY(bounds.contains(rect));
+            QVERIFY(qAbs(rect.left() - (bounds.left() + pos % 3 * (bounds.width() - rect.width()) / 2)) <= 1);
+            QVERIFY(qAbs(rect.top() - (pos < 3 ? bounds.top() : bounds.bottom() + 1 - rect.height())) <= 1);
+        }
+        QVERIFY(overlay.windowFlags().testFlag(Qt::WindowTransparentForInput));
+        QVERIFY(overlay.windowFlags().testFlag(Qt::WindowDoesNotAcceptFocus));
+        settings.durationMs = 250;
+        overlay.present(screen, settings, "Old", {});
+        QTRY_VERIFY(overlay.windowOpacity() < 1.0);
+        overlay.present(screen, settings, "Replacement", {});
+        QCOMPARE(overlay.windowOpacity(), 1.0);
+        QVERIFY(overlay.isVisible());
+        QTRY_VERIFY(!overlay.isVisible());
+    }
     void submenuAppearanceTabsKeepTheirOwnDimensions() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         auto data = config.GetConfig();

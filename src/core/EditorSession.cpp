@@ -388,6 +388,14 @@ void EditorSession::setStylePreset(const QString& name) {
         if (next.ToJson() != effectiveStyle().ToJson()) mutableProfile()->StyleOverride = next;
     });
 }
+void EditorSession::setOverlayField(const QString& field, const QVariant& value) {
+    auto fields = Draft.ActionOverlay.toJson();
+    if (!fields.contains(field)) return;
+    fields[field] = QJsonValue::fromVariant(value);
+    if (const auto parsed = ActionOverlayConfig::parse(fields))
+        mutate("actionOverlay/" + field, [&] { Draft.ActionOverlay = *parsed; });
+}
+
 QString EditorSession::language() const {
     if (Draft.Language.isEmpty() || Draft.Language == "system") return QStringLiteral("system");
     return ResolveLanguage(Draft.Language).replace('_', '-');

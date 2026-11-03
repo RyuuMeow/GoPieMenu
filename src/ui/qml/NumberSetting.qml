@@ -11,6 +11,7 @@ ColumnLayout {
     property real step: 1
     property real value: 0
     property string suffix: ""
+    property var writeValue: function(value) { editor.setStyleField(root.field, value) }
     spacing: 3
     RowLayout {
         Layout.fillWidth: true
@@ -22,7 +23,7 @@ ColumnLayout {
         Layout.fillWidth: true
         from: root.minimum; to: root.maximum; stepSize: root.step
         value: root.value
-        onMoved: editor.setStyleField(root.field, value)
+        onMoved: root.writeValue(value)
         Accessible.name: root.label
     }
 }

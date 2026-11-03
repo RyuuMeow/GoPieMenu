@@ -6,6 +6,7 @@
 
 #include "PieMenuConfig.h"
 #include "StyleConfig.h"
+#include "ActionOverlayConfig.h"
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -26,6 +27,8 @@ struct AppConfig
     StyleConfig                GlobalStyle; // Legacy fallback and initial appearance for new profiles; editor writes are profile-local.
     bool                       bStartWithWindows = false;
     QString                    Language          = QStringLiteral("system");
+
+    ActionOverlayConfig ActionOverlay;
 
     // === Factory ===
     [[nodiscard]] static AppConfig CreateDefault() 
@@ -52,6 +55,8 @@ struct AppConfig
         Obj["startWithWindows"] = bStartWithWindows;
         Obj["language"]    = Language;
 
+        Obj["actionOverlay"] = ActionOverlay.toJson();
+
         // Metadata
         Obj["version"]     = QStringLiteral("1.0");
 
@@ -72,6 +77,7 @@ struct AppConfig
             Config.GlobalStyle = StyleConfig::FromJson(Obj["globalStyle"].toObject());
         }
 
+        Config.ActionOverlay = ActionOverlayConfig::parse(Obj["actionOverlay"].toObject()).value_or(ActionOverlayConfig{});
         Config.bStartWithWindows = Obj["startWithWindows"].toBool(false);
         Config.Language          = Obj["language"].toString(QStringLiteral("system"));
 
