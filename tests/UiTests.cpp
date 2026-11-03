@@ -645,6 +645,33 @@ private slots:
         editor.show();
         QCOMPARE(editor.session()->selectedItem()["name"].toString(), QString("My action"));
     }
+    void addActionMenuFitsLastVisibleRow() {
+        QTemporaryDir dir;
+        ConfigManager config(nullptr, dir.filePath("config.json"));
+        IconService icons;
+        SettingsWindow editor(&config, &icons);
+        QVERIFY(showEditor(editor));
+        auto* window = editor.window();
+        auto* session = editor.session();
+        const auto folder = session->addItem(int(ActionType::ListMenu));
+        auto* button = find(window, "addActionButton");
+        QVERIFY(button);
+        auto* menu = button->property("menu").value<QObject*>();
+        QVERIFY(menu);
+        auto* content = menu->property("contentItem").value<QQuickItem*>();
+        QVERIFY(content);
+        for (bool inFolder : {false, true, false}) {
+            if (inFolder) session->enterFolder(folder);
+            else session->leaveFolder();
+            QVERIFY(click(window, "addActionButton"));
+            const auto label = inFolder ? "Run command" : "New submenu";
+            QTRY_VERIFY(visibleItem(content, label, "text"));
+            auto* row = visibleItem(content, label, "text");
+            const auto rowBottom = [&] { return row->mapToItem(content, QPointF(0, row->height())).y(); };
+            QTRY_COMPARE_WITH_TIMEOUT(qRound(content->height()), qRound(rowBottom()), 1000);
+            QTest::keyClick(window, Qt::Key_Escape);
+        }
+    }
     void shortcutIconsSubmenusAndApply() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);

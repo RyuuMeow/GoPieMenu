@@ -169,13 +169,22 @@ ApplicationWindow {
                         menu: addMenu
                         AppMenu {
                             id: addMenu
+                            readonly property bool canAddSubmenu: editor.folderId.length === 0
                             AppMenuItem { text: qsTr("Keyboard shortcut"); onTriggered: editor.addItem(3) }
                             AppMenuItem { text: qsTr("Open application"); onTriggered: editor.addItem(1) }
                             AppMenuItem { text: qsTr("Open file or folder"); onTriggered: editor.addItem(4) }
                             AppMenuItem { text: qsTr("Open website"); onTriggered: editor.addItem(5) }
                             AppMenuItem { text: qsTr("Run command"); onTriggered: editor.addItem(2) }
-                            AppMenuSeparator { visible: editor.folderId.length === 0 }
-                            AppMenuItem { text: qsTr("New submenu"); visible: editor.folderId.length === 0; onTriggered: editor.addItem(6) }
+                            AppMenuSeparator {
+                                visible: addMenu.canAddSubmenu
+                                height: addMenu.canAddSubmenu ? implicitHeight : 0
+                            }
+                            AppMenuItem {
+                                text: qsTr("New submenu")
+                                visible: addMenu.canAddSubmenu
+                                height: addMenu.canAddSubmenu ? implicitHeight : 0
+                                onTriggered: editor.addItem(6)
+                            }
                         }
                     }
                     Item { Layout.fillWidth: true }
