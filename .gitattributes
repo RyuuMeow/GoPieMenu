@@ -1,0 +1,18 @@
+# Shell scripts and workflow definitions must keep LF line endings on every checkout.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary assets are always stored as-is.
+*.icns binary
+*.ico binary
+*.png binary
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.wav binary
+*.mp3 binary
+*.dmg binary

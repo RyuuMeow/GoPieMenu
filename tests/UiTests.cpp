@@ -24,6 +24,7 @@
 #include "UpdateTestSupport.h"
 
 using namespace gpm;
+
 class UrlReceiver : public QObject {
     Q_OBJECT
 public:
@@ -419,7 +420,11 @@ private slots:
             QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
             auto initial = config.GetConfig(); initial.Language = language; QVERIFY(config.Commit(initial));
             SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
+#ifdef Q_OS_WIN
             QCOMPARE(editor.fontFamily(), "Microsoft JhengHei UI");
+#else
+            QCOMPARE(editor.fontFamily(), language == "zh-TW" ? "PingFang TC" : "PingFang SC");
+#endif
             QVERIFY(showEditor(editor)); auto* w = editor.window();
             auto* apply = find(w, "applyButton"); QVERIFY(apply);
             QCOMPARE(apply->property("text").toString(), QCoreApplication::translate("Main", "Apply"));
@@ -586,7 +591,13 @@ private slots:
         QTest::keyClick(w, Qt::Key_Escape);
         TrayManager tray;
         auto* icon = tray.findChild<QSystemTrayIcon*>(); QVERIFY(icon); QVERIFY(!icon->icon().isNull());
+#ifdef Q_OS_WIN
         QVERIFY(!QIcon(":/logo/GoPieMenu.ico").pixmap(32,32).isNull());
+#else
+        // The menu bar uses the monochrome template image plus the colour fallback.
+        QVERIFY(!QIcon(":/logo/trayTemplate.png").pixmap(22,22).isNull());
+        QVERIFY(!QIcon(":/logo/GoPieMenu.png").pixmap(32,32).isNull());
+#endif
         auto* menu = icon->contextMenu(); QVERIFY(menu);
         QSignalSpy pause(&tray, &TrayManager::PauseToggled);
         menu->popup(w->mapToGlobal(QPoint(100,160))); QTRY_VERIFY(menu->isVisible());
@@ -625,6 +636,8 @@ private slots:
         QTest::mouseClick(editor.window(), Qt::LeftButton, Qt::NoModifier, point);
         QTRY_VERIFY(!editor.session()->selectedId().isEmpty());
         QVERIFY(click(editor.window(), "itemNameField"));
+        // Qt maps the Command key to ControlModifier on macOS, so this chord also
+        // selects all text there; the QML save shortcut follows StandardKey.Save.
         QTest::keyClick(editor.window(), Qt::Key_A, Qt::ControlModifier);
         for (const char c : QByteArray("My action")) QTest::keyClick(editor.window(), c);
         QVERIFY(editor.session()->dirty());
@@ -688,7 +701,13 @@ private slots:
         QTRY_COMPARE(find(w, "actionTypeCombo")->property("displayText").toString(), QString("Keyboard shortcut"));
         QVERIFY(click(w, "actionRecorderButton"));
         QTest::keyClick(w, Qt::Key_K, Qt::ControlModifier | Qt::ShiftModifier);
+#ifdef Q_OS_MACOS
+        // Qt reports Command as ControlModifier on macOS, and the shared trigger
+        // format names Command "Win" because the configuration keeps Windows keys.
+        QCOMPARE(session->selectedItem()["target"].toString(), QString("Win+Shift+K"));
+#else
         QCOMPARE(session->selectedItem()["target"].toString(), QString("Ctrl+Shift+K"));
+#endif
         QVERIFY(click(w, "chooseIconButton"));
         QTRY_VERIFY(find(w, "iconGrid"));
         auto* catalog = qvariant_cast<QObject*>(qmlContext(w)->contextProperty("iconCatalog"));
@@ -908,7 +927,13 @@ private slots:
         QVERIFY(QMetaObject::invokeMethod(recorder, "cancel"));
         session->setProfileField("triggerMode", 2);
         QVERIFY(click(w, "triggerRecorderButton"));
+#ifdef Q_OS_MACOS
+        // Command is the primary shortcut modifier; Qt reports it as
+        // ControlModifier and the shared trigger format stores it as Win.
+        QTest::keyClick(w, Qt::Key_K, Qt::ControlModifier | Qt::ShiftModifier);
+#else
         QTest::keyClick(w, Qt::Key_K, Qt::MetaModifier | Qt::ShiftModifier);
+#endif
         QCOMPARE(session->profile()["triggerMode"].toInt(), 2);
         QCOMPARE(session->profile()["vkCode"].toInt(), int('K'));
         QCOMPARE(session->profile()["modifiers"].toInt(), 10);
@@ -971,6 +996,8 @@ private slots:
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
         auto* w = editor.window(); QVERIFY(w); QVERIFY(showEditor(editor));
         QVERIFY(w->flags() & Qt::FramelessWindowHint);
+#ifdef Q_OS_WIN
+        // Windows keeps the native DWM maximize state, so geometry and restore are exact.
         const auto normalSize = w->size();
         QVERIFY(click(w, "windowMaximizeButton")); QTRY_VERIFY(editor.maximized());
         QCOMPARE(w->geometry(), w->screen()->availableGeometry());
@@ -978,6 +1005,12 @@ private slots:
         QVERIFY(click(w, "windowMaximizeButton")); QTRY_COMPARE(w->visibility(), QWindow::Windowed);
         QVERIFY(!editor.maximized());
         QTRY_COMPARE(w->size(), normalSize);
+#else
+        // macOS exercises the Qt default frameless maximize path; native zoom
+        // geometry and restoration differ from the Windows DWM behavior.
+        QVERIFY(click(w, "windowMaximizeButton")); QTRY_VERIFY(editor.maximized());
+        QVERIFY(click(w, "windowMaximizeButton")); QTRY_VERIFY(!editor.maximized());
+#endif
         QVERIFY(click(w, "menuEnabledToggle")); QVERIFY(!editor.session()->profile()["enabled"].toBool());
         QVERIFY(click(w, "menuEnabledToggle")); QVERIFY(editor.session()->profile()["enabled"].toBool());
         QSignalSpy exit(&editor, &SettingsWindow::exitConfirmed);

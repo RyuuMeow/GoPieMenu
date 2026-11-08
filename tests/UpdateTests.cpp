@@ -12,21 +12,65 @@ class UpdateTests : public QObject {
 private slots:
     void comparesVersionsNumericallyAndRejectsPrereleases() {
         QString error;
-        QVERIFY(ParseRelease(Release("v2.0.10"), "2.0.9", "en", &error));
+        QVERIFY(ParseRelease(Release("v2.0.10"), "2.0.9", "en", WindowsTarget(), &error));
         QVERIFY(error.isEmpty());
-        QVERIFY(!ParseRelease(Release("v2.0.9"), "2.0.10", "en"));
-        QVERIFY(!ParseRelease(Release("v2.0.0"), "2.0.0", "en"));
-        QVERIFY(!ParseRelease(Release("v1.9.9"), "2.0.0", "en"));
-        QVERIFY(!ParseRelease(Release("v3.0.0-beta.1"), "2.0.0", "en"));
-        QVERIFY(!ParseRelease(Release("v2.1.0/../../file"), "2.0.0", "en"));
-        QVERIFY(!ParseRelease("not JSON", "2.0.0", "en", &error)); QVERIFY(!error.isEmpty());
+        QVERIFY(!ParseRelease(Release("v2.0.9"), "2.0.10", "en", WindowsTarget()));
+        QVERIFY(!ParseRelease(Release("v2.0.0"), "2.0.0", "en", WindowsTarget()));
+        QVERIFY(!ParseRelease(Release("v1.9.9"), "2.0.0", "en", WindowsTarget()));
+        QVERIFY(!ParseRelease(Release("v3.0.0-beta.1"), "2.0.0", "en", WindowsTarget()));
+        QVERIFY(!ParseRelease(Release("v2.1.0/../../file"), "2.0.0", "en", WindowsTarget()));
+        QVERIFY(!ParseRelease("not JSON", "2.0.0", "en", WindowsTarget(), &error)); QVERIFY(!error.isEmpty());
         auto json = QJsonDocument::fromJson(Release()).object();
-        json["draft"] = true; QVERIFY(!ParseRelease(QJsonDocument(json).toJson(), "2.0.0", "en"));
+        json["draft"] = true; QVERIFY(!ParseRelease(QJsonDocument(json).toJson(), "2.0.0", "en", WindowsTarget()));
         json["draft"] = false; json["prerelease"] = true;
-        QVERIFY(!ParseRelease(QJsonDocument(json).toJson(), "2.0.0", "en"));
-        const auto release = ParseRelease(Release(), "2.0.0", "en"); QVERIFY(release);
+        QVERIFY(!ParseRelease(QJsonDocument(json).toJson(), "2.0.0", "en", WindowsTarget()));
+        const auto release = ParseRelease(Release(), "2.0.0", "en", WindowsTarget()); QVERIFY(release);
         QCOMPARE(release->pageUrl, QUrl("https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.1.0"));
+        QCOMPARE(release->installerName, WindowsAsset());
         QCOMPARE(release->installerUrl, QUrl("https://github.com/RyuuMeow/GoPieMenu/releases/download/v2.1.0/GoPieMenu_Setup.exe"));
+    }
+    void parsesMacDiskImagesAndRejectsTheOtherPlatform() {
+        const auto release = ParseRelease(MacRelease(), "2.0.0", "en", MacTarget());
+        QVERIFY(release);
+        QCOMPARE(release->installerName, MacAsset());
+        QCOMPARE(release->installerSize, qint64(Installer.size()));
+        QCOMPARE(release->installerUrl,
+            QUrl("https://github.com/RyuuMeow/GoPieMenu/releases/download/v2.1.0/GoPieMenu-2.1.0.dmg"));
+        // Notes stay available when the platform's installer asset is missing.
+        const auto windowsOnly = ParseRelease(Release(), "2.0.0", "en", MacTarget());
+        QVERIFY(windowsOnly); QVERIFY(windowsOnly->installerUrl.isEmpty()); QVERIFY(!windowsOnly->notes.isEmpty());
+        const auto macOnly = ParseRelease(MacRelease(), "2.0.0", "en", WindowsTarget());
+        QVERIFY(macOnly); QVERIFY(macOnly->installerUrl.isEmpty());
+    }
+    void acceptsOneFallbackMacDiskImageButRejectsAmbiguity() {
+        const QJsonObject sums{{"name", "SHA256SUMS.txt"}, {"state", "uploaded"}, {"size", 100}};
+        const auto single = ParseRelease(ReleaseWithAssets("v2.1.0",
+            QJsonArray{Asset("GoPieMenu-2.1.0+build5.dmg"), sums}), "2.0.0", "en", MacTarget());
+        QVERIFY(single);
+        QCOMPARE(single->installerName, QString("GoPieMenu-2.1.0+build5.dmg"));
+        const auto ambiguous = ParseRelease(ReleaseWithAssets("v2.1.0",
+            QJsonArray{Asset("GoPieMenu-2.0.1.dmg"), Asset("GoPieMenu-2.0.2.dmg"), sums}), "2.0.0", "en", MacTarget());
+        QVERIFY(ambiguous); QVERIFY(ambiguous->installerUrl.isEmpty());
+        // Non-uploaded assets and path-like names never qualify.
+        const auto notUploaded = ParseRelease(ReleaseWithAssets("v2.1.0",
+            QJsonArray{Asset(MacAsset(), Installer.size(), "new"), sums}), "2.0.0", "en", MacTarget());
+        QVERIFY(notUploaded); QVERIFY(notUploaded->installerUrl.isEmpty());
+        const auto traversal = ParseRelease(ReleaseWithAssets("v2.1.0",
+            QJsonArray{Asset("../GoPieMenu-2.1.0.dmg"), sums}), "2.0.0", "en", MacTarget());
+        QVERIFY(traversal); QVERIFY(traversal->installerUrl.isEmpty());
+        // The single-DMG fallback must not turn a nested path into a download name.
+        const auto nestedPath = ParseRelease(ReleaseWithAssets("v2.1.0",
+            QJsonArray{Asset("GoPieMenu-../evil.dmg"), sums}), "2.0.0", "en", MacTarget());
+        QVERIFY(nestedPath); QVERIFY(nestedPath->installerUrl.isEmpty());
+    }
+    void explicitAssetOverrideSelectsThatAsset() {
+        const QString custom = "GoPieMenu-nightly.dmg";
+        const auto release = ParseRelease(Release("v2.1.0", Notes, custom), "2.0.0", "en",
+            Target(UpdatePlatform::MacOS, custom));
+        QVERIFY(release); QCOMPARE(release->installerName, custom);
+        // An override must not silently accept a differently named asset.
+        const auto missing = ParseRelease(MacRelease(), "2.0.0", "en", Target(UpdatePlatform::MacOS, custom));
+        QVERIFY(missing); QVERIFY(missing->installerUrl.isEmpty());
     }
     void selectsLocalizedNotesAndSharedValidation() {
         const auto traditional = LocalizedReleaseNotes(Notes, "zh-HK");
@@ -59,12 +103,22 @@ private slots:
             QVERIFY(!notes.isEmpty()); QVERIFY(notes.contains("Validation")); QVERIFY(!notes.contains("gpm:lang"));
         }
     }
-    void parsesOnlyTheInstallerChecksum() {
-        QCOMPARE(InstallerChecksum(Checksum()), QCryptographicHash::hash(Installer, QCryptographicHash::Sha256).toHex());
-        QCOMPARE(InstallerChecksum(Checksum().toUpper().replace("GOPIEMENU_SETUP.EXE", "GoPieMenu_Setup.exe")), InstallerChecksum(Checksum()));
-        QVERIFY(InstallerChecksum("bad  GoPieMenu_Setup.exe").isEmpty());
-        QVERIFY(InstallerChecksum(Checksum() + Checksum()).isEmpty());
-        QVERIFY(InstallerChecksum(Checksum().replace("GoPieMenu_Setup.exe", "../GoPieMenu_Setup.exe")).isEmpty());
+    void parsesOnlyTheMatchingPlatformChecksum() {
+        const auto hash = QCryptographicHash::hash(Installer, QCryptographicHash::Sha256).toHex();
+        QCOMPARE(InstallerChecksum(Checksum(), WindowsAsset()), hash);
+        // Uppercase digests are accepted; the asset name must still match exactly.
+        QCOMPARE(InstallerChecksum(hash.toUpper() + QByteArrayLiteral("  GoPieMenu_Setup.exe\n"), WindowsAsset()), hash);
+        QCOMPARE(InstallerChecksum(ChecksumFor(MacAsset()), MacAsset()), hash);
+        QVERIFY(InstallerChecksum("bad  GoPieMenu_Setup.exe", WindowsAsset()).isEmpty());
+        QVERIFY(InstallerChecksum(Checksum() + Checksum(), WindowsAsset()).isEmpty());
+        // A path-like manifest entry must not match the exact asset name.
+        QVERIFY(InstallerChecksum(hash + QByteArrayLiteral("  ../GoPieMenu_Setup.exe\n"), WindowsAsset()).isEmpty());
+        QVERIFY(InstallerChecksum(Checksum(), MacAsset()).isEmpty());
+        // The release job merges both platforms into one SHA256SUMS.txt.
+        const auto combined = ChecksumFor(WindowsAsset()) + ChecksumFor(MacAsset());
+        QCOMPARE(InstallerChecksum(combined, WindowsAsset()), hash);
+        QCOMPARE(InstallerChecksum(combined, MacAsset()), hash);
+        QVERIFY(InstallerChecksum(combined, {}).isEmpty());
     }
     void checksOncePerRequestAndRemembersSkippedVersion() {
         QTemporaryDir dir; Network network; network.responses = {{Release()}, {Release()}, {Release("v2.2.0")}};
@@ -94,12 +148,27 @@ private slots:
         QVERIFY(!manager.launchInstaller()); QCOMPARE(launches, 0);
         manager.download(); QTRY_VERIFY(manager.ready()); QCOMPARE(manager.progress(), 1.0);
         QVERIFY(!manager.downloading()); QCOMPARE(launches, 0);
+        QVERIFY(manager.installerPath().endsWith("GoPieMenu_Setup.exe"));
         QFile file(manager.installerPath()); QVERIFY(file.open(QIODevice::ReadOnly)); QCOMPARE(file.readAll(), Installer); file.close();
         QVERIFY(manager.launchInstaller()); QCOMPARE(launches, 1);
         QCOMPARE(network.requests.size(), 3);
         QCOMPARE(network.requests[0].url().host(), "api.github.com");
         QCOMPARE(network.requests[1].url().fileName(), "SHA256SUMS.txt");
         QCOMPARE(network.requests[2].url().fileName(), "GoPieMenu_Setup.exe");
+    }
+    void downloadsMacDiskImageFromACombinedManifest() {
+        QTemporaryDir dir; Network network;
+        const auto combined = ChecksumFor(WindowsAsset()) + ChecksumFor(MacAsset());
+        network.responses = {{MacRelease()}, {combined}, {Installer}};
+        auto options = Options(dir.path(), "en", MacTarget()); QString launched;
+        options.launchInstaller = [&](const QString& path, QString*) { launched = path; return QFile::exists(path); };
+        UpdateManager manager(options, &network);
+        manager.check(); QTRY_VERIFY(manager.available()); QVERIFY(manager.canDownload());
+        manager.download(); QTRY_VERIFY(manager.ready());
+        QVERIFY(manager.installerPath().endsWith("GoPieMenu-2.1.0.dmg"));
+        QFile file(manager.installerPath()); QVERIFY(file.open(QIODevice::ReadOnly)); QCOMPARE(file.readAll(), Installer); file.close();
+        QVERIFY(manager.launchInstaller()); QCOMPARE(launched, manager.installerPath());
+        QCOMPARE(network.requests[2].url().fileName(), QString("GoPieMenu-2.1.0.dmg"));
     }
     void rejectsCorruptedDownloadAndAllowsRetry() {
         QTemporaryDir dir; Network network; network.responses = {{Release()}, {Checksum("wrong")}, {Installer}, {Checksum()}, {Installer}};
@@ -141,7 +210,7 @@ private slots:
         manager.download(); QTRY_VERIFY(!manager.downloading()); QVERIFY(!manager.ready());
         QVERIFY(!QFile::exists(manager.installerPath()));
     }
-    void missingWindowsAssetsStillShowsNotes() {
+    void missingInstallerAssetsStillShowsNotes() {
         auto json = QJsonDocument::fromJson(Release()).object(); json["assets"] = QJsonArray();
         QTemporaryDir dir; Network network; network.responses = {{QJsonDocument(json).toJson()}};
         UpdateManager manager(Options(dir.path()), &network);

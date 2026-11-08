@@ -3,6 +3,8 @@
 #include <QEvent>
 #ifdef Q_OS_WIN
 #include <windows.h>
+#elif defined(Q_OS_MACOS)
+#include "platform/mac/MacWindow.h"
 #endif
 
 namespace gpm {
@@ -26,11 +28,17 @@ protected:
             const auto window = reinterpret_cast<HWND>(internalWinId());
             SetWindowLongPtrW(window, GWL_EXSTYLE, GetWindowLongPtrW(window, GWL_EXSTYLE) | WS_EX_NOACTIVATE);
         }
+#elif defined(Q_OS_MACOS)
+        if (event->type() == QEvent::WinIdChange && internalWinId()) {
+            // Qt::Tool creates an NSPanel on macOS. Mirror the Windows contract
+            // whenever Qt creates/recreates the native window, before it shows.
+            MacPrepareNonActivatingWindow(this);
+        }
 #endif
         return handled;
     }
     bool nativeEvent(const QByteArray& type, void* message, qintptr* result) override {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
         const auto id = static_cast<MSG*>(message)->message;
         if (id == WM_MOUSEACTIVATE) {
             *result = MA_NOACTIVATE;

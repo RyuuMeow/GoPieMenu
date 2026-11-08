@@ -1,4 +1,7 @@
 #include "HookManager.h"
+
+#ifdef Q_OS_WIN
+
 #include <QCursor>
 #include <QFileInfo>
 #include <QDebug>
@@ -133,3 +136,5 @@ LRESULT CALLBACK HookManager::MouseProc(int code, WPARAM wparam, LPARAM lparam) 
     return CallNextHookEx(nullptr, code, wparam, lparam);
 }
 }
+
+#endif // Q_OS_WIN

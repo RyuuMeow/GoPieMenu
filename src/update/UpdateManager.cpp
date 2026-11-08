@@ -8,6 +8,8 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <shellapi.h>
+#elif defined(Q_OS_MACOS)
+#include <QProcess>
 #endif
 
 namespace gpm {
@@ -22,9 +24,14 @@ bool StartInstaller(const QString& path, QString* error) {
     execute.nShow = SW_SHOWNORMAL;
     if (ShellExecuteExW(&execute)) return true;
     *error = QCoreApplication::translate("Updates", "The installer was not started. You may have cancelled the Windows permission prompt.");
+#elif defined(Q_OS_MACOS)
+    // The downloaded DMG is mounted by Launch Services; the user then drags the
+    // app to Applications, so no elevation prompt exists on macOS.
+    if (QProcess::startDetached(QStringLiteral("/usr/bin/open"), {path})) return true;
+    *error = QCoreApplication::translate("Updates", "The update disk image was not opened. Try again or download it from the release page.");
 #else
     Q_UNUSED(path);
-    *error = QCoreApplication::translate("Updates", "Installing updates is only supported on Windows.");
+    *error = QCoreApplication::translate("Updates", "Installing updates is not supported on this platform.");
 #endif
     return false;
 }
@@ -105,7 +112,7 @@ void UpdateManager::finished() {
     }
     if (operation == Operation::Check) {
         QString parseError;
-        auto release = ParseRelease(Buffer, Options.currentVersion, Options.language, &parseError);
+        auto release = ParseRelease(Buffer, Options.currentVersion, Options.language, Options.target, &parseError);
         if (!parseError.isEmpty()) { fail(parseError); return; }
         Checking = false;
         if (!release) {
@@ -123,11 +130,13 @@ void UpdateManager::finished() {
         emit changed(); emit checkFinished(); return;
     }
     if (operation == Operation::Checksum) {
-        ExpectedChecksum = InstallerChecksum(Buffer);
+        ExpectedChecksum = InstallerChecksum(Buffer, Release.installerName);
         if (ExpectedChecksum.isEmpty()) { fail(tr("The release checksum is missing or invalid.")); return; }
         const auto directory = Options.downloadDirectory + "/" + Release.version;
         if (!QDir().mkpath(directory)) { fail(tr("Could not create the update download folder.")); return; }
-        InstallerPath = QDir(directory).absoluteFilePath("GoPieMenu_Setup.exe");
+        // Keep the published platform asset name so "open" can mount the DMG and
+        // Windows keeps its familiar Setup.exe file.
+        InstallerPath = QDir(directory).absoluteFilePath(Release.installerName);
         Download = std::make_unique<QSaveFile>(InstallerPath);
         Download->setDirectWriteFallback(false);
         if (!Download->open(QIODevice::WriteOnly)) { fail(tr("Could not save the installer. Check disk space and try again.")); return; }

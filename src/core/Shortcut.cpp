@@ -7,6 +7,55 @@
 #endif
 
 namespace gpm {
+#ifdef Q_OS_MACOS
+namespace {
+// macOS configurations and action payloads still use Windows virtual-key codes.
+// The recorder writes portable text, so map the characters that text can carry
+// (US layout) back to those codes. Shift is implied exactly like the Windows
+// VkKeyScan path, including for shifted digit and punctuation symbols.
+bool MacShortcutKey(QChar character, int& vk, bool& shift) {
+    const auto code = character.unicode();
+    if (code >= 'a' && code <= 'z') { vk = code - 'a' + 'A'; return true; }
+    if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9')) { vk = code; return true; }
+    switch (code) {
+    case '=': vk = 0xbb; return true;
+    case '+': vk = 0xbb; shift = true; return true;
+    case '-': vk = 0xbd; return true;
+    case '_': vk = 0xbd; shift = true; return true;
+    case '[': vk = 0xdb; return true;
+    case '{': vk = 0xdb; shift = true; return true;
+    case ']': vk = 0xdd; return true;
+    case '}': vk = 0xdd; shift = true; return true;
+    case '\\': vk = 0xdc; return true;
+    case '|': vk = 0xdc; shift = true; return true;
+    case ';': vk = 0xba; return true;
+    case ':': vk = 0xba; shift = true; return true;
+    case '\'': vk = 0xde; return true;
+    case '"': vk = 0xde; shift = true; return true;
+    case ',': vk = 0xbc; return true;
+    case '<': vk = 0xbc; shift = true; return true;
+    case '.': vk = 0xbe; return true;
+    case '>': vk = 0xbe; shift = true; return true;
+    case '/': vk = 0xbf; return true;
+    case '?': vk = 0xbf; shift = true; return true;
+    case '`': vk = 0xc0; return true;
+    case '~': vk = 0xc0; shift = true; return true;
+    case '!': vk = '1'; shift = true; return true;
+    case '@': vk = '2'; shift = true; return true;
+    case '#': vk = '3'; shift = true; return true;
+    case '$': vk = '4'; shift = true; return true;
+    case '%': vk = '5'; shift = true; return true;
+    case '^': vk = '6'; shift = true; return true;
+    case '&': vk = '7'; shift = true; return true;
+    case '*': vk = '8'; shift = true; return true;
+    case '(': vk = '9'; shift = true; return true;
+    case ')': vk = '0'; shift = true; return true;
+    case ' ': vk = 0x20; return true;
+    default: return false;
+    }
+}
+} // namespace
+#endif
 std::vector<int> ParseShortcut(const QString& text) {
     static const QHash<QString, int> named{
         {"tab",0x09}, {"enter",0x0d}, {"return",0x0d}, {"escape",0x1b}, {"esc",0x1b},
@@ -41,6 +90,8 @@ std::vector<int> ParseShortcut(const QString& text) {
             if (code == -1) return {};
             mainKey = code & 0xff;
             shift |= (code & 0x100) != 0; ctrl |= (code & 0x200) != 0; alt |= (code & 0x400) != 0;
+#elif defined(Q_OS_MACOS)
+            if (!MacShortcutKey(part[0], mainKey, shift)) return {};
 #else
             const auto c = part[0].toUpper().unicode();
             if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) mainKey = c;

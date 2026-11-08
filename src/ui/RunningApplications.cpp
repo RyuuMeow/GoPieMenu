@@ -1,10 +1,15 @@
 #include "RunningApplications.h"
-#include <QFileInfo>
+#ifdef Q_OS_WIN
 #include <QCoreApplication>
+#include <QFileInfo>
 #include <windows.h>
+#elif defined(Q_OS_MACOS)
+#include "platform/mac/MacApplications.h"
+#endif
 
 namespace gpm {
 QStringList RunningApplications() {
+#ifdef Q_OS_WIN
     QStringList result;
     EnumWindows([](HWND window, LPARAM data) -> BOOL {
         if (!IsWindowVisible(window) || (GetWindowLongPtrW(window, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)) return TRUE;
@@ -21,5 +26,10 @@ QStringList RunningApplications() {
         CloseHandle(process); return TRUE;
     }, reinterpret_cast<LPARAM>(&result));
     result.sort(Qt::CaseInsensitive); return result;
+#elif defined(Q_OS_MACOS)
+    return MacRunningApplications();
+#else
+    return {};
+#endif
 }
 }

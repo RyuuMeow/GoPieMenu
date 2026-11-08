@@ -7,6 +7,9 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
+#ifdef Q_OS_MACOS
+#include "platform/mac/MacKeyMap.h"
+#endif
 
 namespace gpm {
 namespace {
@@ -47,6 +50,9 @@ QString KeyDisplayName(uint32_t vkCode) {
         vkCode == VK_INSERT || vkCode == VK_DELETE) scan |= 0x100;
     wchar_t name[128]{};
     if (GetKeyNameTextW(LONG(scan << 16), name, 128)) return QString::fromWCharArray(name);
+#elif defined(Q_OS_MACOS)
+    const auto name = MacKeyDisplayName(int(vkCode));
+    if (!name.isEmpty()) return name;
 #endif
     return QCoreApplication::translate("EditorSession", "Key %1").arg(vkCode);
 }
@@ -61,7 +67,14 @@ QString TriggerDisplayName(const TriggerDef& trigger) {
     default: mouse = QCoreApplication::translate("EditorSession", "Not set"); break;
     }
     QString key = trigger.Mode == ActivationMode::MouseHold ? mouse : KeyDisplayName(trigger.VKCode);
+#ifdef Q_OS_MACOS
+    // The shared modifier enum calls this modifier "Win"; macOS users know the
+    // same physical modifier as Command, so only the display name changes.
+    QString mods = ModifierKeyToString(trigger.Modifiers);
+    if (!mods.isEmpty()) mods.replace(QStringLiteral("Win"), QCoreApplication::translate("EditorSession", "Cmd"));
+#else
     const auto mods = ModifierKeyToString(trigger.Modifiers);
+#endif
     if (!mods.isEmpty()) key.prepend(mods + " + ");
     return key;
 }

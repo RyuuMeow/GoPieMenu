@@ -17,7 +17,10 @@ struct UpdateOptions {
     QString downloadDirectory; // Empty uses the application's cache directory.
     int requestTimeoutMs = 15000;
     int downloadTimeoutMs = 10 * 60 * 1000;
-    // Tests inject a launcher; production uses the Windows installer shell verb.
+    // Tests override the target so the Windows and macOS asset flows stay covered
+    // on every host; production uses the current platform.
+    UpdateTarget target;
+    // Tests inject a launcher; production uses the platform's installer shell verb.
     std::function<bool(const QString&, QString*)> launchInstaller;
 };
 

@@ -1,4 +1,4 @@
-name: Windows Build, Test & Release
+name: Build, Test & Release
 
 on:
   push:
@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build:
+    name: Windows
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +27,7 @@ jobs:
           if ($env:GITHUB_REF_NAME -ne "v$version") { throw "Release tag does not match the application version." }
           ./scripts/release-notes.ps1 -Version $env:GITHUB_REF_NAME -OutputPath build/release-notes.md
       - uses: ilammy/msvc-dev-cmd@v1
-      - uses: jurplel/install-qt-action@v3
+      - uses: jurplel/install-qt-action@v4
         with:
           version: '6.9.0'
           host: windows
@@ -39,7 +40,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: regression-results
+          name: windows-regression-results
           path: |
             build/test-results.xml
             build/Testing/Temporary/LastTest.log
@@ -55,10 +56,60 @@ jobs:
             Output/GoPieMenu_Setup.exe
             Output/SHA256SUMS.txt
 
+  macos:
+    name: macOS
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          version=$(sed -n 's/^project(GoPieMenu VERSION \([0-9][0-9.]*\).*/\1/p' CMakeLists.txt)
+          if [[ "$GITHUB_REF_NAME" != "v$version" ]]; then
+            echo "Release tag does not match the application version." >&2
+            exit 1
+          fi
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.9.0'
+          host: 'mac'
+          target: 'desktop'
+          arch: 'clang_64'
+          cache: true
+      - name: Build universal app and run tests
+        shell: bash
+        env:
+          # The official Qt 6.9 macOS binaries are universal, so one build serves both Macs.
+          GPM_OSX_ARCHITECTURES: 'arm64;x86_64'
+        run: bash scripts/build-macos.sh
+      - name: Upload test results and UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-regression-results
+          path: |
+            build/test-results.xml
+            build/Testing/Temporary/LastTest.log
+            build/artifacts/*.png
+            build/artifacts/*.txt
+      - name: Package DMG and verify SDK-independent startup
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: bash scripts/package-macos.sh
+      - name: Upload macOS package for the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-package
+          path: |
+            Output/GoPieMenu-*.dmg
+            Output/SHA256SUMS.macos.txt
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
-    runs-on: windows-latest
+    needs: [build, macos]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -66,7 +117,20 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: windows-package
-          path: package
+          path: package/windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-package
+          path: package/macos
+      - name: Combine installers and checksums
+        shell: bash
+        run: |
+          mkdir -p package/upload
+          cp package/windows/GoPieMenu_Setup.exe package/upload/
+          cp package/macos/GoPieMenu-*.dmg package/upload/
+          # One manifest keeps Windows and macOS updaters on the same verified file.
+          { cat package/windows/SHA256SUMS.txt; cat package/macos/SHA256SUMS.macos.txt; } > package/upload/SHA256SUMS.txt
+          cat package/upload/SHA256SUMS.txt
       - name: Extract multilingual release notes
         shell: pwsh
         run: ./scripts/release-notes.ps1 -Version $env:GITHUB_REF_NAME -OutputPath release-notes.md
@@ -76,5 +140,6 @@ jobs:
           body_path: release-notes.md
           fail_on_unmatched_files: true
           files: |
-            package/GoPieMenu_Setup.exe
-            package/SHA256SUMS.txt
+            package/upload/GoPieMenu_Setup.exe
+            package/upload/GoPieMenu-*.dmg
+            package/upload/SHA256SUMS.txt
