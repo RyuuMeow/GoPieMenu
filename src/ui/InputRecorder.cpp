@@ -66,7 +66,7 @@ bool InputRecorder::eventFilter(QObject*, QEvent* event) {
 #ifdef Q_OS_MACOS
         // Command/Control meaning is swapped by Qt on macOS; translate before
         // the portable text is written so it uses the shared Win/Ctrl names.
-        shortcut = QKeySequence(QKeyCombination(SharedModifiers(mods), key->key()))
+        shortcut = QKeySequence(SharedModifiers(mods) | Qt::Key(key->key()))
             .toString(QKeySequence::PortableText).replace("Meta+", "Win+");
 #else
         shortcut = QKeySequence(key->keyCombination()).toString(QKeySequence::PortableText).replace("Meta+", "Win+");
