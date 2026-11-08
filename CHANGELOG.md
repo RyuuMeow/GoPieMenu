@@ -2,6 +2,60 @@
 
 ## [Unreleased]
 
+### English
+<!-- gpm:lang en -->
+
+#### What's new
+
+- GoPieMenu now runs on macOS 12 or newer as a universal app for Apple silicon and Intel Macs. The editor, pie and submenu menus, persistent floating menus, action hints, application scope, login startup, icons, import/export, and the existing version 1.0 configuration format work the same way.
+- Global triggers and keyboard actions use macOS Accessibility and Input Monitoring permissions. The first launch asks for them; enable GoPieMenu under System Settings > Privacy & Security > Accessibility and Input Monitoring, then restart GoPieMenu.
+- The macOS build is ad-hoc signed, so the first manual launch needs Open from the Finder context menu or Allow Anyway in System Settings > Privacy & Security. A Developer ID and notarization can be added later without changing the app.
+- Updates on macOS download `GoPieMenu-<version>.dmg`, verify it against `SHA256SUMS.txt`, and mount it so the new app replaces the old one in Applications. Windows keeps its signed installer flow.
+
+#### Fixes and compatibility
+
+- Windows behavior, its installer, and saved triggers are unchanged. The existing `Win` modifier keeps its meaning on both platforms and is labelled `Cmd` on macOS.
+- The macOS app is a menu bar item without a Dock icon, so quit it from the menu bar. Startup at login uses a LaunchAgent; disabling the option removes it again.
+- CI builds the macOS app on every change, runs the portable and QML regression tests on a virtual screen, and publishes the disk image from the same release as the Windows installer and a combined `SHA256SUMS.txt`.
+
+<!-- gpm:endlang -->
+
+### 繁體中文
+<!-- gpm:lang zh-TW -->
+
+#### 新功能
+
+- GoPieMenu 現在支援 macOS 12 以上，並以 Apple 晶片與 Intel Mac 通用的單一版本提供。編輯器、圓盤與子選單、常駐懸浮選單、動作提示、應用程式範圍、登入時啟動、圖示、匯入／匯出，以及既有的 1.0 版設定格式都與 Windows 相同。
+- 全域觸發與鍵盤動作使用 macOS 的「輔助使用」與「輸入監控」權限。首次啟動會提示開啓；請到「系統設定 > 隱私權與安全性 > 輔助使用」與「輸入監控」允許 GoPieMenu，再重新啟動程式。
+- macOS 版本以 ad-hoc 簽章發佈，首次手動開啟需在 Finder 以右鍵選擇「打開」，或到「系統設定 > 隱私權與安全性」選擇「仍要打開」。之後可再補上 Developer ID 簽章與公證，不需修改程式。
+- macOS 更新會下載 `GoPieMenu-<version>.dmg`、依 `SHA256SUMS.txt` 驗證後掛載，讓你以新版本取代「應用程式」中的舊版。Windows 仍使用原本的簽章安裝流程。
+
+#### 相容性
+
+- Windows 行為、安裝程式與既有觸發設定完全不變。原有的 `Win` 修飾鍵在兩平台維持相同意義，macOS 介面顯示為 `Cmd`。
+- macOS 版本是選單列項目，不顯示 Dock 圖示，請從選單列結束程式。登入時啟動使用 LaunchAgent，關閉選項即會移除。
+- CI 會在每次變更時建置 macOS 版本，在虛擬螢幕上執行可攜與 QML 回歸測試，並在發佈時與 Windows 安裝程式及合併的 `SHA256SUMS.txt` 一同發佈磁碟映像。
+
+<!-- gpm:endlang -->
+
+### 简体中文
+<!-- gpm:lang zh-CN -->
+
+#### 新功能
+
+- GoPieMenu 现在支持 macOS 12 或更高版本，并以兼容 Apple 芯片和 Intel Mac 的单一通用版本提供。编辑器、圆盘与子菜单、常驻悬浮菜单、动作提示、应用范围、登录时启动、图标、导入／导出，以及现有的 1.0 版配置格式都与 Windows 相同。
+- 全局触发与键盘操作使用 macOS 的“辅助功能”和“输入监控”权限。首次启动会提示开启；请到“系统设置 > 隐私与安全性 > 辅助功能”和“输入监控”中允许 GoPieMenu，然后重新启动程序。
+- macOS 版本使用 ad-hoc 签名，首次手动打开需在 Finder 右键选择“打开”，或到“系统设置 > 隐私与安全性”选择“仍要打开”。之后可再补上 Developer ID 签名与公证，无需修改程序。
+- macOS 更新会下载 `GoPieMenu-<version>.dmg`，按 `SHA256SUMS.txt` 验证后挂载，让你用新版本替换“应用程序”中的旧版本。Windows 仍使用原有的签名安装流程。
+
+#### 兼容性
+
+- Windows 行为、安装程序和既有触发设置完全不变。原有的 `Win` 修饰键在两个平台含义相同，macOS 界面显示为 `Cmd`。
+- macOS 版本是菜单栏项目，不显示 Dock 图标，请从菜单栏退出程序。登录时启动使用 LaunchAgent，关闭该选项即会移除。
+- CI 会在每次更改时构建 macOS 版本，在虚拟屏幕上运行可移植与 QML 回归测试，并在发布时与 Windows 安装程序及合并的 `SHA256SUMS.txt` 一同发布磁盘映像。
+
+<!-- gpm:endlang -->
+
 ## [2.3.0]
 
 ### English
