@@ -177,7 +177,9 @@ jobs:
           MAKE_LATEST: ${{ steps.platforms.outputs.make_latest }}
         run: |
           # The action has had regressions around make_latest; set it explicitly.
-          gh api --method PATCH "repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+          # The API only updates a release by numeric id, not by tag path.
+          release_id=$(gh api "repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" --jq .id)
+          gh api --method PATCH "repos/${{ github.repository }}/releases/$release_id" \
             -f make_latest="$MAKE_LATEST"
       - name: Update the per-platform update channel
         shell: pwsh
@@ -187,14 +189,10 @@ jobs:
           VERSION: ${{ steps.platforms.outputs.version }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          $headers = @{
-            Authorization = "Bearer $env:GH_TOKEN"
-            Accept = 'application/vnd.github+json'
-            'X-GitHub-Api-Version' = '2022-11-28'
-          }
-          $endpoint = "https://api.github.com/repos/$env:REPOSITORY/contents/platform-versions.json"
-          $current = Invoke-RestMethod -Uri "$endpoint?ref=release-channel" -Headers $headers
-          $text = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($current.content -replace '\s', '')))
+          $contentPath = "repos/$env:REPOSITORY/contents/platform-versions.json"
+          $sha = gh api "${contentPath}?ref=release-channel" --jq '.sha'
+          $encoded = gh api "${contentPath}?ref=release-channel" --jq '.content'
+          $text = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($encoded -replace '\s', '')))
           $versions = $text | ConvertFrom-Json
           foreach ($platform in $env:PLATFORMS.Split(',')) {
             $versions | Add-Member -NotePropertyName $platform -NotePropertyValue $env:VERSION -Force
@@ -204,10 +202,11 @@ jobs:
             message = "chore: publish $env:VERSION for $env:PLATFORMS [skip ci]"
             content = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($updated))
             branch = 'release-channel'
-            sha = $current.sha
+            sha = $sha
           } | ConvertTo-Json
-          Invoke-RestMethod -Method Put -Uri $endpoint -Headers $headers -Body $body -ContentType 'application/json' | Out-Null
-          $check = Invoke-RestMethod -Uri "$endpoint?ref=release-channel" -Headers $headers
-          $checkText = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($check.content -replace '\s', '')))
+          $body | Out-File -Encoding utf8 channel.json
+          gh api --method PUT $contentPath --input channel.json | Out-Null
+          $check = gh api "${contentPath}?ref=release-channel" --jq '.content'
+          $checkText = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($check -replace '\s', '')))
           Write-Output $checkText
           if ($checkText -ne $updated) { throw 'The per-platform update channel was not stored as expected.' }
