@@ -7,6 +7,7 @@
 #include <QQuickStyle>
 #include <QFileDialog>
 #include <QSaveFile>
+#include <QFile>
 #include <QFileInfo>
 #include <QDir>
 #include <QDesktopServices>
@@ -19,11 +20,27 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <dwmapi.h>
+#elif defined(Q_OS_MACOS)
+#include "platform/mac/MacWindow.h"
+#include <QProcess>
+#include <QXmlStreamWriter>
+#include <unistd.h>
 #endif
 
 static void InitializeEditorResources() { Q_INIT_RESOURCE(editor); }
 
 namespace gpm {
+namespace {
+// Application scope filters store process names, so a picked macOS bundle must
+// lose its ".app" suffix to match the foreground executable name.
+QString ApplicationFilterName(const QString& path) {
+    auto name = QFileInfo(path).fileName();
+#ifdef Q_OS_MACOS
+    if (name.endsWith(QStringLiteral(".app"), Qt::CaseInsensitive)) name.chop(4);
+#endif
+    return name;
+}
+}
 SettingsWindow::SettingsWindow(ConfigManager* manager, IconService* icons, QObject* parent, UpdateManager* updates)
     : QObject(parent), Manager(manager), Icons(icons), Updates(updates), Session(manager), Recorder(&Session), Catalog(icons) {
     InitializeEditorResources();
@@ -92,6 +109,10 @@ void SettingsWindow::show() {
     if (Window->windowState() == Qt::WindowMinimized) Window->showNormal();
     else Window->show();
     Window->raise(); Window->requestActivate();
+#ifdef Q_OS_MACOS
+    // A menu bar (LSUIElement) app is not activated by requestActivate alone.
+    MacActivateApplication();
+#endif
 }
 void SettingsWindow::raise() { if (Window) Window->raise(); }
 void SettingsWindow::activateWindow() { if (Window) Window->requestActivate(); }
@@ -181,8 +202,15 @@ void SettingsWindow::chooseTarget(bool directory) {
     const auto type = static_cast<ActionType>(Session.selectedItem()["action"].toInt());
     QString path;
     if (directory) path = QFileDialog::getExistingDirectory(nullptr, tr("Choose folder"));
-    else path = QFileDialog::getOpenFileName(nullptr, type == ActionType::LaunchApp ? tr("Choose application") : tr("Choose file"),
-        {}, type == ActionType::LaunchApp ? tr("Applications (*.exe *.bat *.cmd);;All files (*)") : tr("All files (*)"));
+    else {
+#ifdef Q_OS_MACOS
+        const auto filter = type == ActionType::LaunchApp ? tr("Applications (*.app);;All files (*)") : tr("All files (*)");
+#else
+        const auto filter = type == ActionType::LaunchApp ? tr("Applications (*.exe *.bat *.cmd);;All files (*)") : tr("All files (*)");
+#endif
+        path = QFileDialog::getOpenFileName(nullptr, type == ActionType::LaunchApp ? tr("Choose application") : tr("Choose file"),
+            {}, filter);
+    }
     if (!path.isEmpty()) Session.setItemField("target", path);
 }
 void SettingsWindow::addAppFilter(const QString& name) {
@@ -192,8 +220,12 @@ void SettingsWindow::addAppFilter(const QString& name) {
     Session.setProfileField("appFilter", values.join(", "));
 }
 void SettingsWindow::chooseApplicationFilter() {
+#ifdef Q_OS_MACOS
+    const auto path = QFileDialog::getOpenFileName(nullptr, tr("Choose application"), {}, tr("Applications (*.app)"));
+#else
     const auto path = QFileDialog::getOpenFileName(nullptr, tr("Choose application"), {}, tr("Applications (*.exe)"));
-    if (!path.isEmpty()) addAppFilter(QFileInfo(path).fileName());
+#endif
+    if (!path.isEmpty()) addAppFilter(ApplicationFilterName(path));
 }
 void SettingsWindow::pickRunningApplication() {
     refreshRunningApplications(); emit runningAppsRequested();
@@ -253,12 +285,17 @@ void SettingsWindow::openIconDirectory() {
     Catalog.refresh();
 }
 void SettingsWindow::addDroppedFiles(const QStringList& urls) {
+#ifdef Q_OS_MACOS
+    const auto applicationSuffix = "app";
+#else
+    const auto applicationSuffix = "exe";
+#endif
     for (const auto& value : urls) {
         const QUrl url(value);
         const auto path = url.isLocalFile() ? url.toLocalFile() : value;
         const auto file = QFileInfo(path);
         const auto type = !url.isLocalFile() && !url.scheme().isEmpty() ? ActionType::OpenURL :
-            (file.suffix().compare("exe", Qt::CaseInsensitive) == 0 ? ActionType::LaunchApp : ActionType::OpenFile);
+            (file.suffix().compare(applicationSuffix, Qt::CaseInsensitive) == 0 ? ActionType::LaunchApp : ActionType::OpenFile);
         if (Session.addItem(int(type)).isEmpty()) break;
         Session.setItemField("target", path);
     }
@@ -272,6 +309,46 @@ void SettingsWindow::installAutoStart() {
     else registry.remove("GoPieMenu");
     registry.sync();
     if (registry.status() != QSettings::NoError) Session.reportError(tr("Settings were saved, but Windows startup could not be updated."));
+#elif defined(Q_OS_MACOS)
+    // A per-user LaunchAgent is the macOS equivalent of the Run registry value:
+    // no installer or privileged helper is involved, and launchd loads it at login.
+    const auto agentsDirectory = QDir::home().absoluteFilePath("Library/LaunchAgents");
+    const auto plistPath = agentsDirectory + "/com.gopiemenu.app.plist";
+    const auto startupError = tr("Settings were saved, but startup at login could not be updated.");
+    if (Manager->GetConfig().bStartWithWindows) {
+        if (!QDir().mkpath(agentsDirectory)) { Session.reportError(startupError); return; }
+        QSaveFile file(plistPath);
+        file.setDirectWriteFallback(false);
+        if (!file.open(QIODevice::WriteOnly)) { Session.reportError(startupError); return; }
+        QXmlStreamWriter xml(&file);
+        xml.writeStartDocument();
+        xml.writeDTD("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
+        xml.writeStartElement("plist");
+        xml.writeAttribute("version", "1.0");
+        xml.writeStartElement("dict");
+        xml.writeTextElement("key", "Label");
+        xml.writeTextElement("string", "com.gopiemenu.app");
+        xml.writeTextElement("key", "ProgramArguments");
+        xml.writeStartElement("array");
+        xml.writeTextElement("string", QCoreApplication::applicationFilePath());
+        xml.writeTextElement("string", "--autostart");
+        xml.writeEndElement();
+        xml.writeTextElement("key", "RunAtLoad");
+        xml.writeEmptyElement("true");
+        xml.writeTextElement("key", "KeepAlive");
+        xml.writeEmptyElement("false");
+        xml.writeEndElement();
+        xml.writeEndElement();
+        xml.writeEndDocument();
+        if (!file.commit()) { Session.reportError(startupError); return; }
+    } else {
+        // Copying the plist away is what actually disables the login item. The
+        // bootout call only clears a job that is still registered and is allowed
+        // to fail; booting out the running login item would terminate this app.
+        if (QFile::exists(plistPath) && !QFile::remove(plistPath)) { Session.reportError(startupError); return; }
+        QProcess::startDetached(QStringLiteral("/bin/launchctl"),
+            {QStringLiteral("bootout"), QStringLiteral("gui/%1").arg(getuid()), plistPath});
+    }
 #endif
 }
 }

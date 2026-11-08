@@ -2,23 +2,29 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md)
 
-Windows 圓形快捷選單，可錄製快捷鍵、啟動應用程式、開啟檔案／網址與執行指令。
+Windows 與 macOS 圓形快捷選單，可錄製快捷鍵、啟動應用程式、開啟檔案／網址與執行指令。
 
-[下載 v2.3.0（Windows x64）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [更新與升級說明](CHANGELOG.md#230)
+[下載 Windows x64 版（2.3.0）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [下載 macOS 版（2.4.0）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.4.0) · [所有版本](https://github.com/RyuuMeow/GoPieMenu/releases) · [更新與升級說明](CHANGELOG.md#240)
 
 ![淺色編輯器](resources/demo/Editor2.png)
 
-介面支援英文、繁體中文及簡體中文。新設定預設跟隨系統介面語言，不支援的語言使用英文。切換「設定 → 語言」會顯示「稍後」及藍色「重新啟動」按鈕；重新啟動會先套用所有待存變更，稍後則保留草稿繼續編輯。中文介面使用微軟正黑體 UI。既有設定若已指定語言，會保留該選擇；已儲存的選單及動作名稱不會重新翻譯。
+介面支援英文、繁體中文及簡體中文。新設定預設跟隨系統介面語言，不支援的語言使用英文。切換「設定 → 語言」會顯示「稍後」及藍色「重新啟動」按鈕；重新啟動會先套用所有待存變更，稍後則保留草稿繼續編輯。中文介面在 Windows 使用微軟正黑體 UI，在 macOS 使用 PingFang。既有設定若已指定語言，會保留該選擇；已儲存的選單及動作名稱不會重新翻譯。
 
 手動開啟 GoPieMenu 會顯示編輯器，已在系統匣執行時也會喚回視窗；隨 Windows 自動啟動時則留在系統匣。
+
+## macOS
+
+GoPieMenu 以 macOS 12 以上的通用版本提供，同時支援 Apple 晶片與 Intel Mac。CI 會建置、測試並打包 `GoPieMenu-<version>.dmg`，與 Windows 安裝程式一同附在下一個發行版本。
+
+macOS 版本是選單列項目，不顯示 Dock 圖示，請從選單列結束程式。全域觸發與鍵盤動作需要**輔助使用**與**輸入監控**權限：請到「系統設定 → 隱私權與安全性」允許 GoPieMenu，再重新啟動程式。本版本使用 ad-hoc 簽章，首次手動開啟需在 Finder 以右鍵選擇「打開」，或到「隱私權與安全性」選擇「仍要打開」。登入時啟動使用 LaunchAgent。更新會下載並驗證磁碟映像，掛載後讓你以新版本取代「應用程式」中的舊版。
 
 ## 使用方式
 
 1. 從系統匣開啟 **Settings**。頂部選單左側的 **+** 可新增並切換到新選單；三點管理選單可新增、複製或刪除，刪除後切換到第一個選單。
 2. 點擊扇形直接編輯；**Add action** 新增動作或子選單。目標與快捷鍵可以留空，觸發空白動作時不執行任何操作。在預覽或排序清單對動作按右鍵，可 **Duplicate** 或 **Delete action**。
 3. 按圖層按鈕展開 **Arrange actions**，可拖曳整列排序，保留原本選取狀態；三橫線為拖曳把手，插入線標示目的位置，靠近邊緣時自動捲動。雙擊子選單或按 **Edit actions**，即可在原工作區編輯；維持兩層結構。
-4. 點擊頂部觸發方式，修改快捷鍵與應用程式範圍。滑鼠按住模式可獨立組合 **Ctrl／Shift／Alt／Win** 與五種滑鼠按鍵；**Enabled／Disabled** 開關控制啟用狀態。新增及複製的選單預設停用。
-5. 草稿即時顯示在畫布，改名不會移動預覽位置。按 **Apply** 驗證並保存成功後才影響實際選單；**Apply** 和 **Discard** 固定顯示，有變更時才可操作。Ctrl+Z／Ctrl+Y 可復原／重做。
+4. 點擊頂部觸發方式，修改快捷鍵與應用程式範圍。滑鼠按住模式可獨立組合 **Ctrl／Shift／Alt／Win** 與五種滑鼠按鍵（macOS 上 Win 即 Command）；**Enabled／Disabled** 開關控制啟用狀態。新增及複製的選單預設停用。
+5. 草稿即時顯示在畫布，改名不會移動預覽位置。按 **Apply** 驗證並保存成功後才影響實際選單；**Apply** 和 **Discard** 固定顯示，有變更時才可操作。Ctrl+Z／Ctrl+Y（macOS 為 Cmd+Z／Cmd+Y）可復原／重做。
 
 切換設定檔保留草稿。關閉主視窗會隱藏至系統匣；退出時會處理未套用變更。匯入先成為可復原的草稿，損壞檔案和保存失敗不會覆蓋目前設定。
 
@@ -54,27 +60,38 @@ JSON 設定格式維持 1.0，存於 Qt 應用程式資料目錄；Settings 可�
 
 GoPieMenu 會在啟動時檢查 GitHub 是否有較新的穩定版本。編輯器開啟時顯示更新對話窗；隱藏或最小化時顯示系統匣通知，點擊後可查看更新內容。「略過此版本」會記住該版本，也可從「設定 → 檢查更新」重新查看。
 
-更新說明依目前介面語言顯示，缺少翻譯時使用英文，驗證資訊則共用。「更新」會下載 Windows 安裝程式並驗證 `SHA256SUMS.txt`；按下「安裝並結束」後，會先處理尚未套用的編輯，再開啟 Windows 安裝權限提示。取消權限提示時 GoPieMenu 會繼續執行；按「稍後」關閉更新視窗不會自動安裝。
+更新說明依目前介面語言顯示，缺少翻譯時使用英文，驗證資訊則共用。更新檢查依發佈流程維護的分平台通道判斷，各平台只會收到自己已發佈的版本，Windows 與 macOS 因此可以各自發佈。 「更新」會下載對應平台的發行檔並依 `SHA256SUMS.txt` 驗證：Windows 為安裝程式、macOS 為磁碟映像。按下「安裝並結束」後，會先處理尚未套用的編輯，再開啟 Windows 安裝權限提示；取消權限提示時 GoPieMenu 會繼續執行。macOS 上按「開啟並結束」會先處理未套用編輯，再掛載已驗證的磁碟映像，讓你在「應用程式」中替換版本。按「稍後」關閉更新視窗不會自動安裝。
 
 所有更新說明集中在 [CHANGELOG.md](CHANGELOG.md)。發布時只擷取該版本區塊至 GitHub Release，程式再從 Release 讀取內容。預覽與啟動驗證模式不會檢查更新。
 
 ## 建置與驗證
 
-需要 Windows、Visual Studio 2022 C++、CMake 3.21+、Qt 6.9（Widgets、Quick、QML、Quick Controls、SVG、Network、Linguist Tools、Test）。
+Windows 需要 Visual Studio 2022 C++、CMake 3.21+、Qt 6.9（Widgets、Quick、QML、Quick Controls、SVG、Network、Linguist Tools、Test）。macOS 需要 Xcode 15 以上與命令列工具、CMake 3.21+，以及相同的 Qt 6.9 元件。
+
+Windows：
 
 ```powershell
 ./scripts/build.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"
 ```
 
-指令會建置 Release，執行核心及 100%、125%、150%、200% 縮放的 UI 測試，截圖輸出至 `build/artifacts`。增量建置可加 `-SkipTests`。
+macOS：
 
-執行時將 Qt bin 加到 PATH，開啟 `build/Release/GoPieMenu.exe --settings`。參數 `--preview` 使用暫存設定，不安裝全域掛鉤、不執行動作，也不更動 Windows 啟動設定。
+```bash
+export QT_ROOT_DIR="$HOME/Qt/6.9.0/macos"
+./scripts/build-macos.sh
+# 產生 Apple 晶片與 Intel Mac 通用版本：
+GPM_OSX_ARCHITECTURES="arm64;x86_64" ./scripts/build-macos.sh
+```
 
-安裝 Inno Setup 6 後，執行 `./scripts/package.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"`，即可部署 Qt/QML、檢查獨立啟動，並在 `Output` 產生安裝檔與 `SHA256SUMS.txt`。CI 使用相同建置與打包入口；版本標籤通過驗證後，會發佈安裝檔、校驗檔及對應更新說明。
+兩個入口都會建置 Release，並執行核心及 UI 回歸測試；Windows 以 100%、125%、150%、200% 縮放執行 QML 測試，macOS 以 100%、200%（Retina）執行。Windows 在桌面執行，macOS 使用 1920 × 1080 的離屏虛擬螢幕與軟體 Qt Quick 後端。截圖輸出至 `build/artifacts`。增量建置可加 `-SkipTests`（Windows）或 `SKIP_TESTS=1`（macOS）。
 
-若只要打包、不執行啟動檢查，可加上 `-SkipSmokeTest`。CI 預設仍會執行檢查。
+將 Qt bin 加到 PATH 後，Windows 執行 `build/Release/GoPieMenu.exe --settings`；macOS 可開啟 `build/GoPieMenu.app`，或執行 `build/GoPieMenu.app/Contents/MacOS/GoPieMenu --settings`。參數 `--preview` 使用暫存設定，不安裝全域掛鉤、不執行動作，也不更動啟動設定。
 
-架構、測試範圍、效能數據及尚需實機驗證項目，見 [架構與驗證](docs/architecture.md)。
+安裝 Inno Setup 6 後，Windows 執行 `./scripts/package.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"`，即可部署 Qt/QML、檢查獨立啟動，並在 `Output` 產生安裝檔與 `SHA256SUMS.txt`。macOS 執行 `./scripts/package-macos.sh` 會部署 Qt/QML、以 ad-hoc 簽章簽署、在沒有 SDK 的情況下檢查啟動，並在 `Output` 產生 `GoPieMenu-<version>.dmg` 與 `SHA256SUMS.macos.txt`。CI 在 pull request 與 main 分支推送時使用相同的建置與打包入口；版本標籤通過驗證後，會發佈安裝檔、磁碟映像、合併的 `SHA256SUMS.txt` 及對應更新說明。
+
+若只要打包、不執行啟動檢查，Windows 可加 `-SkipSmokeTest`，macOS 可加 `SKIP_SMOKE_TEST=1`。CI 預設仍會執行檢查。
+
+架構、測試範圍、效能數據及尚需實機驗證項目，見 [架構與驗證](docs/architecture.md)；macOS 的權限、焦點與打包驗收清單見 [macOS 手動驗收](docs/macos-manual-checks.md)。
 
 ## 授權
 

@@ -1,12 +1,14 @@
 #include <QtTest>
 #include <QTemporaryDir>
 #include <QFile>
+#include <QSet>
 #include "core/EditorSession.h"
 #include "core/ConfigValidation.h"
 #include "core/InputState.h"
 #include "core/MenuPolicy.h"
 #include "core/Shortcut.h"
 #include "core/TranslationManager.h"
+#include "platform/mac/MacKeyMap.h"
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -149,9 +151,15 @@ private slots:
         QVERIFY(!ParseConfig(QJsonDocument(json).toJson()).Error.isEmpty());
     }
     void resolvesUiLanguage() {
+#ifdef Q_OS_MACOS
+        QCOMPARE(InterfaceFontFamily("zh-TW"), "PingFang TC");
+        QCOMPARE(InterfaceFontFamily("zh-CN"), "PingFang SC");
+        QCOMPARE(InterfaceFontFamily("en"), "Helvetica Neue");
+#else
         QCOMPARE(InterfaceFontFamily("zh-TW"), "Microsoft JhengHei UI");
         QCOMPARE(InterfaceFontFamily("zh-CN"), "Microsoft JhengHei UI");
         QCOMPARE(InterfaceFontFamily("en"), "Segoe UI");
+#endif
         QCOMPARE(ResolveLanguage("system", {"zh-TW"}), "zh_TW");
         QCOMPARE(ResolveLanguage("system", {"zh-HK"}), "zh_TW");
         QCOMPARE(ResolveLanguage("system", {"zh-Hant-MO"}), "zh_TW");
@@ -299,6 +307,69 @@ private slots:
         QVERIFY(ParseShortcut("Ctrl").empty());
         QVERIFY(ParseShortcut("Ctrl+A+B").empty());
         QVERIFY(!ParseShortcut("Ctrl++").empty());
+#ifdef Q_OS_MACOS
+        // macOS derives Shift and the virtual key from the recorded character
+        // instead of using VkKeyScan; the key order stays ctrl, shift, alt, win.
+        QCOMPARE(ParseShortcut("Ctrl++"), (std::vector<int>{0xa2, 0xa0, 0xbb}));
+        QCOMPARE(ParseShortcut("Ctrl+;"), (std::vector<int>{0xa2, 0xba}));
+        QCOMPARE(ParseShortcut("Ctrl+Shift+["), (std::vector<int>{0xa2, 0xa0, 0xdb}));
+        QCOMPARE(ParseShortcut("Win+~"), (std::vector<int>{0xa0, 0x5b, 0xc0}));
+#endif
+    }
+    void macKeyMapRoundTripsAndNames() {
+        const auto& mappings = MacKeyMappings();
+        QVERIFY(mappings.size() > 40);
+        QSet<int> macCodes, windowsVks;
+        for (const auto& mapping : mappings) {
+            QVERIFY(mapping.MacKeyCode >= 0 && mapping.MacKeyCode <= 0x7f);
+            QVERIFY(mapping.WindowsVk > 0 && mapping.WindowsVk <= 0xff);
+            QVERIFY2(!macCodes.contains(mapping.MacKeyCode),
+                qPrintable(QString("duplicate mac key code %1").arg(mapping.MacKeyCode)));
+            macCodes.insert(mapping.MacKeyCode);
+            QCOMPARE(WindowsVkFromMacKeyCode(mapping.MacKeyCode), mapping.WindowsVk);
+            QVERIFY(!MacKeyDisplayName(mapping.WindowsVk).isEmpty());
+            // Recording a physical key and sending its virtual key must agree.
+            QCOMPARE(WindowsVkFromMacKeyCode(MacKeyCodeFromWindowsVk(mapping.WindowsVk)), mapping.WindowsVk);
+            if (!windowsVks.contains(mapping.WindowsVk)) {
+                // The first entry for a Windows VK is the canonical physical key.
+                QCOMPARE(MacKeyCodeFromWindowsVk(mapping.WindowsVk), mapping.MacKeyCode);
+                windowsVks.insert(mapping.WindowsVk);
+            }
+        }
+        // Aliases: every Return key records as VK_RETURN but sending uses key Return.
+        QCOMPARE(WindowsVkFromMacKeyCode(0x4c), 0x0d);
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x0d), 0x24);
+        // Generic modifier VKs resolve to the left-hand physical key.
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x10), 0x38);
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x11), 0x3b);
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x12), 0x3a);
+        // Keys that only one platform has a physical counterpart for.
+        QCOMPARE(WindowsVkFromMacKeyCode(0x80), -1);
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x2c), -1); // Print Screen
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x90), -1); // Num Lock
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x91), -1); // Scroll Lock
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x13), -1); // Pause
+        QCOMPARE(MacKeyCodeFromWindowsVk(0x87), -1); // F24
+        // Display names follow GetKeyNameText() conventions.
+        QCOMPARE(MacKeyDisplayName('A'), "A");
+        QCOMPARE(MacKeyDisplayName('7'), "7");
+        QCOMPARE(MacKeyDisplayName(0x70), "F1");
+        QCOMPARE(MacKeyDisplayName(0x87), "F24");
+        QCOMPARE(MacKeyDisplayName(0x24), "Home");
+        QCOMPARE(MacKeyDisplayName(0x0d), "Enter");
+        QCOMPARE(MacKeyDisplayName(0x1b), "Esc");
+        QCOMPARE(MacKeyDisplayName(0x08), "Backspace");
+        QCOMPARE(MacKeyDisplayName(0xba), ";");
+        QCOMPARE(MacKeyDisplayName(0xbb), "=");
+        QCOMPARE(MacKeyDisplayName(0x5b), "Left Command");
+        QCOMPARE(MacKeyDisplayName(0x60), "Num 0");
+        // Windows-only virtual keys still have a readable name for imported configs.
+        QCOMPARE(MacKeyDisplayName(0x2c), "Print Screen");
+        QCOMPARE(MacKeyDisplayName(0x90), "Num Lock");
+        QCOMPARE(MacKeyDisplayName(0x91), "Scroll Lock");
+        QCOMPARE(MacKeyDisplayName(0x13), "Pause");
+        QCOMPARE(MacKeyDisplayName(0), QString());
+        QCOMPARE(MacKeyDisplayName(0xe2), QString());
     }
     void inputHoldRepeatAndMatchingReleases() {
         auto p = PieMenuConfig::CreateDefault();

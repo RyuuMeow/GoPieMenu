@@ -29,7 +29,16 @@ TrayManager::~TrayManager()
 void TrayManager::CreateTrayIcon()
 {
     TrayIcon = new QSystemTrayIcon(this);
+#ifdef Q_OS_MACOS
+    // The menu bar draws a monochrome template image and tints it for light and
+    // dark appearances; Qt applies QIcon::isMask as NSImage.isTemplate.
+    QIcon trayIcon(QStringLiteral(":/logo/trayTemplate.png"));
+    if (trayIcon.isNull()) trayIcon = QIcon(QStringLiteral(":/logo/GoPieMenu.png"));
+    else trayIcon.setIsMask(true);
+    TrayIcon->setIcon(trayIcon);
+#else
     TrayIcon->setIcon(QIcon(QStringLiteral(":/logo/tray-color.ico")));
+#endif
     TrayIcon->setToolTip(tr("GoPieMenu - Active"));
 
     TrayMenu = new QMenu;
@@ -110,10 +119,17 @@ void TrayManager::ShowUpdateNotification(const QString& version) {
 
 void TrayManager::OnTrayActivated(QSystemTrayIcon::ActivationReason Reason)
 {
+#ifdef Q_OS_MACOS
+    // macOS opens the context menu on a single click and never reports a
+    // double click while a menu is attached; Settings stays one click away in
+    // that menu, so no additional activation handling is needed.
+    Q_UNUSED(Reason);
+#else
     if (Reason == QSystemTrayIcon::DoubleClick) 
     {
         emit SettingsRequested();
     }
+#endif
 }
 
 } // namespace gpm

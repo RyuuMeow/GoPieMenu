@@ -2,23 +2,29 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md)
 
-A customizable Windows radial menu for shortcuts, applications, files, websites, and commands.
+A customizable radial menu for Windows and macOS: shortcuts, applications, files, websites, and commands.
 
-[Download v2.3.0 for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [What's new and upgrading](CHANGELOG.md#230)
+[Download for Windows x64 (2.3.0)](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [Download for macOS (2.4.0)](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.4.0) · [All releases](https://github.com/RyuuMeow/GoPieMenu/releases) · [What's new and upgrading](CHANGELOG.md#240)
 
 ![Light editor](resources/demo/Editor2.png)
 
-The interface supports English, Traditional Chinese, and Simplified Chinese. New configurations follow the system UI language; unsupported languages use English. Settings → Language offers **Later** or a blue **Restart** button. Restart applies all pending changes; Later keeps the draft for further editing. Chinese interfaces use Microsoft JhengHei UI. Existing configurations with an explicit language keep that choice. Your saved menu and action names are not retranslated.
+The interface supports English, Traditional Chinese, and Simplified Chinese. New configurations follow the system UI language; unsupported languages use English. Settings → Language offers **Later** or a blue **Restart** button. Restart applies all pending changes; Later keeps the draft for further editing. Chinese interfaces use Microsoft JhengHei UI on Windows and PingFang on macOS. Existing configurations with an explicit language keep that choice. Your saved menu and action names are not retranslated.
 
 Opening GoPieMenu manually shows the editor, including when it is already running in the tray. Windows startup keeps it in the tray.
+
+## macOS
+
+GoPieMenu builds as a universal app for macOS 12 or newer on Apple silicon and Intel Macs. CI builds, tests, and packages a `GoPieMenu-<version>.dmg`; the disk image is attached to the next release together with the Windows installer.
+
+The macOS app lives in the menu bar without a Dock icon; quit it from the menu bar item. Global triggers and keyboard actions need **Accessibility** and **Input Monitoring** permission: enable GoPieMenu under System Settings → Privacy & Security, then restart the app. The build is ad-hoc signed, so the first manual launch needs **Open** from the Finder context menu or **Open Anyway** under Privacy & Security. Startup at login uses a LaunchAgent. Updates download and verify the disk image, then mount it so you can replace GoPieMenu in Applications.
 
 ## Edit your menu
 
 1. Open **Settings** from the tray icon. Use **+** beside the menu selector to create and select a menu. The adjacent three-dot menu contains New, Duplicate, and Delete; deleting selects the first remaining menu.
 2. Click a slice to edit it. **Add action** creates an action or a submenu. Empty targets and shortcuts can be saved as placeholders; triggering them does nothing. Right-click an action in the preview or organizer to **Duplicate** or **Delete action**.
 3. Open **Arrange actions** with the layers button and drag anywhere on a row to reorder it without changing the current selection. The three-line handle and insertion line mark the interaction; the list scrolls near its edges. Double-click a submenu or choose **Edit actions** to edit it in the same workspace. Submenus contain actions only.
-4. Edit the trigger and application scope from the trigger summary. Mouse hold supports independent **Ctrl / Shift / Alt / Win** modifiers and five mouse buttons. The **Enabled / Disabled** switch controls the menu; new and copied menus start disabled.
-5. Changes appear immediately in the preview, whose position stays fixed when names change. **Apply** validates and saves them before the running menu changes. **Apply** and **Discard** stay visible and activate when there are changes. Ctrl+Z and Ctrl+Y undo and redo.
+4. Edit the trigger and application scope from the trigger summary. Mouse hold supports independent **Ctrl / Shift / Alt / Win** modifiers and five mouse buttons (on macOS the Win modifier is Command). The **Enabled / Disabled** switch controls the menu; new and copied menus start disabled.
+5. Changes appear immediately in the preview, whose position stays fixed when names change. **Apply** validates and saves them before the running menu changes. **Apply** and **Discard** stay visible and activate when there are changes. Ctrl+Z and Ctrl+Y (Cmd+Z and Cmd+Y on macOS) undo and redo.
 
 Switching menus preserves all drafts. Closing the editor hides it to the tray and preserves edits; quitting asks how to handle unapplied changes. Import creates an undoable draft. Invalid imports and failed saves leave the current configuration intact.
 
@@ -54,33 +60,44 @@ The application and [tray menu](resources/demo/TrayMenu.png) use the new Pie Men
 
 GoPieMenu checks for newer stable GitHub releases at startup. A visible editor shows an update dialog; when hidden or minimized, a tray notification opens the same dialog. **Skip this version** remembers that release; **Settings → Check for updates** can revisit it.
 
-Release notes use the current interface language, with English fallback and shared validation information. **Update** downloads the Windows installer and verifies `SHA256SUMS.txt`. **Install and exit** asks you to resolve unapplied edits, then opens the Windows installer permission prompt. Cancelling that prompt keeps GoPieMenu running. Closing the update dialog with **Later** does not install anything.
+Release notes use the current interface language, with English fallback and shared validation information. Update checks follow a per-platform channel maintained by the release workflow, so each platform is offered only its own published version and Windows and macOS can ship independently. **Update** downloads the platform release file and verifies it against `SHA256SUMS.txt`: the Windows installer on Windows, the disk image on macOS. **Install and exit** asks you to resolve unapplied edits, then opens the Windows installer permission prompt; cancelling that prompt keeps GoPieMenu running. On macOS, **Open and exit** resolves unapplied edits and mounts the verified disk image so you can replace the app in Applications. Closing the update dialog with **Later** does not install anything.
 
 The [changelog](CHANGELOG.md) is the source for all release notes. Publishing a version extracts only its section into the GitHub Release body, which the application reads. Preview and smoke-test modes do not check for updates.
 
 ## Build and verify
 
-Requires Windows, Visual Studio 2022 with C++ tools, CMake 3.21+, and Qt 6.9 with Widgets, Quick, QML, Quick Controls, SVG, Network, Linguist Tools, and Test.
+Windows requires Visual Studio 2022 with C++ tools, CMake 3.21+, and Qt 6.9 with Widgets, Quick, QML, Quick Controls, SVG, Network, Linguist Tools, and Test. macOS requires Xcode 15 or newer with the command line tools, CMake 3.21+, and the same Qt 6.9 components.
+
+Windows:
 
 ```powershell
 ./scripts/build.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"
 ```
 
-This builds Release and runs core and UI regression tests at 100%, 125%, 150%, and 200% scale. Test screenshots are written to `build/artifacts`. Use `-SkipTests` for an incremental build.
+macOS:
 
-Run `build/Release/GoPieMenu.exe --settings` with Qt's bin directory on PATH. `--preview` opens an isolated temporary configuration without global hooks, action execution, or Windows startup changes.
+```bash
+export QT_ROOT_DIR="$HOME/Qt/6.9.0/macos"
+./scripts/build-macos.sh
+# Universal build for Apple silicon and Intel Macs:
+GPM_OSX_ARCHITECTURES="arm64;x86_64" ./scripts/build-macos.sh
+```
 
-To package with Inno Setup 6 installed:
+Both entry points build Release and run core and UI regression tests; Windows runs the QML suite at 100%, 125%, 150%, and 200% scale, macOS at 100% and 200% (the Retina factor). Windows runs them on the desktop; macOS uses an offscreen 1920 × 1080 screen and the software Qt Quick backend. Test screenshots are written to `build/artifacts`. Use `-SkipTests` on Windows or `SKIP_TESTS=1` on macOS for an incremental build.
+
+Run `build/Release/GoPieMenu.exe --settings` on Windows with Qt's bin directory on PATH; on macOS open `build/GoPieMenu.app` or run `build/GoPieMenu.app/Contents/MacOS/GoPieMenu --settings`. `--preview` opens an isolated temporary configuration without global hooks, action execution, or startup changes.
+
+To package on Windows with Inno Setup 6 installed:
 
 ```powershell
 ./scripts/package.ps1 -QtRoot "C:/Qt/6.9.0/msvc2022_64"
 ```
 
-This deploys Qt/QML dependencies, checks startup without the SDK on PATH, and writes the installer and `SHA256SUMS.txt` to `Output`. CI uses the same build and packaging scripts on pull requests and main-branch pushes. Version tags additionally publish the installer, checksum, and matching release notes after validation succeeds.
+On macOS, `./scripts/package-macos.sh` deploys Qt/QML, signs the bundle ad hoc, checks startup without the SDK, and writes `Output/GoPieMenu-<version>.dmg` and `Output/SHA256SUMS.macos.txt`. CI uses the same build and packaging entry points on pull requests and main-branch pushes. On a version tag it publishes the installer, the disk image, a merged `SHA256SUMS.txt`, and matching release notes.
 
-For packaging without launching the startup check, pass `-SkipSmokeTest`. CI retains the default check.
+For packaging without launching the startup check, pass `-SkipSmokeTest` on Windows or `SKIP_SMOKE_TEST=1` on macOS. CI retains the default check.
 
-See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks.
+See [architecture and validation](docs/architecture.md) for module boundaries, test coverage, measurements, and remaining hardware checks, and [macOS manual checks](docs/macos-manual-checks.md) for the permission, focus, and packaging acceptance list.
 
 ## Credits and license
 

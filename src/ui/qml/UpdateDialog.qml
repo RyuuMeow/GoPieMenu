@@ -7,6 +7,9 @@ AppDialog {
     id: root
     objectName: "updateDialog"
     readonly property var updater: appController.updater
+    // macOS updates ship as a DMG image that opens in Finder; Windows runs a
+    // Setup.exe, so the install wording and the ready action differ.
+    readonly property bool isMacOS: Qt.platform.os === "osx"
     title: qsTr("Update available")
     width: Math.min(640, parent.width - 32)
     Label {
@@ -29,7 +32,9 @@ AppDialog {
     Label {
         Layout.fillWidth: true
         visible: root.updater && !root.updater.canDownload
-        text: qsTr("This release has no verified Windows installer. View the release on GitHub.")
+        text: root.isMacOS
+            ? qsTr("This release has no verified macOS disk image. View the release on GitHub.")
+            : qsTr("This release has no verified Windows installer. View the release on GitHub.")
         color: T.muted; wrapMode: Text.WordWrap
     }
     ProgressBar {
@@ -42,14 +47,18 @@ AppDialog {
     Label {
         Layout.fillWidth: true
         visible: root.updater && root.updater.downloading
-        text: qsTr("Downloading and verifying the installer… %1%").arg(Math.round(root.updater ? root.updater.progress * 100 : 0))
+        text: root.isMacOS
+            ? qsTr("Downloading and verifying the disk image… %1%").arg(Math.round(root.updater ? root.updater.progress * 100 : 0))
+            : qsTr("Downloading and verifying the installer… %1%").arg(Math.round(root.updater ? root.updater.progress * 100 : 0))
         color: T.muted; wrapMode: Text.WordWrap
     }
     Label {
         objectName: "updateReadyMessage"
         Layout.fillWidth: true
         visible: root.updater && root.updater.ready
-        text: qsTr("The installer is verified. Install now? GoPieMenu will close after you resolve any unsaved changes.")
+        text: root.isMacOS
+            ? qsTr("The disk image is verified. Open it now? GoPieMenu will close after you resolve any unsaved changes.")
+            : qsTr("The installer is verified. Install now? GoPieMenu will close after you resolve any unsaved changes.")
         color: T.ink; wrapMode: Text.WordWrap
     }
     Label {
@@ -84,7 +93,7 @@ AppDialog {
         AppButton {
             objectName: "installUpdateButton"
             visible: root.updater && root.updater.ready
-            text: qsTr("Install and exit"); kind: "primary"
+            text: root.isMacOS ? qsTr("Open and exit") : qsTr("Install and exit"); kind: "primary"
             onClicked: { root.close(); appController.requestUpdateInstall() }
         }
     }

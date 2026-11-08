@@ -24,7 +24,27 @@
 #include <QFont>
 #ifdef Q_OS_WIN
 #include <Windows.h>
+#else
+#include <errno.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <QThread>
 #endif
+
+namespace {
+QString InputHookInstallError() {
+#ifdef Q_OS_MACOS
+    // macOS gates global input taps behind per-app approvals. Point at the exact
+    // settings pane, and note that the approval only applies after a relaunch.
+    return QCoreApplication::translate("Application",
+        "GoPieMenu needs Accessibility and Input Monitoring permission to read the global trigger. "
+        "Open System Settings > Privacy & Security, enable GoPieMenu under Accessibility and Input Monitoring, "
+        "then restart GoPieMenu.");
+#else
+    return QCoreApplication::translate("Application", "Could not install global input hooks.");
+#endif
+}
+}
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -32,7 +52,11 @@ int main(int argc, char* argv[]) {
     app.setApplicationVersion(APP_VERSION);
     app.setOrganizationName("GoPieMenu");
     app.setQuitOnLastWindowClosed(false);
+#ifdef Q_OS_MACOS
+    app.setWindowIcon(QIcon(":/logo/GoPieMenu.png"));
+#else
     app.setWindowIcon(QIcon(":/logo/GoPieMenu.ico"));
+#endif
     app.setStyle("Fusion");
     app.styleHints()->setColorScheme(Qt::ColorScheme::Light);
     QQuickStyle::setStyle("Basic");
@@ -50,6 +74,22 @@ int main(int argc, char* argv[]) {
             CloseHandle(parent);
             if (result != WAIT_OBJECT_0) return 1;
         } else if (GetLastError() != ERROR_INVALID_PARAMETER) return 1;
+    }
+#else
+    // A restarted child must not contend for the instance lock until its parent exits.
+    const int parentArgument = arguments.indexOf("--restart-parent");
+    if (parentArgument >= 0) {
+        bool valid = false;
+        const auto pid = arguments.value(parentArgument + 1).toLongLong(&valid);
+        if (!valid || pid <= 0 || pid == QCoreApplication::applicationPid()) return 1;
+        // POSIX has no waitable handle, so poll until the parent disappears, with
+        // the same 30 second bound as the Windows path.
+        bool parentAlive = true;
+        for (int elapsed = 0; elapsed < 30000 && parentAlive; elapsed += 50) {
+            parentAlive = !(::kill(static_cast<pid_t>(pid), 0) != 0 && errno == ESRCH);
+            if (parentAlive) QThread::msleep(50);
+        }
+        if (parentAlive) return 1;
     }
 #endif
     const bool smokeTest = app.arguments().contains("--smoke-test");
@@ -103,7 +143,7 @@ int main(int argc, char* argv[]) {
     editor.setRestartHandler([preview] {
         QStringList restartArguments{"--settings"};
         if (preview) restartArguments << "--preview";
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
         restartArguments << "--restart-parent" << QString::number(QCoreApplication::applicationPid());
 #endif
         return QProcess::startDetached(QCoreApplication::applicationFilePath(), restartArguments);
@@ -165,11 +205,11 @@ int main(int argc, char* argv[]) {
     QObject::connect(&tray, &gpm::TrayManager::PauseToggled, &hooks, [&](bool paused) {
         runtime.SetPaused(paused);
         if (paused) hooks.Uninstall();
-        else if (!preview && !hooks.Install()) editor.session()->reportError(QCoreApplication::translate("Application", "Could not install global input hooks."));
+        else if (!preview && !hooks.Install()) editor.session()->reportError(InputHookInstallError());
     });
     QObject::connect(&tray, &gpm::TrayManager::QuitRequested, &editor, &gpm::SettingsWindow::requestExit);
     QObject::connect(&editor, &gpm::SettingsWindow::exitConfirmed, &app, &QCoreApplication::quit);
-    if (!preview && !hooks.Install()) editor.session()->reportError(QCoreApplication::translate("Application", "Could not install global input hooks."));
+    if (!preview && !hooks.Install()) editor.session()->reportError(InputHookInstallError());
     if (!preview) tray.Show();
     if (showSettings || !config.LoadError().isEmpty())
         editor.show();

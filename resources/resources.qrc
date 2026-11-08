@@ -4,5 +4,6 @@
         <file>logo/GoPieMenu.ico</file>
         <file>logo/GoPieMenu.svg</file>
         <file>logo/tray-color.ico</file>
+        <file>logo/trayTemplate.png</file>
     </qresource>
 </RCC>

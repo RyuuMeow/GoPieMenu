@@ -9,15 +9,20 @@
 #include <QDebug>
 #include <QStringList>
 
-#include <windows.h>
 #include <vector>
-#include <unordered_map>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 namespace gpm 
 {
 
 /**
- * Simulates keyboard shortcuts using Win32 SendInput.
+ * Simulates keyboard shortcuts. Windows uses Win32 SendInput; macOS posts
+ * Quartz keyboard events. Both keep the same semantics: release modifiers that
+ * are physically held, send the chord, release it, then press the physical
+ * modifiers back so the system state matches the real keyboard.
  */
 class SendHotkeyAction : public IActionHandler 
 {
@@ -43,7 +48,9 @@ public:
 
 private:
     [[nodiscard]] static std::vector<int> GetHeldModifiers();
+#ifdef Q_OS_WIN
     [[nodiscard]] static bool bIsExtendedKey(int VK);
+#endif
 };
 
 } // namespace gpm

@@ -16,8 +16,15 @@ QString ResolveLanguage(const QString& preference, const QStringList& systemLang
 }
 TranslationManager::TranslationManager() { InitializeTranslations(); }
 QString InterfaceFontFamily(const QString& preference) {
-    return ResolveLanguage(preference).startsWith("zh_")
-        ? QStringLiteral("Microsoft JhengHei UI") : QStringLiteral("Segoe UI");
+    const auto language = ResolveLanguage(preference);
+    const bool chinese = language.startsWith("zh_");
+#ifdef Q_OS_MACOS
+    // macOS ships PingFang for Chinese and Helvetica Neue for Latin UI text.
+    if (!chinese) return QStringLiteral("Helvetica Neue");
+    return language == "zh_TW" ? QStringLiteral("PingFang TC") : QStringLiteral("PingFang SC");
+#else
+    return chinese ? QStringLiteral("Microsoft JhengHei UI") : QStringLiteral("Segoe UI");
+#endif
 }
 bool TranslationManager::load(const QString& preference) {
     QCoreApplication::removeTranslator(&Translator);

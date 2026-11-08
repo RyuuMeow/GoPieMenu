@@ -17,10 +17,20 @@ struct UpdateOptions {
     QString downloadDirectory; // Empty uses the application's cache directory.
     int requestTimeoutMs = 15000;
     int downloadTimeoutMs = 10 * 60 * 1000;
-    // Tests inject a launcher; production uses the Windows installer shell verb.
+    // Tests override the target so the Windows and macOS asset flows stay covered
+    // on every host; production uses the current platform.
+    UpdateTarget target;
+    // The release-channel document is the only authority for published platform
+    // versions. Tests point this at a fake URL.
+    QUrl channelUrl = QUrl(QStringLiteral("https://raw.githubusercontent.com/RyuuMeow/GoPieMenu/release-channel/platform-versions.json"));
+    // Tests inject a launcher; production uses the platform's installer shell verb.
     std::function<bool(const QString&, QString*)> launchInstaller;
 };
 
+// One asynchronous update check per launch: read the release-channel version for
+// this platform, and only if it is newer than the running build fetch that exact
+// tagged release. GitHub's "latest release" endpoint is never used, so shipping
+// one platform cannot notify the other platform's clients.
 class UpdateManager : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool checking READ checking NOTIFY changed)
@@ -58,7 +68,7 @@ signals:
     void updateAvailable();
     void checkFinished();
 private:
-    enum class Operation { Check, Checksum, Installer };
+    enum class Operation { Channel, Check, Checksum, Installer };
     void request(const QUrl& url, Operation operation);
     void consume();
     void finished();
@@ -69,8 +79,10 @@ private:
     std::unique_ptr<QSettings> Preferences;
     QPointer<QNetworkReply> Reply;
     QTimer Deadline;
-    Operation CurrentOperation = Operation::Check;
+    Operation CurrentOperation = Operation::Channel;
     QByteArray Buffer, ExpectedChecksum;
+    // Version selected by the release channel; the tagged release must match it.
+    QString PendingVersion;
     QCryptographicHash Hash{QCryptographicHash::Sha256};
     std::unique_ptr<QSaveFile> Download;
     ReleaseInfo Release;
