@@ -4,7 +4,7 @@
 
 A customizable radial menu for Windows and macOS: shortcuts, applications, files, websites, and commands.
 
-[Download for Windows x64](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [All releases](https://github.com/RyuuMeow/GoPieMenu/releases) · [What's new and upgrading](CHANGELOG.md#230)
+[Download for Windows x64 (2.3.0)](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [Download for macOS (2.4.0)](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.4.0) · [All releases](https://github.com/RyuuMeow/GoPieMenu/releases) · [What's new and upgrading](CHANGELOG.md#240)
 
 ![Light editor](resources/demo/Editor2.png)
 
@@ -60,7 +60,7 @@ The application and [tray menu](resources/demo/TrayMenu.png) use the new Pie Men
 
 GoPieMenu checks for newer stable GitHub releases at startup. A visible editor shows an update dialog; when hidden or minimized, a tray notification opens the same dialog. **Skip this version** remembers that release; **Settings → Check for updates** can revisit it.
 
-Release notes use the current interface language, with English fallback and shared validation information. **Update** downloads the platform release file and verifies it against `SHA256SUMS.txt`: the Windows installer on Windows, the disk image on macOS. **Install and exit** asks you to resolve unapplied edits, then opens the Windows installer permission prompt; cancelling that prompt keeps GoPieMenu running. On macOS, **Open and exit** resolves unapplied edits and mounts the verified disk image so you can replace the app in Applications. Closing the update dialog with **Later** does not install anything.
+Release notes use the current interface language, with English fallback and shared validation information. Update checks follow a per-platform channel maintained by the release workflow, so each platform is offered only its own published version and Windows and macOS can ship independently. **Update** downloads the platform release file and verifies it against `SHA256SUMS.txt`: the Windows installer on Windows, the disk image on macOS. **Install and exit** asks you to resolve unapplied edits, then opens the Windows installer permission prompt; cancelling that prompt keeps GoPieMenu running. On macOS, **Open and exit** resolves unapplied edits and mounts the verified disk image so you can replace the app in Applications. Closing the update dialog with **Later** does not install anything.
 
 The [changelog](CHANGELOG.md) is the source for all release notes. Publishing a version extracts only its section into the GitHub Release body, which the application reads. Preview and smoke-test modes do not check for updates.
 

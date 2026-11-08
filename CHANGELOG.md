@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [2.4.0]
+<!-- gpm:platforms macos -->
+
 ### English
 <!-- gpm:lang en -->
 
@@ -16,7 +19,7 @@
 
 - Windows behavior, its installer, and saved triggers are unchanged. The existing `Win` modifier keeps its meaning on both platforms and is labelled `Cmd` on macOS.
 - The macOS app is a menu bar item without a Dock icon, so quit it from the menu bar. Startup at login uses a LaunchAgent; disabling the option removes it again.
-- CI builds the macOS app on every change, runs the portable and QML regression tests on a virtual screen, and publishes the disk image from the same release as the Windows installer and a combined `SHA256SUMS.txt`.
+- CI builds the macOS app on every change, runs the portable and QML regression tests on a virtual screen, and publishes the disk image with a combined `SHA256SUMS.txt`. The first macOS release is not marked as the latest GitHub release, so existing Windows users stay on 2.3.0 until a release that includes Windows changes; each platform follows its own entry in the update channel.
 
 <!-- gpm:endlang -->
 
@@ -34,7 +37,7 @@
 
 - Windows 行為、安裝程式與既有觸發設定完全不變。原有的 `Win` 修飾鍵在兩平台維持相同意義，macOS 介面顯示為 `Cmd`。
 - macOS 版本是選單列項目，不顯示 Dock 圖示，請從選單列結束程式。登入時啟動使用 LaunchAgent，關閉選項即會移除。
-- CI 會在每次變更時建置 macOS 版本，在虛擬螢幕上執行可攜與 QML 回歸測試，並在發佈時與 Windows 安裝程式及合併的 `SHA256SUMS.txt` 一同發佈磁碟映像。
+- CI 會在每次變更時建置 macOS 版本，在虛擬螢幕上執行可攜與 QML 回歸測試，並發佈磁碟映像與合併的 `SHA256SUMS.txt`。首個 macOS 版本不會標記為 GitHub 最新發行，因此既有 Windows 使用者會留在 2.3.0，直到有包含 Windows 變更的版本；各平台依更新通道中自己的項目判斷。
 
 <!-- gpm:endlang -->
 
@@ -52,7 +55,14 @@
 
 - Windows 行为、安装程序和既有触发设置完全不变。原有的 `Win` 修饰键在两个平台含义相同，macOS 界面显示为 `Cmd`。
 - macOS 版本是菜单栏项目，不显示 Dock 图标，请从菜单栏退出程序。登录时启动使用 LaunchAgent，关闭该选项即会移除。
-- CI 会在每次更改时构建 macOS 版本，在虚拟屏幕上运行可移植与 QML 回归测试，并在发布时与 Windows 安装程序及合并的 `SHA256SUMS.txt` 一同发布磁盘映像。
+- CI 会在每次更改时构建 macOS 版本，在虚拟屏幕上运行可移植与 QML 回归测试，并发布磁盘映像与合并的 `SHA256SUMS.txt`。首个 macOS 版本不会标记为 GitHub 最新发行，因此现有 Windows 用户会留在 2.3.0，直到有包含 Windows 更改的版本；各平台按更新通道中自己的项目判断。
+
+<!-- gpm:endlang -->
+
+<!-- gpm:lang shared -->
+### Validation
+
+The Windows build and the universal macOS build are built and tested on every change. This release publishes the macOS disk image only, and it is not marked as the latest GitHub release so that existing Windows clients are not prompted; Windows users stay on 2.3.0 until a release that includes Windows changes.
 
 <!-- gpm:endlang -->
 

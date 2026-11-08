@@ -4,7 +4,7 @@
 
 Windows 与 macOS 圆形快捷菜单，支持快捷键、应用程序、文件、网址和命令。
 
-[下载 Windows x64 版](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [所有版本](https://github.com/RyuuMeow/GoPieMenu/releases) · [更新与升级说明](CHANGELOG.md#230)
+[下载 Windows x64 版（2.3.0）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.3.0) · [下载 macOS 版（2.4.0）](https://github.com/RyuuMeow/GoPieMenu/releases/tag/v2.4.0) · [所有版本](https://github.com/RyuuMeow/GoPieMenu/releases) · [更新与升级说明](CHANGELOG.md#240)
 
 ![浅色编辑器](resources/demo/Editor2.png)
 
@@ -60,7 +60,7 @@ JSON 配置格式保持 1.0，位于 Qt 应用数据目录；Settings 提供导�
 
 GoPieMenu 会在启动时检查 GitHub 是否有更新的稳定版本。编辑器打开时显示更新对话框；隐藏或最小化时显示托盘通知，点击后可查看更新内容。“跳过此版本”会记住该版本，也可从“设置 → 检查更新”重新查看。
 
-更新说明按当前界面语言显示，缺少翻译时使用英文，验证信息则共用。“更新”会下载对应平台的发行文件并按 `SHA256SUMS.txt` 验证：Windows 为安装程序、macOS 为磁盘映像。点击“安装并退出”后，会先处理尚未应用的编辑，再打开 Windows 安装权限提示；取消权限提示时 GoPieMenu 会继续运行。macOS 上点击“打开并退出”会先处理未应用编辑，再挂载已验证的磁盘映像，让你在“应用程序”中替换版本。点击“稍后”关闭更新窗口不会自动安装。
+更新说明按当前界面语言显示，缺少翻译时使用英文，验证信息则共用。更新检查按发布流程维护的分平台通道判断，各平台只会收到自己已发布的版本，Windows 与 macOS 因此可以各自发布。 “更新”会下载对应平台的发行文件并按 `SHA256SUMS.txt` 验证：Windows 为安装程序、macOS 为磁盘映像。点击“安装并退出”后，会先处理尚未应用的编辑，再打开 Windows 安装权限提示；取消权限提示时 GoPieMenu 会继续运行。macOS 上点击“打开并退出”会先处理未应用编辑，再挂载已验证的磁盘映像，让你在“应用程序”中替换版本。点击“稍后”关闭更新窗口不会自动安装。
 
 所有更新说明集中在 [CHANGELOG.md](CHANGELOG.md)。发布时只提取该版本区块至 GitHub Release，程序再从 Release 读取内容。预览和启动验证模式不会检查更新。
 

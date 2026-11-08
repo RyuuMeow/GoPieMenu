@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(GoPieMenu VERSION 2.3.0 LANGUAGES CXX)
+project(GoPieMenu VERSION 2.4.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -186,6 +186,7 @@ if(BUILD_TESTING)
     find_program(GPM_POWERSHELL NAMES pwsh powershell)
     if(GPM_POWERSHELL)
         add_test(NAME release-notes COMMAND "${GPM_POWERSHELL}" -NoProfile -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/ReleaseNotesTests.ps1")
+        add_test(NAME release-platforms COMMAND "${GPM_POWERSHELL}" -NoProfile -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/ReleasePlatformsTests.ps1")
     endif()
 
     if(GPM_BUILD_DESKTOP)

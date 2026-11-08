@@ -39,6 +39,7 @@ Automated CI covers the portable libraries, the editor, the runtime menus, and t
 
 ## Updates and packaging
 
+- Updates follow the per-platform channel: with the Windows entry ahead of the macOS entry, the macOS app reports the macOS version and never a Windows-only release. Bump the channel entry manually only after a release publishes the matching disk image.
 - With a test release that has a DMG asset, **Check for updates** shows localized notes, the download verifies against the merged `SHA256SUMS.txt`, and **Open and exit** mounts the disk image after resolving dirty drafts.
 - Cancelling a download, closing the dialog with Later, and skipping a version keep the app running and remember the choice.
 - The packaged `GoPieMenu-<version>.dmg` opens without the Qt SDK installed, the app inside runs, and the checksum in `SHA256SUMS.txt` matches both the Windows installer and the DMG lines.

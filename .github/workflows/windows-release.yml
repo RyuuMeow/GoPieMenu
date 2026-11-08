@@ -26,6 +26,7 @@ jobs:
           $version = [regex]::Match((Get-Content CMakeLists.txt -Raw), 'project\(GoPieMenu VERSION ([0-9.]+)').Groups[1].Value
           if ($env:GITHUB_REF_NAME -ne "v$version") { throw "Release tag does not match the application version." }
           ./scripts/release-notes.ps1 -Version $env:GITHUB_REF_NAME -OutputPath build/release-notes.md
+          ./scripts/release-platforms.ps1 -Version $env:GITHUB_REF_NAME | Out-Null
       - uses: ilammy/msvc-dev-cmd@v1
       - uses: jurplel/install-qt-action@v4
         with:
@@ -115,6 +116,16 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Resolve release platforms
+        id: platforms
+        shell: pwsh
+        run: |
+          $summary = ./scripts/release-platforms.ps1 -Version $env:GITHUB_REF_NAME -OutputPath release-platforms.json
+          $data = Get-Content release-platforms.json -Raw | ConvertFrom-Json
+          "version=$($data.version)" >> $env:GITHUB_OUTPUT
+          "platforms=$($data.platforms -join ',')" >> $env:GITHUB_OUTPUT
+          "make_latest=$($data.latest.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          Write-Output $summary
       - uses: actions/download-artifact@v4
         with:
           name: windows-package
@@ -123,14 +134,31 @@ jobs:
         with:
           name: macos-package
           path: package/macos
-      - name: Combine installers and checksums
+      - name: Assemble release assets for the declared platforms
         shell: bash
+        env:
+          PLATFORMS: ${{ steps.platforms.outputs.platforms }}
         run: |
+          set -euo pipefail
           mkdir -p package/upload
-          cp package/windows/GoPieMenu_Setup.exe package/upload/
-          cp package/macos/GoPieMenu-*.dmg package/upload/
-          # One manifest keeps Windows and macOS updaters on the same verified file.
-          { cat package/windows/SHA256SUMS.txt; cat package/macos/SHA256SUMS.macos.txt; } > package/upload/SHA256SUMS.txt
+          : > package/upload/SHA256SUMS.txt
+          IFS=',' read -ra selected <<< "$PLATFORMS"
+          for platform in "${selected[@]}"; do
+            case "$platform" in
+              windows)
+                cp package/windows/GoPieMenu_Setup.exe package/upload/
+                cat package/windows/SHA256SUMS.txt >> package/upload/SHA256SUMS.txt
+                ;;
+              macos)
+                cp package/macos/GoPieMenu-*.dmg package/upload/
+                cat package/macos/SHA256SUMS.macos.txt >> package/upload/SHA256SUMS.txt
+                ;;
+              *)
+                echo "Unknown platform: $platform" >&2
+                exit 1
+                ;;
+            esac
+          done
           cat package/upload/SHA256SUMS.txt
       - name: Extract multilingual release notes
         shell: pwsh
@@ -140,7 +168,46 @@ jobs:
           name: GoPieMenu ${{ github.ref_name }}
           body_path: release-notes.md
           fail_on_unmatched_files: true
-          files: |
-            package/upload/GoPieMenu_Setup.exe
-            package/upload/GoPieMenu-*.dmg
-            package/upload/SHA256SUMS.txt
+          make_latest: ${{ steps.platforms.outputs.make_latest }}
+          files: package/upload/*
+      - name: Enforce the latest policy
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAKE_LATEST: ${{ steps.platforms.outputs.make_latest }}
+        run: |
+          # The action has had regressions around make_latest; set it explicitly.
+          gh api --method PATCH "repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+            -f make_latest="$MAKE_LATEST"
+      - name: Update the per-platform update channel
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLATFORMS: ${{ steps.platforms.outputs.platforms }}
+          VERSION: ${{ steps.platforms.outputs.version }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+          $endpoint = "https://api.github.com/repos/$env:REPOSITORY/contents/platform-versions.json"
+          $current = Invoke-RestMethod -Uri "$endpoint?ref=release-channel" -Headers $headers
+          $text = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($current.content -replace '\s', '')))
+          $versions = $text | ConvertFrom-Json
+          foreach ($platform in $env:PLATFORMS.Split(',')) {
+            $versions | Add-Member -NotePropertyName $platform -NotePropertyValue $env:VERSION -Force
+          }
+          $updated = ($versions | ConvertTo-Json -Compress) + "`n"
+          $body = @{
+            message = "chore: publish $env:VERSION for $env:PLATFORMS [skip ci]"
+            content = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($updated))
+            branch = 'release-channel'
+            sha = $current.sha
+          } | ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri $endpoint -Headers $headers -Body $body -ContentType 'application/json' | Out-Null
+          $check = Invoke-RestMethod -Uri "$endpoint?ref=release-channel" -Headers $headers
+          $checkText = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($check.content -replace '\s', '')))
+          Write-Output $checkText
+          if ($checkText -ne $updated) { throw 'The per-platform update channel was not stored as expected.' }
