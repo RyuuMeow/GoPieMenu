@@ -32,12 +32,25 @@ codesign --verify --deep --strict "$APP"
 
 if [[ "${SKIP_SMOKE_TEST:-0}" != "1" ]]; then
     SMOKE_LOG="$BUILD_DIR/macos-smoke.log"
-    # Deployed bundles must start without the Qt SDK on PATH.
-    if ! QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
-        "$APP/Contents/MacOS/GoPieMenu" --smoke-test >"$SMOKE_LOG" 2>&1; then
-        cat "$SMOKE_LOG" >&2
-        echo "SDK-independent startup smoke test failed." >&2
-        exit 1
+    : >"$SMOKE_LOG"
+    # Deployed bundles must start without the Qt SDK on PATH. Try the native
+    # platform first and fall back to the offscreen plugin for headless hosts.
+    smoke_test() {
+        local platform="${1:-}"
+        if [[ -n "$platform" ]]; then
+            QT_QPA_PLATFORM="$platform" QT_QUICK_BACKEND=software \
+                "$APP/Contents/MacOS/GoPieMenu" --smoke-test >>"$SMOKE_LOG" 2>&1
+        else
+            "$APP/Contents/MacOS/GoPieMenu" --smoke-test >>"$SMOKE_LOG" 2>&1
+        fi
+    }
+    if ! smoke_test; then
+        echo "Native startup failed; retrying on the offscreen platform." >>"$SMOKE_LOG"
+        if ! smoke_test offscreen; then
+            cat "$SMOKE_LOG" >&2
+            echo "SDK-independent startup smoke test failed." >&2
+            exit 1
+        fi
     fi
     echo "SDK-independent startup smoke test passed."
 fi
