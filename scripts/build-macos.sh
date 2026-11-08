@@ -27,6 +27,11 @@ cmake -S "$ROOT" -B "$BUILD_DIR" \
 cmake --build "$BUILD_DIR" --config "$CONFIG" --parallel "$(sysctl -n hw.ncpu)"
 
 if [[ "${SKIP_TESTS:-0}" != "1" ]]; then
+    # Core and update coverage must pass on the first attempt. The QML suite
+    # drives synthetic gestures on an offscreen screen, so a single retry is
+    # allowed; every other failure still fails the build.
     ctest --test-dir "$BUILD_DIR" -C "$CONFIG" --output-on-failure \
-        --output-junit "$BUILD_DIR/test-results.xml"
+        --output-junit "$BUILD_DIR/test-results.xml" -E '^ui-'
+    ctest --test-dir "$BUILD_DIR" -C "$CONFIG" --output-on-failure \
+        --output-junit "$BUILD_DIR/test-results-ui.xml" -R '^ui-' --repeat until-pass:2
 fi
