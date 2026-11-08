@@ -90,6 +90,7 @@ jobs:
           name: macos-regression-results
           path: |
             build/test-results.xml
+            build/test-results-ui.xml
             build/Testing/Temporary/LastTest.log
             build/artifacts/*.png
             build/artifacts/*.txt
