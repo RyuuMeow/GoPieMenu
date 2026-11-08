@@ -122,6 +122,7 @@ if(GPM_BUILD_DESKTOP)
     endif()
     if(APPLE)
         list(APPEND GPM_APP_SOURCES
+            src/core/HookManager.h
             src/core/HookManagerMac.cpp
             resources/macos/GoPieMenu.icns
         )
