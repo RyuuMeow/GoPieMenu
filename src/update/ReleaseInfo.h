@@ -2,6 +2,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QUrl>
+#include <QVersionNumber>
 #include <optional>
 
 namespace gpm {
@@ -17,6 +18,21 @@ struct UpdateTarget {
     UpdatePlatform platform = CurrentUpdatePlatform();
     QString assetName;
 };
+
+// Strict parser for the three-segment stable versions used by releases and the
+// release channel. Prerelease/build suffixes and malformed segments are rejected.
+std::optional<QVersionNumber> ParseStableVersion(const QString& text);
+
+// Published platform versions from the release-channel document. The channel is
+// the only authority for which version each platform has actually shipped.
+struct ChannelVersions {
+    QVersionNumber windows;
+    QVersionNumber macos;
+};
+// Empty when the document is malformed, incomplete, or holds a non-stable
+// version; callers fail closed rather than guessing a version.
+std::optional<ChannelVersions> ParseChannelVersions(const QByteArray& json);
+QVersionNumber ChannelVersionFor(const ChannelVersions& versions, UpdatePlatform platform);
 
 struct ReleaseInfo {
     QString version;

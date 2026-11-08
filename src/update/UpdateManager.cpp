@@ -54,9 +54,13 @@ void UpdateManager::check(bool manual) {
     Manual = manual;
     Checking = true;
     Error.clear();
+    PendingVersion.clear();
     Status = tr("Checking for updates…");
     emit changed();
-    request(QUrl("https://api.github.com/repos/RyuuMeow/GoPieMenu/releases/latest"), Operation::Check);
+    // The release-channel document is the only authority for published platform
+    // versions. The GitHub "latest release" endpoint is intentionally never used
+    // so shipping one platform cannot notify the other platform's clients.
+    request(Options.channelUrl, Operation::Channel);
 }
 
 void UpdateManager::request(const QUrl& url, Operation operation) {
@@ -64,8 +68,10 @@ void UpdateManager::request(const QUrl& url, Operation operation) {
     Buffer.clear(); Received = 0;
     QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "GoPieMenu/" + Options.currentVersion.toUtf8());
-    request.setRawHeader("Accept", operation == Operation::Check ? "application/vnd.github+json" : "application/octet-stream");
-    if (operation == Operation::Check) request.setRawHeader("X-GitHub-Api-Version", "2026-03-10");
+    const bool githubApi = operation == Operation::Check;
+    request.setRawHeader("Accept", githubApi ? "application/vnd.github+json"
+        : operation == Operation::Channel ? "*/*" : "application/octet-stream");
+    if (githubApi) request.setRawHeader("X-GitHub-Api-Version", "2026-03-10");
     request.setTransferTimeout(Options.requestTimeoutMs);
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     request.setMaximumRedirectsAllowed(5);
@@ -81,7 +87,8 @@ void UpdateManager::consume() {
     const auto bytes = Reply->readAll();
     Received += bytes.size();
     const qint64 limit = CurrentOperation == Operation::Installer ? Release.installerSize
-        : CurrentOperation == Operation::Checksum ? 64 * 1024 : 2 * 1024 * 1024;
+        : CurrentOperation == Operation::Checksum ? 64 * 1024
+        : CurrentOperation == Operation::Channel ? 16 * 1024 : 2 * 1024 * 1024;
     if (Received > limit) { fail(tr("The update response is larger than expected.")); return; }
     if (CurrentOperation == Operation::Installer) {
         if (!Download || Download->write(bytes) != bytes.size()) {
@@ -101,28 +108,59 @@ void UpdateManager::finished() {
     const auto detail = Reply->errorString();
     const auto operation = CurrentOperation;
     stopRequest();
-    if (operation == Operation::Check && code == 404) {
-        Checking = false;
-        Available = false;
-        Status = tr("No releases are available yet.");
-        emit changed(); emit checkFinished(); return;
-    }
     if (networkError != QNetworkReply::NoError || code != 200) {
+        // A failed check has no safe fallback: never guess a version from another
+        // endpoint. Download failures keep the offered update available so the
+        // user can retry.
+        if (operation == Operation::Channel || operation == Operation::Check) Available = false;
         fail(tr("Could not contact the update server: %1").arg(detail)); return;
+    }
+    if (operation == Operation::Channel) {
+        const auto versions = ParseChannelVersions(Buffer);
+        if (!versions) { Available = false; fail(tr("The update channel response is invalid.")); return; }
+        const auto current = ParseStableVersion(Options.currentVersion);
+        if (!current) { Available = false; fail(tr("The release version is invalid.")); return; }
+        const auto published = ChannelVersionFor(*versions, Options.target.platform);
+        if (QVersionNumber::compare(published, *current) <= 0) {
+            Checking = false;
+            Available = false;
+            Status = tr("You are using the latest version.");
+            emit changed(); emit checkFinished(); return;
+        }
+        PendingVersion = published.toString();
+        // Release notes and assets must come from exactly the channel-selected
+        // tag, so query the tag endpoint instead of "latest".
+        request(QUrl(QStringLiteral("https://api.github.com/repos/RyuuMeow/GoPieMenu/releases/tags/v")
+            + PendingVersion), Operation::Check);
+        return;
     }
     if (operation == Operation::Check) {
         QString parseError;
         auto release = ParseRelease(Buffer, Options.currentVersion, Options.language, Options.target, &parseError);
-        if (!parseError.isEmpty()) { fail(parseError); return; }
-        Checking = false;
+        if (!parseError.isEmpty()) { Available = false; fail(parseError); return; }
         if (!release) {
+            Checking = false;
             Available = false;
             Status = tr("You are using the latest version.");
+        } else if (release->version != PendingVersion) {
+            // The channel and the tagged release disagree; fail closed instead of
+            // offering a version the channel did not publish.
+            Available = false;
+            fail(tr("The update channel response is invalid."));
+            return;
+        } else if (release->installerUrl.isEmpty() || release->checksumUrl.isEmpty()) {
+            // A channel release without this platform's asset must not surface as
+            // "an update is available but cannot be downloaded".
+            Available = false;
+            fail(tr("The release does not include an update for this platform."));
+            return;
         } else if (!Manual && Preferences->value("updates/skippedVersion").toString() == release->version) {
+            Checking = false;
             Available = false;
             Status = tr("Version %1 was skipped.").arg(release->version);
         } else {
             Release = std::move(*release);
+            Checking = false;
             Available = true;
             Status = tr("GoPieMenu %1 is available.").arg(Release.version);
             emit changed(); emit checkFinished(); emit updateAvailable(); return;

@@ -1,9 +1,11 @@
 #pragma once
 #include "update/UpdateManager.h"
+#include <QHash>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <QUrl>
 #include <cstring>
 
 namespace update_test {
@@ -45,15 +47,29 @@ private:
     qint64 Offset = 0;
 };
 
+// The update check now talks to several URLs in a fixed order, so responses are
+// keyed by URL instead of by request order. Every request is recorded so tests
+// can assert exactly which endpoints were (and were not) contacted.
 class Network : public QNetworkAccessManager {
 public:
-    QList<Response> responses;
-    QList<QNetworkRequest> requests;
+    QHash<QString, Response> responses;
+    QList<QUrl> requests;
+    void serve(const QUrl& url, const Response& response) { responses.insert(url.toString(), response); }
+    void serve(const QUrl& url, const QByteArray& body, int status = 200,
+               QNetworkReply::NetworkError error = QNetworkReply::NoError, int delayMs = 0) {
+        serve(url, Response{body, status, error, delayMs});
+    }
+    bool requestedLatestEndpoint() const {
+        for (const auto& url : requests)
+            if (url.path().contains(QStringLiteral("/releases/latest"))) return true;
+        return false;
+    }
 protected:
     QNetworkReply* createRequest(Operation, const QNetworkRequest& request, QIODevice*) override {
-        requests.append(request);
-        const auto response = responses.isEmpty()
-            ? Response{{}, 500, QNetworkReply::UnknownNetworkError} : responses.takeFirst();
+        requests.append(request.url());
+        const auto found = responses.constFind(request.url().toString());
+        const auto response = found == responses.constEnd()
+            ? Response{{}, 500, QNetworkReply::UnknownNetworkError} : found.value();
         return new Reply(request, response, this);
     }
 };
@@ -85,6 +101,28 @@ inline gpm::UpdateTarget Target(gpm::UpdatePlatform platform, const QString& ass
     target.assetName = assetName;
     return target;
 }
+
+// The release channel and the URLs derived from its selected version.
+inline QUrl ChannelUrl() {
+    return QUrl(QStringLiteral("https://raw.githubusercontent.com/RyuuMeow/GoPieMenu/release-channel/platform-versions.json"));
+}
+inline QUrl TagUrl(const QString& version) {
+    return QUrl(QStringLiteral("https://api.github.com/repos/RyuuMeow/GoPieMenu/releases/tags/v") + version);
+}
+inline QUrl DownloadUrl(const QString& version, const QString& asset) {
+    return QUrl(QStringLiteral("https://github.com/RyuuMeow/GoPieMenu/releases/download/v") + version + "/" + asset);
+}
+inline QUrl ChecksumUrl(const QString& version) { return DownloadUrl(version, QStringLiteral("SHA256SUMS.txt")); }
+inline QByteArray Channel(const QString& windows = "2.1.0", const QString& macos = "0.0.0") {
+    return QJsonDocument(QJsonObject{{"windows", windows}, {"macos", macos}}).toJson();
+}
+inline void ServeChannel(Network& network, const QString& windows, const QString& macos) {
+    network.serve(ChannelUrl(), Channel(windows, macos));
+}
+inline void ServeTaggedRelease(Network& network, const QString& version, const QByteArray& release) {
+    network.serve(TagUrl(version), release);
+}
+
 inline QJsonObject Asset(const QString& name, qint64 size = Installer.size(), const QString& state = "uploaded") {
     return QJsonObject{{"name", name}, {"state", state}, {"size", size}};
 }
@@ -106,6 +144,20 @@ inline QByteArray ChecksumFor(const QString& assetName, const QByteArray& bytes 
     return QCryptographicHash::hash(bytes, QCryptographicHash::Sha256).toHex() + "  " + assetName.toUtf8() + "\n";
 }
 inline QByteArray Checksum(const QByteArray& bytes = Installer) { return ChecksumFor(WindowsAsset(), bytes); }
+// Serves the merged SHA256SUMS.txt plus the platform installer for one release.
+inline void ServePlatformDownload(Network& network, const QString& version, const QString& asset,
+                                  const QByteArray& installer = Installer) {
+    network.serve(ChecksumUrl(version), ChecksumFor(asset, installer));
+    network.serve(DownloadUrl(version, asset), installer);
+}
+// Seeds a complete Windows update (channel + tagged release + download) for tests
+// that exercise the editor's update dialog rather than the update protocol.
+inline void ServeStandardUpdate(Network& network, const QByteArray& releaseJson = Release(),
+                                const QString& version = "2.1.0") {
+    ServeChannel(network, version, "0.0.0");
+    ServeTaggedRelease(network, version, releaseJson);
+    ServePlatformDownload(network, version, WindowsAsset());
+}
 inline gpm::UpdateOptions Options(const QString& directory, const QString& language = "en",
                                   const gpm::UpdateTarget& target = WindowsTarget()) {
     gpm::UpdateOptions options;
@@ -114,6 +166,7 @@ inline gpm::UpdateOptions Options(const QString& directory, const QString& langu
     options.settingsFile = directory + "/updates.ini";
     options.downloadDirectory = directory + "/downloads";
     options.target = target;
+    options.channelUrl = ChannelUrl();
     options.launchInstaller = [](const QString&, QString*) { return true; };
     return options;
 }

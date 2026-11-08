@@ -4,22 +4,13 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonParseError>
 #include <QMap>
 #include <QRegularExpression>
 #include <QVersionNumber>
 
 namespace gpm {
 namespace {
-std::optional<QVersionNumber> StableVersion(const QString& text) {
-    static const QRegularExpression pattern(R"(^v?((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))$)");
-    const auto match = pattern.match(text);
-    if (!match.hasMatch()) return {};
-    qsizetype suffix = 0;
-    const auto version = QVersionNumber::fromString(match.captured(1), &suffix);
-    if (suffix != match.capturedLength(1) || version.segmentCount() != 3) return {};
-    return version;
-}
-
 // Windows publishes one installer name; macOS publishes GoPieMenu-<version>.dmg.
 QString DefaultInstallerAsset(const UpdateTarget& target, const QString& version) {
     if (!target.assetName.isEmpty()) return target.assetName;
@@ -36,6 +27,36 @@ bool IsSafeAssetName(const QString& name) {
     return !name.isEmpty() && name != "." && name != ".."
         && !name.contains('/') && !name.contains('\\');
 }
+}
+
+std::optional<QVersionNumber> ParseStableVersion(const QString& text) {
+    static const QRegularExpression pattern(R"(^v?((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))$)");
+    const auto match = pattern.match(text);
+    if (!match.hasMatch()) return {};
+    qsizetype suffix = 0;
+    const auto version = QVersionNumber::fromString(match.captured(1), &suffix);
+    if (suffix != match.capturedLength(1) || version.segmentCount() != 3) return {};
+    return version;
+}
+
+std::optional<ChannelVersions> ParseChannelVersions(const QByteArray& json) {
+    QJsonParseError parseError{};
+    const auto document = QJsonDocument::fromJson(json, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !document.isObject()) return {};
+    const auto object = document.object();
+    // Both known platforms must be valid; unknown keys are ignored so the
+    // channel writer can add platforms without breaking older readers.
+    const auto windows = object.value("windows");
+    const auto macos = object.value("macos");
+    if (!windows.isString() || !macos.isString()) return {};
+    const auto windowsVersion = ParseStableVersion(windows.toString());
+    const auto macosVersion = ParseStableVersion(macos.toString());
+    if (!windowsVersion || !macosVersion) return {};
+    return ChannelVersions{*windowsVersion, *macosVersion};
+}
+
+QVersionNumber ChannelVersionFor(const ChannelVersions& versions, UpdatePlatform platform) {
+    return platform == UpdatePlatform::MacOS ? versions.macos : versions.windows;
 }
 
 UpdatePlatform CurrentUpdatePlatform() {
@@ -73,10 +94,10 @@ std::optional<ReleaseInfo> ParseRelease(const QByteArray& json, const QString& c
                                        const QString& language, const UpdateTarget& target, QString* error) {
     if (error) error->clear();
     const auto document = QJsonDocument::fromJson(json);
-    const auto current = StableVersion(currentVersion);
+    const auto current = ParseStableVersion(currentVersion);
     const auto object = document.object();
     const auto tag = object.value("tag_name").toString();
-    const auto version = StableVersion(tag);
+    const auto version = ParseStableVersion(tag);
     if (!document.isObject() || !object.value("draft").isBool() || !object.value("prerelease").isBool()) {
         if (error) *error = QCoreApplication::translate("Updates", "The release response is invalid.");
         return {};

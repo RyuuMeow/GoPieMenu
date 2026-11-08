@@ -1776,12 +1776,12 @@
 <context>
     <name>Updates</name>
     <message>
-        <location filename="../../src/update/ReleaseInfo.cpp" line="81"/>
+        <location filename="../../src/update/ReleaseInfo.cpp" line="102"/>
         <source>The release response is invalid.</source>
         <translation>版本資訊回應無效。</translation>
     </message>
     <message>
-        <location filename="../../src/update/ReleaseInfo.cpp" line="86"/>
+        <location filename="../../src/update/ReleaseInfo.cpp" line="107"/>
         <source>The release version is invalid.</source>
         <translation>版本號無效。</translation>
     </message>
@@ -2051,81 +2051,93 @@
         <translation>更新請求逾時，請稍後再試。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="57"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="58"/>
         <source>Checking for updates…</source>
         <translation>正在檢查更新…</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="85"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="92"/>
         <source>The update response is larger than expected.</source>
         <translation>更新回應大小超出預期。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="88"/>
-        <location filename="../../src/update/UpdateManager.cpp" line="142"/>
-        <location filename="../../src/update/UpdateManager.cpp" line="150"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="95"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="180"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="188"/>
         <source>Could not save the installer. Check disk space and try again.</source>
         <translation>無法儲存安裝程式。請確認磁碟空間足夠後再試一次。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="107"/>
-        <source>No releases are available yet.</source>
-        <translation>目前尚無可用版本。</translation>
-    </message>
-    <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="111"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="116"/>
         <source>Could not contact the update server: %1</source>
         <translation>無法連線至更新伺服器：%1</translation>
     </message>
     <message>
         <location filename="../../src/update/UpdateManager.cpp" line="120"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="149"/>
+        <source>The update channel response is invalid.</source>
+        <translation>更新通道回應無效。</translation>
+    </message>
+    <message>
+        <location filename="../../src/update/UpdateManager.cpp" line="122"/>
+        <source>The release version is invalid.</source>
+        <translation>發行版本無效。</translation>
+    </message>
+    <message>
+        <location filename="../../src/update/UpdateManager.cpp" line="127"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="144"/>
         <source>You are using the latest version.</source>
         <translation>你使用的已是最新版本。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="123"/>
-        <location filename="../../src/update/UpdateManager.cpp" line="210"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="155"/>
+        <source>The release does not include an update for this platform.</source>
+        <translation>此發行版本沒有包含適用於此平台的更新。</translation>
+    </message>
+    <message>
+        <location filename="../../src/update/UpdateManager.cpp" line="160"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="248"/>
         <source>Version %1 was skipped.</source>
         <translation>已略過版本 %1。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="127"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="165"/>
         <source>GoPieMenu %1 is available.</source>
         <translation>GoPieMenu %1 已推出。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="134"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="172"/>
         <source>The release checksum is missing or invalid.</source>
         <translation>版本的 SHA256 校驗碼遺漏或無效。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="136"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="174"/>
         <source>Could not create the update download folder.</source>
         <translation>無法建立更新下載資料夾。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="148"/>
-        <location filename="../../src/update/UpdateManager.cpp" line="220"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="186"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="258"/>
         <source>The installer failed verification. Download the update again.</source>
         <translation>安裝程式驗證失敗。請重新下載更新。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="158"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="196"/>
         <source>The update is ready to open.</source>
         <translation>更新已準備好可開啟。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="160"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="198"/>
         <source>The update is ready to install.</source>
         <translation>更新已準備就緒，可以安裝。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="207"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="245"/>
         <source>Could not save the skipped version. Try again.</source>
         <translation>無法儲存略過的版本，請再試一次。</translation>
     </message>
     <message>
-        <location filename="../../src/update/UpdateManager.cpp" line="225"/>
+        <location filename="../../src/update/UpdateManager.cpp" line="263"/>
         <source>Could not start the installer. Please try again.</source>
         <translation>無法啟動安裝程式，請再試一次。</translation>
     </message>

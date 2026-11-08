@@ -428,7 +428,7 @@ private slots:
     }
     void init() { QTest::failOnWarning(QRegularExpression(".*(qrc:/editor|QQml|Binding loop|ReferenceError|TypeError).*")); }
     void hiddenUpdatesUseTrayAndReopenTheirNotes() {
-        QTemporaryDir dir; update_test::Network network; network.responses = {{update_test::Release()}};
+        QTemporaryDir dir; update_test::Network network; update_test::ServeStandardUpdate(network);
         UpdateManager updates(update_test::Options(dir.path()), &network);
         ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
@@ -454,7 +454,7 @@ private slots:
     void visibleUpdatesWaitForDialogsAndUseTheInterfaceLanguage() {
         for (const auto& language : {QString("en"), QString("zh-TW"), QString("zh-CN")}) {
             TranslationManager translations; QVERIFY(translations.load(language));
-            QTemporaryDir dir; update_test::Network network; network.responses = {{update_test::Release()}};
+            QTemporaryDir dir; update_test::Network network; update_test::ServeStandardUpdate(network);
             UpdateManager updates(update_test::Options(dir.path(), language), &network);
             ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
             SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
@@ -478,7 +478,7 @@ private slots:
     }
     void installingUpdatesProtectsDraftsAndHandlesCancellation() {
         QTemporaryDir dir; update_test::Network network;
-        network.responses = {{update_test::Release()}, {update_test::Checksum()}, {update_test::Installer}};
+        update_test::ServeStandardUpdate(network);
         auto options = update_test::Options(dir.path()); int launches = 0; bool allowInstall = false;
         options.launchInstaller = [&](const QString&, QString* error) {
             ++launches; if (!allowInstall) *error = "Simulated cancelled permission prompt"; return allowInstall;
@@ -514,7 +514,7 @@ private slots:
         QTemporaryDir dir; update_test::Network network;
         auto body = update_test::Notes;
         body.replace("- English update.", QString("- A detailed release change with enough text to wrap in a compact window.\n").repeated(80));
-        network.responses = {{update_test::Release("v2.1.0", body)}};
+        update_test::ServeStandardUpdate(network, update_test::Release("v2.1.0", body));
         UpdateManager updates(update_test::Options(dir.path()), &network);
         ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
         SettingsWindow editor(&config, &icons, nullptr, &updates); editor.setPlatformIntegrationEnabled(false);
