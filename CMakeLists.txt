@@ -13,6 +13,11 @@ if(NOT WIN32 AND NOT APPLE)
 endif()
 
 if(APPLE)
+    # Objective-C++ carries the AppKit bridging; it cannot be listed in project()
+    # because only Apple toolchains provide an OBJCXX compiler.
+    enable_language(OBJCXX)
+    set(CMAKE_OBJCXX_STANDARD 20)
+    set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
     # Qt 6.9 supports macOS 12 and newer. Keep the bundle and the deployment target aligned.
     set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version")
     add_compile_options($<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc> $<$<COMPILE_LANGUAGE:OBJCXX>:-fblocks>)

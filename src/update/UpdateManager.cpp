@@ -152,7 +152,13 @@ void UpdateManager::finished() {
     Downloading = false;
     Ready = true;
     Progress = 1;
+    // Windows runs the verified Setup.exe; macOS opens the verified DMG for the
+    // user to copy GoPieMenu into Applications.
+#ifdef Q_OS_MACOS
+    Status = tr("The update is ready to open.");
+#else
     Status = tr("The update is ready to install.");
+#endif
     emit changed();
 }
 

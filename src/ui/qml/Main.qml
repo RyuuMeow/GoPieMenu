@@ -28,6 +28,9 @@ ApplicationWindow {
     property bool listVisible: false
     property string previousSelection: ""
     property bool pendingUpdate: false
+    // The startup setting is the Windows Run key on Windows and a LaunchAgent
+    // login item on macOS; the label must describe the platform's behavior.
+    readonly property bool isMacOS: Qt.platform.os === "osx"
     readonly property bool dialogOpen: iconPicker.visible || colorPicker.visible || exitDialog.visible || runningApps.visible || settings.visible || about.visible || updateDialog.visible || restartDialog.visible
     function tryOpenUpdate() {
         if (pendingUpdate && visible && !dialogOpen && !recorder.active && appController.updater && appController.updater.available) {
@@ -120,8 +123,8 @@ ApplicationWindow {
                 checked: root.panelMode === "menu"
             }
             Item { Layout.fillWidth: true }
-            AppButton { objectName: "undoButton"; iconName: "undo.svg"; hint: qsTr("Undo · Ctrl+Z"); enabled: editor.canUndo; onClicked: editor.undo() }
-            AppButton { iconName: "redo.svg"; hint: qsTr("Redo · Ctrl+Y"); enabled: editor.canRedo; onClicked: editor.redo() }
+            AppButton { objectName: "undoButton"; iconName: "undo.svg"; hint: root.isMacOS ? qsTr("Undo · Cmd+Z") : qsTr("Undo · Ctrl+Z"); enabled: editor.canUndo; onClicked: editor.undo() }
+            AppButton { iconName: "redo.svg"; hint: root.isMacOS ? qsTr("Redo · Cmd+Y") : qsTr("Redo · Ctrl+Y"); enabled: editor.canRedo; onClicked: editor.redo() }
             AppButton { objectName: "discardButton"; enabled: editor.dirty; text: qsTr("Discard"); onClicked: { root.contentItem.forceActiveFocus(); editor.discard() } }
             AppButton { objectName: "applyButton"; enabled: editor.dirty; text: qsTr("Apply"); iconName: "check.svg"; kind: "primary"; onClicked: root.applyDraft() }
             AppButton { objectName: "applicationSettingsButton"; iconName: "settings.svg"; hint: qsTr("Application settings"); onClicked: settings.open() }
@@ -334,7 +337,7 @@ ApplicationWindow {
                 Accessible.name: qsTr("Language")
             }
             Label { Layout.fillWidth: true; text: qsTr("Language changes take effect after restarting GoPieMenu."); color: T.muted; font.pixelSize: 12; wrapMode: Text.WordWrap }
-            AppCheckBox { text: qsTr("Start with Windows"); checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
+            AppCheckBox { text: root.isMacOS ? qsTr("Start at login") : qsTr("Start with Windows"); checked: editor.startWithWindows; onClicked: editor.setStartWithWindows(checked) }
             ActionOverlaySettings { Layout.fillWidth: true }
             AppButton {
                 objectName: "checkUpdatesButton"
