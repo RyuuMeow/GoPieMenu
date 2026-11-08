@@ -76,6 +76,14 @@ class UiTests : public QObject {
         QCoreApplication::processEvents();
         return true;
     }
+    // macOS offscreen does not add the held left button to QTest::mouseMove, so
+    // QML drag handlers would see a hover and never start the drag. Deliver the
+    // move with the pressed button state explicitly; this also works on Windows.
+    static void dragMove(QQuickWindow* window, const QPoint& point) {
+        QMouseEvent move(QEvent::MouseMove, QPointF(point), QPointF(window->mapToGlobal(point)),
+            Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(window, &move);
+    }
     static bool snapshot(QQuickWindow* window, const QString& name) {
         QCoreApplication::processEvents();
         const auto image = window->grabWindow();
@@ -93,7 +101,8 @@ private slots:
         auto* window = editor.window();
         QVERIFY(click(window, "applicationSettingsButton"));
         QVERIFY(click(window, "overlayEnabled"));
-        QVERIFY(editor.session()->draft().ActionOverlay.enabled);
+        // Clicks are delivered asynchronously on macOS, so let the binding settle.
+        QTRY_VERIFY(editor.session()->draft().ActionOverlay.enabled);
         QVERIFY(!config.GetConfig().ActionOverlay.enabled);
         QSignalSpy requested(&editor, &SettingsWindow::previewActionOverlay);
         auto* preview = find(window, "overlayPreviewButton");
@@ -138,14 +147,16 @@ private slots:
         QVERIFY(click(window, "appearanceButton"));
         QVERIFY(find(window, "fontSizeSlider"));
         QVERIFY(click(window, "submenuAppearanceButton"));
-        QCOMPARE(session->folderId(), data.Profiles[0].Items[0].Id);
-        QVERIFY(find(window, "submenuFontSizeSlider")); QVERIFY(!find(window, "fontSizeSlider"));
+        QTRY_COMPARE(session->folderId(), data.Profiles[0].Items[0].Id);
+        QTRY_VERIFY(find(window, "submenuFontSizeSlider"));
+        QTRY_VERIFY(!find(window, "fontSizeSlider"));
         session->setStyleField("submenuFontSize", 24);
         session->setStyleField("submenuIconSize", 80);
         session->setStyleField("submenuBorderWidth", 5);
         session->setStyleField("submenuTextOutlineThickness", 6);
         QVERIFY(click(window, "pieAppearanceButton"));
-        QVERIFY(session->folderId().isEmpty()); QVERIFY(find(window, "fontSizeSlider"));
+        QTRY_VERIFY(session->folderId().isEmpty());
+        QTRY_VERIFY(find(window, "fontSizeSlider"));
         QCOMPARE(session->effectiveStyle().FontSize, data.GlobalStyle.FontSize);
         ListScene before; before.build(data.Profiles[0].Items[0].SubItems, session->effectiveStyle());
         const auto render = [](const ListScene& scene) {
@@ -193,11 +204,11 @@ private slots:
             combo->setProperty("currentIndex", 1);
             QVERIFY(QMetaObject::invokeMethod(combo, "activated", Q_ARG(int, 1)));
             QTRY_VERIFY(editor.session()->profile()["persistent"].toBool());
-            QVERIFY(!find(window, "activationModeCombo"));
+            QTRY_VERIFY(!find(window, "activationModeCombo"));
             auto* collapse = find(window, "collapseSubmenuOnClickCheckBox"); QVERIFY(collapse);
             QVERIFY(!collapse->property("checked").toBool());
             QVERIFY(click(window, "collapseSubmenuOnClickCheckBox"));
-            QVERIFY(editor.session()->profile()["collapseSubmenuOnClick"].toBool());
+            QTRY_VERIFY(editor.session()->profile()["collapseSubmenuOnClick"].toBool());
             editor.session()->undo();
             QTRY_VERIFY(!collapse->property("checked").toBool());
             QCOMPARE(editor.session()->profile()["triggerSummary"].toString(), QCoreApplication::translate("gpm::EditorSession", "Persistent floating menu"));
@@ -205,7 +216,7 @@ private slots:
             editor.session()->undo();
             QTRY_VERIFY(!editor.session()->profile()["persistent"].toBool());
             QTRY_VERIFY(find(window, "activationModeCombo"));
-            QVERIFY(!find(window, "collapseSubmenuOnClickCheckBox"));
+            QTRY_VERIFY(!find(window, "collapseSubmenuOnClickCheckBox"));
         }
     }
     void persistentClicksDragAndSubmenuToggle() {
@@ -733,7 +744,7 @@ private slots:
         }
         const auto folder = session->addItem(int(ActionType::ListMenu));
         QVERIFY(click(w, "enterSubmenuButton"));
-        QCOMPARE(session->folderId(), folder);
+        QTRY_COMPARE(session->folderId(), folder);
         const auto child = session->addItem(int(ActionType::OpenURL));
         session->setItemField("target", "https://example.com");
         const auto second = session->addItem(int(ActionType::SendHotkey));
@@ -752,8 +763,9 @@ private slots:
         const auto from = handle->mapToScene(QPointF(12, 20)).toPoint();
         const auto to = nextHandle->mapToScene(QPointF(12, 30)).toPoint();
         QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        QTest::mouseMove(w, from + QPoint(0, 16), 20);
-        QTest::mouseMove(w, to, 30);
+        dragMove(w, from + QPoint(0, 16));
+        QTest::qWait(20);
+        dragMove(w, to);
         QTest::qWait(30);
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
         QTRY_COMPARE_WITH_TIMEOUT(session->items()[1].toMap()["id"].toString(), movedId, 2000);
@@ -858,7 +870,8 @@ private slots:
         auto from = row->mapToScene(QPointF(row->width()*.65, 20)).toPoint();
         auto to = viewport->mapToScene(QPointF(120, 2)).toPoint();
         QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        QTest::mouseMove(w, from - QPoint(0,20), 20); QTest::mouseMove(w, to, 30);
+        dragMove(w, from - QPoint(0,20)); QTest::qWait(20);
+        dragMove(w, to); QTest::qWait(30);
         QTRY_VERIFY(find(w, "insertionLine")); QVERIFY(find(w, "dragPreview"));
         QVERIFY(snapshot(w, "drag-insertion"));
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
@@ -871,7 +884,8 @@ private slots:
         from = row->mapToScene(QPointF(105,20)).toPoint();
         to = viewport->mapToScene(QPointF(120, viewport->height()-2)).toPoint();
         QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        QTest::mouseMove(w, from + QPoint(0,20), 20); QTest::mouseMove(w, to, 30);
+        dragMove(w, from + QPoint(0,20)); QTest::qWait(20);
+        dragMove(w, to); QTest::qWait(30);
         QTRY_VERIFY(find(w, "insertionLine"));
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
         QTRY_COMPARE(session->items()[2].toMap()["id"].toString(), ids[0]);
@@ -881,7 +895,7 @@ private slots:
         from = row->mapToScene(QPointF(110,20)).toPoint();
         to = viewport->mapToScene(QPointF(120,2)).toPoint();
         QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        QTest::mouseMove(w, to, 30); QTRY_VERIFY(find(w, "insertionLine"));
+        dragMove(w, to); QTest::qWait(30); QTRY_VERIFY(find(w, "insertionLine"));
         QTest::keyClick(w, Qt::Key_Escape);
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
         QCOMPARE(session->items(), before); QVERIFY(!find(w, "insertionLine"));
@@ -899,7 +913,7 @@ private slots:
         auto* row = find(w, "arrange-row-" + first); QVERIFY(row);
         auto from = row->mapToScene(QPointF(110,20)).toPoint();
         auto to = viewport->mapToScene(QPointF(120,viewport->height()-2)).toPoint();
-        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from); QTest::mouseMove(w, to, 30);
+        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from); dragMove(w, to); QTest::qWait(30);
         QTRY_VERIFY_WITH_TIMEOUT(list->property("contentY").toReal() >= list->property("contentHeight").toReal() - list->height() - 1, 4000);
         QVERIFY(find(w, "insertionLine"));
         QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
