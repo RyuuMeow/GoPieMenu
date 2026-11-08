@@ -83,7 +83,7 @@ export QT_ROOT_DIR="$HOME/Qt/6.9.0/macos"
 GPM_OSX_ARCHITECTURES="arm64;x86_64" ./scripts/build-macos.sh
 ```
 
-两个入口都会构建 Release，并运行核心测试及 100%、125%、150%、200% 缩放 UI 测试；Windows 在桌面运行，macOS 使用 1920 × 1080 的离屏虚拟屏幕与软件 Qt Quick 后端。截图输出至 `build/artifacts`。增量构建可加 `-SkipTests`（Windows）或 `SKIP_TESTS=1`（macOS）。
+两个入口都会构建 Release，并运行核心及 UI 回归测试；Windows 以 100%、125%、150%、200% 缩放运行 QML 测试，macOS 以 100%、200%（Retina）运行。Windows 在桌面运行，macOS 使用 1920 × 1080 的离屏虚拟屏幕与软件 Qt Quick 后端。截图输出至 `build/artifacts`。增量构建可加 `-SkipTests`（Windows）或 `SKIP_TESTS=1`（macOS）。
 
 将 Qt bin 加入 PATH 后，Windows 运行 `build/Release/GoPieMenu.exe --settings`；macOS 可打开 `build/GoPieMenu.app`，或运行 `build/GoPieMenu.app/Contents/MacOS/GoPieMenu --settings`。参数 `--preview` 使用临时配置，不安装全局钩子、不执行操作，也不修改启动设置。
 

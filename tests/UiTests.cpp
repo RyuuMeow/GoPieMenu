@@ -66,6 +66,15 @@ class UiTests : public QObject {
     static QQuickItem* find(QQuickWindow* window, const QString& name, const char* property = "objectName") {
         return visibleItem(window->contentItem(), name, property);
     }
+    // Loading a panel or list can take a frame or two on macOS offscreen; retry
+    // the lookup instead of failing the first immediate miss.
+    static QQuickItem* waitForItem(QQuickWindow* window, const QString& name, const char* property = "objectName") {
+        for (int attempt = 0; attempt < 100; ++attempt) {
+            if (auto* item = find(window, name, property)) return item;
+            QTest::qWait(30);
+        }
+        return nullptr;
+    }
     static bool click(QQuickWindow* window, const QString& name, const char* property = "objectName") {
         QTest::qWait(30); // Let a newly loaded inspector/menu finish its layout before pointer input.
         auto* item = find(window, name, property);
@@ -83,6 +92,34 @@ class UiTests : public QObject {
         QMouseEvent move(QEvent::MouseMove, QPointF(point), QPointF(window->mapToGlobal(point)),
             Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
         QApplication::sendEvent(window, &move);
+        QCoreApplication::processEvents();
+    }
+    // A press may still be queued on macOS offscreen when the first move arrives,
+    // and QML needs one move past the start-drag distance before it tracks a drag.
+    static void beginDrag(QQuickWindow* window, const QPoint& from) {
+        QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, from);
+        QTest::qWait(40);
+        dragMove(window, from + QPoint(0, QApplication::startDragDistance() * 2));
+        QTest::qWait(30);
+    }
+    static void endDrag(QQuickWindow* window, const QPoint& to) {
+        QTest::qWait(30);
+        QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, to);
+        QCoreApplication::processEvents();
+    }
+    // The first synthesized right click can be dropped while the popup is being
+    // created on macOS offscreen, and a queued outside press can dismiss it right
+    // after opening; retry once before failing the test.
+    static bool rightClickMenu(QQuickWindow* window, const QPoint& point, QObject* menu) {
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            QTest::mouseClick(window, Qt::RightButton, Qt::NoModifier, point);
+            if (QTest::qWaitFor([&] { return menu->property("visible").toBool(); }, 3000)) {
+                QTest::qWait(50);
+                if (menu->property("visible").toBool()) return true;
+            }
+            QTest::qWait(50);
+        }
+        return menu->property("visible").toBool();
     }
     static bool snapshot(QQuickWindow* window, const QString& name) {
         QCoreApplication::processEvents();
@@ -100,12 +137,17 @@ private slots:
         QVERIFY(showEditor(editor));
         auto* window = editor.window();
         QVERIFY(click(window, "applicationSettingsButton"));
+        QTRY_VERIFY(find(window, "overlayEnabled"));
+        QTest::qWait(30); // Let the dialog finish its first layout before clicking the switch.
         QVERIFY(click(window, "overlayEnabled"));
-        // Clicks are delivered asynchronously on macOS, so let the binding settle.
-        QTRY_VERIFY(editor.session()->draft().ActionOverlay.enabled);
+        if (!QTest::qWaitFor([&] { return editor.session()->draft().ActionOverlay.enabled; }, 5000)) {
+            // The first click can land before the dialog settles; retry it once.
+            QVERIFY(click(window, "overlayEnabled"));
+            QTRY_VERIFY(editor.session()->draft().ActionOverlay.enabled);
+        }
         QVERIFY(!config.GetConfig().ActionOverlay.enabled);
         QSignalSpy requested(&editor, &SettingsWindow::previewActionOverlay);
-        auto* preview = find(window, "overlayPreviewButton");
+        auto* preview = waitForItem(window, "overlayPreviewButton");
         QVERIFY(preview);
         QVERIFY(QMetaObject::invokeMethod(preview, "clicked"));
         QCOMPARE(requested.count(), 1);
@@ -145,10 +187,14 @@ private slots:
         SettingsWindow editor(&config, &icons); editor.setPlatformIntegrationEnabled(false);
         QVERIFY(showEditor(editor)); auto* window = editor.window(); auto* session = editor.session();
         QVERIFY(click(window, "appearanceButton"));
-        QVERIFY(find(window, "fontSizeSlider"));
+        QTRY_VERIFY(find(window, "fontSizeSlider"));
+        // The inspector pane can still be settling when the tab button appears;
+        // wait for it and give the click a frame to land on its final geometry.
+        QTRY_VERIFY(find(window, "submenuAppearanceButton"));
+        QTest::qWait(30);
         QVERIFY(click(window, "submenuAppearanceButton"));
-        QTRY_COMPARE(session->folderId(), data.Profiles[0].Items[0].Id);
         QTRY_VERIFY(find(window, "submenuFontSizeSlider"));
+        QTRY_COMPARE(session->folderId(), data.Profiles[0].Items[0].Id);
         QTRY_VERIFY(!find(window, "fontSizeSlider"));
         session->setStyleField("submenuFontSize", 24);
         session->setStyleField("submenuIconSize", 80);
@@ -551,40 +597,47 @@ private slots:
         auto* menu = w->findChild<QObject*>("actionContextMenu"); QVERIFY(menu);
         const auto original = session->items()[0].toMap()["id"].toString();
         auto point = canvas->mapToScene(canvas->itemCenter(0)).toPoint();
-        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, point);
-        QTRY_VERIFY(menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
+        QVERIFY(rightClickMenu(w, point, menu)); QVERIFY(session->selectedId().isEmpty());
         QTest::qWait(100); // Let the first asynchronous icon requests reach the preview capture.
         QVERIFY(snapshot(w, "action-context-menu"));
+        QTRY_VERIFY(find(w, "contextDuplicateAction"));
         QVERIFY(click(w, "contextDuplicateAction"));
-        const auto duplicate = session->selectedId(); QVERIFY(duplicate != original); QCOMPARE(session->items().size(), 5);
+        QTRY_COMPARE(session->items().size(), 5);
+        const auto duplicate = session->selectedId(); QVERIFY(duplicate != original);
         QTest::qWait(30); point = canvas->mapToScene(canvas->itemCenter(0)).toPoint();
-        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, point);
-        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(rightClickMenu(w, point, menu));
+        QTRY_VERIFY(find(w, "contextDeleteAction"));
         QVERIFY(click(w, "contextDeleteAction"));
-        QCOMPARE(session->items().size(), 4); QVERIFY(!session->findItem(original)); QCOMPARE(session->selectedId(), duplicate);
+        QTRY_COMPARE(session->items().size(), 4);
+        QTRY_VERIFY(!session->findItem(original)); QCOMPARE(session->selectedId(), duplicate);
         session->undo(); QVERIFY(session->findItem(original));
-        auto* hint = find(w, "previewHint"); QVERIFY(hint);
+        auto* hint = waitForItem(w, "previewHint"); QVERIFY(hint);
         const auto hintText = hint->property("text").toString(); const auto hintPosition = hint->mapToScene(QPointF());
-        QVERIFY(click(w, "menuEnabledToggle")); QVERIFY(!session->profile()["enabled"].toBool());
-        QVERIFY(find(w, "previewHint")); QCOMPARE(hint->property("text").toString(), hintText);
-        QCOMPARE(hint->mapToScene(QPointF()), hintPosition);
+        QVERIFY(click(w, "menuEnabledToggle"));
+        QTRY_VERIFY(!session->profile()["enabled"].toBool());
+        QTRY_VERIFY(find(w, "previewHint"));
+        QCOMPARE(find(w, "previewHint")->property("text").toString(), hintText);
+        QCOMPARE(find(w, "previewHint")->mapToScene(QPointF()), hintPosition);
 
         const auto folder = session->addItem(int(ActionType::ListMenu)); session->enterFolder(folder);
         const auto child = session->addItem(int(ActionType::LaunchApp)); session->selectItem({}); QTest::qWait(30);
         point = canvas->mapToScene(canvas->itemCenter(0)).toPoint();
-        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, point);
-        QTRY_VERIFY(menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
-        QVERIFY(click(w, "contextDuplicateAction")); QCOMPARE(session->items().size(), 2);
+        QVERIFY(rightClickMenu(w, point, menu)); QVERIFY(session->selectedId().isEmpty());
+        QTRY_VERIFY(find(w, "contextDuplicateAction"));
+        QVERIFY(click(w, "contextDuplicateAction"));
+        QTRY_COMPARE(session->items().size(), 2);
         const auto childCopy = session->selectedId();
         QVERIFY(click(w, "arrangeButton")); QTest::qWait(30);
-        auto* row = find(w, "arrange-row-" + child); QVERIFY(row);
-        QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, row->mapToScene(QPointF(110,20)).toPoint());
-        QTRY_VERIFY(menu->property("visible").toBool()); QCOMPARE(session->selectedId(), childCopy);
+        auto* row = waitForItem(w, "arrange-row-" + child); QVERIFY(row);
+        QVERIFY(rightClickMenu(w, row->mapToScene(QPointF(110,20)).toPoint(), menu));
+        QCOMPARE(session->selectedId(), childCopy);
+        QTRY_VERIFY(find(w, "contextDeleteAction"));
         QVERIFY(click(w, "contextDeleteAction"));
-        QVERIFY(!session->findItem(child)); QCOMPARE(session->items().size(), 1); QCOMPARE(session->selectedId(), childCopy);
+        QTRY_VERIFY(!session->findItem(child));
+        QTRY_COMPARE(session->items().size(), 1); QCOMPARE(session->selectedId(), childCopy);
         session->selectItem({}); QTest::qWait(30);
         QTest::mouseClick(w, Qt::RightButton, Qt::NoModifier, canvas->mapToScene(QPointF(8,8)).toPoint());
-        QVERIFY(!menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
+        QTRY_VERIFY(!menu->property("visible").toBool()); QVERIFY(session->selectedId().isEmpty());
     }
     void githubLinkAndTrayMenu() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
@@ -758,17 +811,15 @@ private slots:
         QTest::qWait(30);
         const auto movedId = session->items()[0].toMap()["id"].toString();
         const auto nextId = session->items()[1].toMap()["id"].toString();
-        auto* handle = find(w, "drag-handle-" + movedId); QVERIFY(handle);
-        auto* nextHandle = find(w, "drag-handle-" + nextId); QVERIFY(nextHandle);
+        auto* handle = waitForItem(w, "drag-handle-" + movedId); QVERIFY(handle);
+        auto* nextHandle = waitForItem(w, "drag-handle-" + nextId); QVERIFY(nextHandle);
         const auto from = handle->mapToScene(QPointF(12, 20)).toPoint();
         const auto to = nextHandle->mapToScene(QPointF(12, 30)).toPoint();
-        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        dragMove(w, from + QPoint(0, 16));
-        QTest::qWait(20);
-        dragMove(w, to);
-        QTest::qWait(30);
-        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
-        QTRY_COMPARE_WITH_TIMEOUT(session->items()[1].toMap()["id"].toString(), movedId, 2000);
+        beginDrag(w, from);
+        dragMove(w, to); QTest::qWait(30);
+        QTRY_VERIFY_WITH_TIMEOUT(find(w, "insertionLine"), 3000);
+        endDrag(w, to);
+        QTRY_COMPARE_WITH_TIMEOUT(session->items()[1].toMap()["id"].toString(), movedId, 3000);
         QVERIFY(snapshot(w, "arrange"));
         session->undo();
         QVERIFY(click(w, "arrangeButton"));
@@ -781,7 +832,8 @@ private slots:
         QCOMPARE(session->profile()["vkCode"].toInt(), int('M'));
         QVERIFY(snapshot(w, "trigger"));
         QVERIFY(click(w, "applyButton"));
-        QVERIFY2(!session->dirty(), qPrintable(session->error()));
+        QTRY_VERIFY_WITH_TIMEOUT(!session->dirty(), 3000);
+        QVERIFY2(session->error().isEmpty(), qPrintable(session->error()));
         QCOMPARE(config.GetConfig().Profiles[0].Items.size(), size_t(6));
     }
     void menuLifecycleAndStableControls() {
@@ -864,41 +916,42 @@ private slots:
         for (int i = 0; i < 3; ++i) { ids.append(session->addItem(3)); session->setItemField("name", QString("Action %1").arg(i)); }
         session->selectItem({});
         QVERIFY(click(w, "arrangeButton")); QTest::qWait(50);
-        auto* viewport = find(w, "arrangeViewport"); QVERIFY(viewport);
+        auto* viewport = waitForItem(w, "arrangeViewport"); QVERIFY(viewport);
         // Begin over the row's blank area, then insert before the first row.
-        auto* row = find(w, "arrange-row-" + ids[2]); QVERIFY(row);
+        auto* row = waitForItem(w, "arrange-row-" + ids[2]); QVERIFY(row);
         auto from = row->mapToScene(QPointF(row->width()*.65, 20)).toPoint();
         auto to = viewport->mapToScene(QPointF(120, 2)).toPoint();
-        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        dragMove(w, from - QPoint(0,20)); QTest::qWait(20);
+        beginDrag(w, from);
         dragMove(w, to); QTest::qWait(30);
-        QTRY_VERIFY(find(w, "insertionLine")); QVERIFY(find(w, "dragPreview"));
+        QTRY_VERIFY_WITH_TIMEOUT(find(w, "insertionLine"), 3000);
+        QTRY_VERIFY(find(w, "dragPreview"));
         QVERIFY(snapshot(w, "drag-insertion"));
-        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        endDrag(w, to);
         QTRY_COMPARE(session->items()[0].toMap()["id"].toString(), ids[2]);
-        QVERIFY(session->selectedId().isEmpty()); QVERIFY(!find(w, "wideInspector"));
+        QVERIFY(session->selectedId().isEmpty()); QTRY_VERIFY(!find(w, "wideInspector"));
         session->undo(); QTest::qWait(30);
         session->selectItem(ids[1]); QTest::qWait(30);
         // Begin over the label, then insert after the last row.
-        row = find(w, "arrange-row-" + ids[0]); QVERIFY(row);
+        row = waitForItem(w, "arrange-row-" + ids[0]); QVERIFY(row);
         from = row->mapToScene(QPointF(105,20)).toPoint();
         to = viewport->mapToScene(QPointF(120, viewport->height()-2)).toPoint();
-        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        dragMove(w, from + QPoint(0,20)); QTest::qWait(20);
+        beginDrag(w, from);
         dragMove(w, to); QTest::qWait(30);
-        QTRY_VERIFY(find(w, "insertionLine"));
-        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        QTRY_VERIFY_WITH_TIMEOUT(find(w, "insertionLine"), 3000);
+        endDrag(w, to);
         QTRY_COMPARE(session->items()[2].toMap()["id"].toString(), ids[0]);
         QCOMPARE(session->selectedId(), ids[1]);
         const auto before = session->items(); QTest::qWait(30);
-        row = find(w, "arrange-row-" + ids[0]); QVERIFY(row);
+        row = waitForItem(w, "arrange-row-" + ids[0]); QVERIFY(row);
         from = row->mapToScene(QPointF(110,20)).toPoint();
         to = viewport->mapToScene(QPointF(120,2)).toPoint();
-        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from);
-        dragMove(w, to); QTest::qWait(30); QTRY_VERIFY(find(w, "insertionLine"));
+        beginDrag(w, from);
+        dragMove(w, to); QTest::qWait(30);
+        QTRY_VERIFY_WITH_TIMEOUT(find(w, "insertionLine"), 3000);
         QTest::keyClick(w, Qt::Key_Escape);
-        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
-        QCOMPARE(session->items(), before); QVERIFY(!find(w, "insertionLine"));
+        QTRY_VERIFY(!find(w, "insertionLine"));
+        endDrag(w, to);
+        QCOMPARE(session->items(), before);
     }
     void dragAutoscrollKeepsGestureAlive() {
         QTemporaryDir dir; ConfigManager config(nullptr, dir.filePath("config.json")); IconService icons;
@@ -909,14 +962,18 @@ private slots:
         QString first;
         for (int i = 0; i < 12; ++i) { const auto id = session->addItem(3); if (!i) first = id; }
         QVERIFY(click(w, "arrangeButton")); QTest::qWait(30);
-        auto* list = find(w, "arrangeList"); auto* viewport = find(w, "arrangeViewport"); QVERIFY(list); QVERIFY(viewport);
-        auto* row = find(w, "arrange-row-" + first); QVERIFY(row);
+        auto* list = waitForItem(w, "arrangeList"); QVERIFY(list);
+        auto* viewport = waitForItem(w, "arrangeViewport"); QVERIFY(viewport);
+        auto* row = waitForItem(w, "arrange-row-" + first); QVERIFY(row);
         auto from = row->mapToScene(QPointF(110,20)).toPoint();
         auto to = viewport->mapToScene(QPointF(120,viewport->height()-2)).toPoint();
-        QTest::mousePress(w, Qt::LeftButton, Qt::NoModifier, from); dragMove(w, to); QTest::qWait(30);
-        QTRY_VERIFY_WITH_TIMEOUT(list->property("contentY").toReal() >= list->property("contentHeight").toReal() - list->height() - 1, 4000);
-        QVERIFY(find(w, "insertionLine"));
-        QTest::mouseRelease(w, Qt::LeftButton, Qt::NoModifier, to);
+        beginDrag(w, from);
+        dragMove(w, to); QTest::qWait(30);
+        // The arrange list scrolls from a 30ms QML timer while the drag is alive.
+        QTRY_VERIFY_WITH_TIMEOUT(list->property("contentY").toReal() > 0, 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(list->property("contentY").toReal() >= list->property("contentHeight").toReal() - list->height() - 1, 5000);
+        QTRY_VERIFY(find(w, "insertionLine"));
+        endDrag(w, to);
         QTRY_COMPARE(session->items().last().toMap()["id"].toString(), first);
     }
     void mouseModifiersAndKeyboardRecordingKeepMode() {

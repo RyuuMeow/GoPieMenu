@@ -83,7 +83,7 @@ export QT_ROOT_DIR="$HOME/Qt/6.9.0/macos"
 GPM_OSX_ARCHITECTURES="arm64;x86_64" ./scripts/build-macos.sh
 ```
 
-Both entry points build Release and run core and UI regression tests at 100%, 125%, 150%, and 200% scale. Windows runs them on the desktop; macOS uses an offscreen 1920 × 1080 screen and the software Qt Quick backend. Test screenshots are written to `build/artifacts`. Use `-SkipTests` on Windows or `SKIP_TESTS=1` on macOS for an incremental build.
+Both entry points build Release and run core and UI regression tests; Windows runs the QML suite at 100%, 125%, 150%, and 200% scale, macOS at 100% and 200% (the Retina factor). Windows runs them on the desktop; macOS uses an offscreen 1920 × 1080 screen and the software Qt Quick backend. Test screenshots are written to `build/artifacts`. Use `-SkipTests` on Windows or `SKIP_TESTS=1` on macOS for an incremental build.
 
 Run `build/Release/GoPieMenu.exe --settings` on Windows with Qt's bin directory on PATH; on macOS open `build/GoPieMenu.app` or run `build/GoPieMenu.app/Contents/MacOS/GoPieMenu --settings`. `--preview` opens an isolated temporary configuration without global hooks, action execution, or startup changes.
 
